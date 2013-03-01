@@ -1,0 +1,207 @@
+<html>
+<head>
+<title>Aneks Nr: {$document.nr}</title>
+{literal}
+<STYLE type="text/css"><!--
+BODY	{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1		{ font-size: 12pt; text-align: center; }
+H2		{ font-size: 11pt; text-align: center; color: red;}
+TD		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TABLE	{ border-collapse: collapse; }
+P		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: center; }
+//-->
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+<DIV STYLE="page-break-after: always">
+<h1>Aneks do Umowy o Świadczenie Usług Telekomunikacyjnych Nr: {$document.nr}</h1>
+<p>Zawarty w dniu {$smarty.now|date_format:"%Y-%m-%d"} w Poznaniu pomiędzy 
+Firmą Neter Sp. z o.o. z siedzibą w Poznaniu przy ulicy Sieradzkiej 28; 60-163 wpisaną do rejestru KRS pod 
+numerem 0000202092, NIP 779-22-07-498, Regon 634350031 zwanym dalej Usługodawcą reprezentowanym 
+przez: {$layout.logname} a: </p>
+<TABLE BORDER="0" size="100%">
+	<TR>
+		<TD valign="top">Nazwa/Nazwisko i imię: </TD>
+		<TD><b>{$customerinfo.customername}</b></TD>
+    	</TR>
+    <TR>
+		<TD>Adres: </TD> 
+		<TD><b>{$customerinfo.address}<br>{$customerinfo.zip} {$customerinfo.city}</b></TD>
+    	</TR>
+    {if $customerinfo.ssn}	
+    <TR>
+		<TD>PESEL: </TD>
+		<TD><b>{$customerinfo.ssn}</b></TD>
+    	</TR>
+	{/if}
+	{if $customerinfo.ten}
+    <TR>
+	   	<TD>NIP: </TD>
+    	<TD><b>{$customerinfo.ten}</b></TD>
+    	</TR>
+    {/if}
+    {if $customerinfo.icn}
+    <tr>
+    	<td>Dowód osobisty: </td>
+    	<td><b>{$customerinfo.icn}</b></td>
+    	</tr>
+    {/if}
+    {if $customerinfo.regon}
+    <tr>
+    	<td>REGON: </td>
+    	<td><b>{$customerinfo.regon}</b></td>
+    	</tr>
+    {/if}
+    {if $customerinfo.rbe}
+    <tr>
+    	<td>EDG/KRS: </td>
+    	<td><b>{$customerinfo.rbe}</b></td>
+    	</tr>
+    {/if}
+    
+</TABLE>
+
+<p>Zwanym dalej Użytkownikiem o następującej treści:</p>
+
+<TABLE BORDER="0">
+	<tr>
+		<td valign="top">1.</td>
+		<td>Przedmiotem aneksu jest zmiana danych Abonenta.</td>
+		</tr>
+	<tr>
+		<td valign="top">2.</td>
+		<td>Dane zostają zmienione na prośbę abonenta.</td>
+		</tr>
+	<tr>
+		<td valign="top">3.</td>
+		<td>Operator zobowiązuje się do zmiany danych, używanych w systemie rozliczeń i na wystawianych fakturach VAT zgodnie z nowymi danymi określonymi w niniejszym Aneksie.</td>
+		</tr>		
+	<tr>
+		<td valign="top">4.</td>
+		<td>Abonent podpisem złożonym pod niniejszym aneksem oświadcza, że akceptuje warunki tego Aneksu.</td>
+	<tr>
+		<td valign="top">5.</td>
+		<td>Abonent oświadcza, że znając treść aneksu wyraża zgodę na włączenie ich postanowień do Umowy.</td>
+		</tr>
+	<tr>
+		<td valign="top">6.</td>
+		<td>Nowe dane:<br>
+			<TABLE BORDER="0" size="100%">
+			<TR>
+				<TD valign="top">Nazwa/Nazwisko i imię: </TD>
+				<TD><b>{$document.new_lastname} {$document.new_name}</b></TD>
+			</TR>
+			<TR>
+				<TD>Adres: </TD> 
+				<TD><b>{$document.new_address}<br>{$document.new_zip} {$document.new_city}</b></TD>
+			</TR>
+			{if $document.new_ssn}	
+			<TR>
+				<TD>PESEL: </TD>
+				<TD><b>{$document.new_ssn}</b></TD>
+			</TR>
+			{else}
+			<TR>
+				<TD>PESEL: </TD>
+				<TD><b>{$customerinfo.ssn}</b></TD>
+			</TR>
+			{/if}
+			{if $document.new_ten}
+			<TR>
+				<TD>NIP: </TD>
+				<TD><b>{$document.new_ten}</b></TD>
+			</TR>
+			{else}
+			<TR>
+				<TD>NIP: </TD>
+				<TD><b>{$customerinfo.ten}</b></TD>
+			</TR>			
+			{/if}
+			{if $document.new_icn}
+			<tr>
+				<td>Dowód osobisty: </td>
+				<td><b>{$document.new_icn}</b></td>
+			</tr>
+			{else}
+			<tr>
+				<td>Dowód osobisty: </td>
+				<td><b>{$customerinfo.icn}</b></td>
+			</tr>			
+			{/if}
+			{if $document.new_regon}
+			<tr>
+				<td>REGON: </td>
+				<td><b>{$document.new_regon}</b></td>
+			</tr>
+			{else}
+			<tr>
+				<td>REGON: </td>
+				<td><b>{$customerinfo.regon}</b></td>
+			</tr>			
+			{/if}
+			{if $document.new_rbe}
+			<tr>
+				<td>EDG/KRS: </td>
+				<td><b>{$document.new_rbe}</b></td>
+			</tr>
+			{else}
+			<tr>
+				<td>EDG/KRS: </td>
+				<td><b>{$customerinfo.rbe}</b></td>
+			</tr>			
+			{/if}		
+		</TABLE>
+		{if $document.new_email || $document.new_phone}
+		Dane kontaktowe, umożliwiające kontakt Operatora z Abonentem: {if $document.new_email}mail: {$document.new_email},{/if}{if $document.new_phone} telefon: {$document.new_phone}{/if}.
+		Zmiana danych kontaktowych nie stanowi zmiany istotnych warunków umowy i nie wymaga formy pisemnej.
+		{/if}
+		</tr>
+	<tr>
+	    <td valign="top">7.</td>
+	    <td>Abonent wyraża zgodę na wyłączenie dostępu do usług, gdy opłata za te usługi nie zostanie zaksięgowana na koncie operatora do 15 dnia miesiąca, a także dobrowolnie poddaje się egzekucji z tutułu windykacji i ponownego włączenia usług.</td>
+	    </tr>
+	<tr>
+		<td valign="top">8.</td>
+		<td>Aneks wchodzi w życie z początkiem następnego okresu rozliczeniowego po jego podpisaniu.</td>
+		</tr>
+	<tr>
+		<td valign="top">9.</td>
+		<td>Sądem właściwym do rozstrzygania wszelkich sporów jest sąd właściwy dla siedziby Operatora.</td>
+		</tr>
+	<tr>
+		<td valign="top">10.</td>
+		<td>W sprawach nieuregulowanych niniejszym aneksem mają zastosowania z umowy, do której aneks jest sporządzony.
+		</td>
+		</tr>
+	<tr>
+		<td valign="top">11.</td>
+		<td>Aneks sporządzono w dwóch jednobrzmiących egzemplarzach, po jednym dla każdej ze stron.</td>
+		</tr>
+ </TABLE>
+
+<BR><BR><br><br><br><br> <br>
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="33%" ALIGN="CENTER">.............................................</TD>
+	<TD WIDTH="33%" ALIGN="CENTER">.............................................</TD>
+	<TD WIDTH="33%" ALIGN="CENTER">.............................................</TD>
+    </TR>
+    <TR>
+	<TD ALIGN="CENTER">Użytkownik</TD>
+	<TD ALIGN="CENTER">Nowy Użytkownik</TD>
+	<TD ALIGN="CENTER">Operator</TD>
+    </TR>
+    <tr>
+    	<td align="center"></td>
+    	<td align="center"></td>
+    	<td align="center">{$layout.logname}</td>
+</TABLE>
+
+<!-- Koniec strony -->
+</div>
+</body>
+</html>
+

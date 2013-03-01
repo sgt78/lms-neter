@@ -1,0 +1,112 @@
+{include file="clearheader.html"}
+<!--// $Id: printcustomerlist.html,v 1.7 2007/08/14 15:21:12 alec Exp $ //-->
+<TABLE WIDTH="100%">
+	<TR>
+		<TD WIDTH="99%" VALIGN="TOP">
+			<H1>{$layout.pagetitle}</H1>
+		</TD>
+		<TD WIDTH="1%" ALIGN="RIGHT" NOWRAP>
+			LMS {$layout.lmsv} @ {$layout.hostname}<BR>
+			{$smarty.now|date_format:"%A, %x"}<BR>
+			{t a=$layout.logname}Prepared by: $a{/t}
+		</TD>
+	</TR>
+</TABLE>
+<TABLE WIDTH="640" CELLPADDING="3" BORDER="1" ALIGN="CENTER">
+	<TR>
+		<TD ALIGN="CENTER" CLASS="HEAD">
+			{t}No.{/t}
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER">
+			&nbsp;
+		</TD>
+		<TD CLASS="HEAD" COLSPAN="4">
+			<B>Nazwa:</B>
+		</TD>
+		<TD CLASS="HEAD" VALIGN="TOP" ALIGN="RIGHT">
+			<B>Wartość:</B>
+		</TD>
+	</TR>
+	{cycle values="white,grey" print=false}
+	{section name=rep1 loop=$rep1}
+	<TR class="{cycle}">{assign var=cid value=$customerlist[customerlist].id}
+		<TD ALIGN="CENTER">
+			{counter}
+		</TD>
+		<TD ALIGN="CENTER">
+			
+		</TD>
+		<TD COLSPAN="4">
+			<B>{$rep1[rep1].name}</B>
+		</TD>
+		<TD ALIGN="RIGHT">
+			<B>{$rep1[rep1].value}</B>
+		</TD>
+	</TR>
+	{/section}
+
+	<TR>
+		<TD ALIGN="CENTER" CLASS="HEAD">
+			{t}No.{/t}
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER">
+			{t}ID{/t}
+		</TD>
+		<TD CLASS="HEAD">
+			<B>Nazwa</B>
+		</TD>
+		<TD CLASS="HEAD" VALIGN="TOP" ALIGN="RIGHT">
+			Ilość:
+		</TD>
+		<TD CLASS="HEAD" VALIGN="TOP" ALIGN="RIGHT">
+			Punkty:
+		</TD>
+		<TD CLASS="HEAD" VALIGN="TOP" ALIGN="RIGHT">
+			Zaliczone:
+		</TD>
+		<TD CLASS="HEAD" ALIGN="RIGHT">
+			Niezaliczone:
+		</TD>
+	</TR>
+	{cycle values="white,grey" print=false}
+	{section name=rep2 loop=$rep2}
+	<TR class="{cycle}">{assign var=cid value=$customerlist[customerlist].id}
+		<TD ALIGN="CENTER">
+			{counter name=rep2}
+		</TD>
+		<TD ALIGN="CENTER">
+			{$rep2[rep2].evs_id|string_format:"%04d"}
+		</TD>
+		<TD>
+			<B>{$rep2[rep2].evs_name}</B>
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			{$rep2[rep2].ilosc} 
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			{$rep2[rep2].punkty} 
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			{$rep2[rep2].zal} 
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			{$rep2[rep2].niezal} 
+		</TD>
+	</TR>
+	{/section}
+
+
+
+
+
+
+
+	<TR class="grey">
+		<TD COLSPAN="3" ALIGN="RIGHT"><B>{t}Total:{/t}</B></TD>
+		<TD ALIGN="RIGHT" NOWRAP><B>{$suma.ilosc}</B></TD>
+		<TD ALIGN="RIGHT" NOWRAP><B>{$suma.punkty}</B></TD>
+		<TD ALIGN="RIGHT" NOWRAP><B>{$suma.zal}</B></TD>
+		<TD ALIGN="RIGHT" NOWRAP><B>{$suma.niezal}</B></TD>
+	</TR>
+</TABLE>
+{include file="clearfooter.html"}

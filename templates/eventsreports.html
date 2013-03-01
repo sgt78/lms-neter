@@ -1,0 +1,65 @@
+{include file="header.html"}
+<!--// $Id: printindex.html,v 1.81.2.1 2007/08/29 13:22:47 alec Exp $ //-->
+<H1>{$layout.pagetitle}</H1>
+{include file="calendar_js.html"}
+<P><FORM method="post" name="printuserwork" id="printuserwork" action="?m=eventsreports&type=userwork" target="_blank">
+<INPUT type="submit" class="hiddenbtn">
+<TABLE width="100%" CELLPADDING="3">
+	<TR class="DARK">
+		<TD class="fleftu" width="1%">
+			<IMG src="img/money.gif" alt="">
+		</TD>
+		<TD class="frightu" width="99%">
+			<B>Karta pracy technika</B>
+		</TD>
+	</TR>
+	<TR class="LIGHT">
+		<TD class="flr" width="100%" colspan="2">
+			<TABLE width="100%">
+				<TR>
+					<TD width="1%">
+						<IMG src="img/users.gif" alt="">
+					</TD>
+					<TD width="1%" nowrap>
+						<B>{t}User:{/t}</B>
+					</TD>
+					<TD width="1%" nowrap>
+						{if $users}
+						<SELECT size="1" name="user" {tip text="Select customer"}>
+							{section name="users" loop=$users}
+							<OPTION value="{$users[users].id}">{$users[users].name} ({$users[users].id|string_format:"%04d"})</OPTION>
+							{/section}
+						</SELECT>
+						{else}
+						<INPUT type="text" name="user" value="" size="5" {tip text="Enter customer ID"}>
+						<a href="javascript: void(0);" onClick="return customerchoosewin(document.printcustomerbalance.customer);" {tip text="Click to search customer"}>{t}Search{/t}&nbsp;&raquo;&raquo;&raquo;</A>
+						{/if}
+					</TD>
+					<TD width="1%">
+						<IMG src="img/calendar.gif" alt="">
+					</TD>
+					<TD width="96%" nowrap>
+						<B>{t}Period:{/t}</B>&nbsp;
+						{t}From{/t}&nbsp;<INPUT TYPE="text" NAME="from" SIZE="10" MAXSIZE="10" OnClick="javascript:cal3.popup();" {tip text="Enter date in 'yyyy/mm/dd' format (empty field means 1970/01/01) or click to choose it from calendar"}>
+						{t}To{/t}&nbsp;<INPUT TYPE="text" NAME="to" SIZE="10" MAXSIZE="10" OnClick="javascript:cal4.popup();" {tip text="Enter date in 'yyyy/mm/dd' format (empty field means current date) or click to choose it from calendar"}>	
+					</TD>
+				</TR>
+			</TABLE>
+		</TD>
+	</TR>
+	<TR class="LIGHT">
+		<TD class="fbottomu" width="100%" colspan="2" align="right">
+			<A href="javascript:document.printuserwork.submit();">{t}Print{/t} <IMG src="img/print.gif" alt="" hspace="2"></A>
+		</TD>
+	</TR>
+</TABLE>
+</FORM>
+<SCRIPT type="text/javascript">
+<!--
+var cal3 = new calendar(document.printuserwork.elements['from']);
+cal3.time_comp = false;
+var cal4 = new calendar(document.printuserwork.elements['to']);
+cal4.time_comp = false;
+//-->
+</SCRIPT>
+</P>

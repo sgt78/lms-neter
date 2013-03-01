@@ -23,8 +23,24 @@
  *
  *  $Id$
  */
+/* Neter sgt
+if(isset($_POST['source']))
+{
 
-include(!empty($CONFIG['phpui']['import_config']) ? $CONFIG['phpui']['import_config'] : 'cashimportcfg.php');
+//	include($_POST['source']==1 ? 'cashimport-bzwbk.php' : 'cashimport-bre.php');
+	include($_POST['source']==1 ? 'cashimport-wbkcfg.php' : 'cashimport-brecfg.php');
+//Neter end
+} 
+else */
+{
+	include(!empty($CONFIG['phpui']['import_config']) ? $CONFIG['phpui']['import_config'] : 'cashimportcfg.php');
+	include('cashimport-wbkcfg.php');
+	include('cashimport-brecfg.php');
+}
+/*Neter sgt
+echo "<PRE>";
+print_r($patterns);
+echo "</PRE>";*/
 
 if(!isset($patterns) || !is_array($patterns))
 {
@@ -36,6 +52,7 @@ elseif(isset($_FILES['file']) && is_uploaded_file($_FILES['file']['tmp_name']) &
 	$filename     = $_FILES['file']['name'];
 	$patterns_cnt = isset($patterns) ? sizeof($patterns) : 0;
 	$ln           = 0;
+	$Kdate = NULL;//Neter sgt
 
 	foreach($file as $line)
 	{
@@ -45,6 +62,13 @@ elseif(isset($_FILES['file']) && is_uploaded_file($_FILES['file']['tmp_name']) &
 
 		if($patterns_cnt) foreach($patterns as $idx => $pattern)
 		{
+//Neter sgt
+			if(isset($pattern['K_pattern'])) {
+				if(preg_match($pattern['K_pattern'], $line, $K_matches)) {
+					$Kdate = $K_matches[$pattern['K_pdate']];
+				}
+			}
+//Neter end
 			$theline = $line;
 
 			if(strtoupper($pattern['encoding']) != 'UTF-8')
@@ -68,10 +92,16 @@ elseif(isset($_FILES['file']) && is_uploaded_file($_FILES['file']['tmp_name']) &
 
 		$name = isset($matches[$pattern['pname']]) ? trim($matches[$pattern['pname']]) : '';
 		$lastname = isset($matches[$pattern['plastname']]) ? trim($matches[$pattern['plastname']]) : '';
-		$comment = isset($matches[$pattern['pcomment']]) ? trim($matches[$pattern['pcomment']]) : '';
-		$time = isset($matches[$pattern['pdate']]) ? trim($matches[$pattern['pdate']]) : '';
+//Neter sgt
+//		$comment = isset($matches[$pattern['pcomment']]) ? trim($matches[$pattern['pcomment']]) : '';
+//		$time = isset($matches[$pattern['pdate']]) ? trim($matches[$pattern['pdate']]) : '';
+//		$value = str_replace(',','.', isset($matches[$pattern['pvalue']]) ? trim($matches[$pattern['pvalue']]) : '');
+		$comment = isset($matches[$pattern['pcomment']]) ? trim($matches[$pattern['pcomment']]) : 'brak tyt.';
+		$TMPtime 	= isset($matches[$pattern['pdate']]) ? trim($matches[$pattern['pdate']]) : '';
+		$time		= isset($Kdate) ? trim($Kdate) : $TMPtime;
 		$value = str_replace(',','.', isset($matches[$pattern['pvalue']]) ? trim($matches[$pattern['pvalue']]) : '');
-
+		$tnr 		= isset($matches[$pattern['ptnr']]) ? trim($matches[$pattern['ptnr']]) : 'brak tnr';
+//Neter end
 		if(!$pattern['pid'])
 		{
 			if(!empty($pattern['pid_regexp'])) 
@@ -84,7 +114,7 @@ elseif(isset($_FILES['file']) && is_uploaded_file($_FILES['file']['tmp_name']) &
 		}
 		else
 			$id = isset($matches[$pattern['pid']]) ? intval($matches[$pattern['pid']]) : NULL;
-
+/*	tego nie potrzebujemy
 		// seek invoice number
 		if(!$id && !empty($pattern['invoice_regexp']))
 		{
@@ -104,7 +134,7 @@ elseif(isset($_FILES['file']) && is_uploaded_file($_FILES['file']['tmp_name']) &
 				}
 			}
 		}
-
+*/		
 		if(!$id && $name && $lastname)
 		{
 			$uids = $DB->GetCol('SELECT id FROM customers WHERE UPPER(lastname)=UPPER(?) and UPPER(name)=UPPER(?)', array($lastname, $name));
@@ -149,10 +179,20 @@ elseif(isset($_FILES['file']) && is_uploaded_file($_FILES['file']['tmp_name']) &
 		$comment = preg_replace('/[ ]+/',' ',$comment);
 		$comment = substr($comment,0,150);
 
-		if(!empty($pattern['use_line_hash']))
+//Neter sgt
+//		if(!empty($pattern['ptnr_date_hash']))
+		if((!empty($pattern['ptnr_date_hash']))&&($pattern['ptnr_date_hash']))
+		{
+			preg_match($pattern['date_regexp'], $TMPtime, $date);
+			$TMPtime = mktime(0,0,0, $date[$pattern['pmonth']], $date[$pattern['pday']], $date[$pattern['pyear']]);
+			$hash = $TMPtime.$tnr;
+		} elseif((!empty($pattern['ptnr_hash']))&&($pattern['ptnr_hash']))
+			$hash = $tnr;
+		elseif((!empty($pattern['use_line_hash']))&&($pattern['use_line_hash']))
 			$hash = md5($theline.(!empty($pattern['line_idx_hash']) ? $ln : ''));
 		else
 			$hash = md5($time.$value.$customer.$comment.(!empty($pattern['line_idx_hash']) ? $ln : ''));
+
 
 		if(is_numeric($value))
 		{
@@ -160,7 +200,11 @@ elseif(isset($_FILES['file']) && is_uploaded_file($_FILES['file']['tmp_name']) &
 			{
 				$value = str_replace(',','.', $value * $pattern['modvalue']);
 			}
-
+			
+			//echo "<PRE>";
+			//print_r(array($time, $value, $customer, $id, $comment, $hash));
+			//echo "</PRE>";
+		
 			if(!$DB->GetOne('SELECT id FROM cashimport WHERE hash = ?', array($hash)))
 			{
                 // Add file

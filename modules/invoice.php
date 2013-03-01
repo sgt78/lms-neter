@@ -26,7 +26,8 @@
 
 if(strtolower($CONFIG['invoices']['type']) == 'pdf')
 {
-    include('invoice_tcpdf.php');
+//    include('invoice_tcpdf.php'); //Neter - ustawienie z LMS-git
+    include('invoice_pdf.php'); //Neter odkomentowac jak nie bedzie dzialac
     $SESSION->close();
     die;
 }

@@ -1,0 +1,31 @@
+Ta wiadomość została wygenerowana automatycznie.
+
+Pan/Pani/Firma: %customer
+
+W trosce o dalszą współpracę pragniemy poinformować Państwa, iż na
+Waszym koncie abonenckim widnieje zaległość %saldo zł. 
+
+Jest to kwota przynajmniej dwóch faktur wystawionych przez naszą firmę.
+Prosimy NIEZWŁOCZNIE o wpłatę wyżej wymienionej kwoty.
+
+W przypadku, gdy nie zgadzają się Państwo z kwotą zaległości prosimy o
+jak najszybszy kontakt.
+
+Jeżeli opłacili już Państwo wyżej wymienione zaległości, to prosimy
+o zignorowanie tej wiadomości.
+
+Jeśli jednak zalegość na Państwa koncie abonenckim będzie się utrzymywać
+to system automatycznie wyłączy dostęp do sieci.
+
+Wszelkie informacje na temat Państwa rozliczeń mogą Państwo znaleźć pod
+adresem https://www.neter.pl/ebok/
+
+Numer konta oraz wszelkie dane potrzebne do zalogowania do eBok znajdują się
+na ostatniej fakturze.
+
+-- 
+z poważaniem
+Biuro Obsług Klienta
+telefon: 61 6662300
+email: bok@neter.pl
+

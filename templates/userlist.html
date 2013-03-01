@@ -54,6 +54,7 @@
 			{if $userslist[userslist].id neq $layout.logid}<a href="?m=userdel&id={$userslist[userslist].id}" onClick="return confirmLink(this, '{trans("Are you sure, you want to irreversibly delete that user account?")}');">{/if}<img src="img/delete.gif" alt="[ {trans("Delete")} ]" title="[ {trans("Delete")} ]"></A>
 			<a href="?m=useredit&id={$userslist[userslist].id}"><img src="img/edit.gif" alt="[ {trans("Edit")} ]" title="[ {trans("Edit")} ]"></A>
 			<a href="?m=userinfo&id={$userslist[userslist].id}"><img src="img/info.gif" alt="[ {trans("Info")} ]" title="[ {trans("Info")} ]"></A>
+			<a href="?m=messageadd&userid={$userslist[userslist].id}"><img src="img/sms.gif" alt="[ {trans("Wyślij SMS")} ]" title=" {trans("Wyślij SMS")}"></a>
 		</TD>
 	</TR>
 	{/if}{/section}

@@ -24,6 +24,53 @@
  *  $Id$
  */
 
+if(isset($_GET['ajax'])) 
+{
+	header('Content-type: text/plain');
+	$search = urldecode(trim($_GET['what']));
+
+	switch($_GET['mode'])
+	{
+	        case 'address':
+			$mode='location_address';
+			if ($CONFIG['database']['type'] == 'mysql' || $CONFIG['database']['type'] == 'mysqli') 
+				$mode = 'substring(location_address from 1 for length(location_address)-locate(\' \',reverse(location_address))+1)';
+			elseif($CONFIG['database']['type'] == 'postgres')
+				$mode = 'substring(location_address from \'^.* \')';
+		break;
+	        case 'zip':
+			$mode='location_zip';
+		break;
+	        case 'city':
+			$mode='location_city';
+		break;
+	}
+
+	if (!isset($mode)) { print 'false;'; exit; }
+
+	$candidates = $DB->GetAll('SELECT '.$mode.' as item, count(id) as entries
+	    FROM nodes
+	    WHERE '.$mode.' != \'\' AND lower('.$mode.') ?LIKE? lower(\'%'.$search.'%\')
+	    GROUP BY item
+	    ORDER BY entries desc, item asc
+	    LIMIT 15');
+
+	$eglible=array(); $descriptions=array();
+	if ($candidates)
+	foreach($candidates as $idx => $row) {
+		$eglible[$row['item']] = escape_js($row['item']);
+		$descriptions[$row['item']] = escape_js($row['entries'].' '.trans('entries'));
+	}
+	if ($eglible) {
+		print "this.eligible = [\"".implode('","',$eglible)."\"];\n";
+		print "this.descriptions = [\"".implode('","',$descriptions)."\"];\n";
+	} else {
+		print "false;\n";
+	}
+	exit;
+}
+
+
 $nodedata['access'] = 1;
 $nodedata['ownerid'] = 0;
 
@@ -164,6 +211,12 @@ if (isset($_POST['nodedata']))
 	}
 	else
 		$nodedata['netdev'] = 0;
+
+    if($nodedata['location_zip'] !='' && !check_zip($nodedata['location_zip']) && !isset($nodedata['zipwarning']))
+    {
+        $error['location_zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
+        $nodedata['zipwarning'] = 1;
+    }
 
 	if(!isset($nodedata['chkmac']))	$nodedata['chkmac'] = 0;
 	if(!isset($nodedata['halfduplex'])) $nodedata['halfduplex'] = 0;

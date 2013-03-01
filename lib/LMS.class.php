@@ -38,10 +38,11 @@ class LMS {
 	var $_version = '1.11-git'; // class version
 	var $_revision = '$Revision$';
 
-	function LMS(&$DB, &$AUTH, &$CONFIG) { // class variables setting
+	function LMS(&$DB, &$AUTH, &$CONFIG /*, &$RADIUS */) { // class variables setting
 		$this->DB = &$DB;
 		$this->AUTH = &$AUTH;
 		$this->CONFIG = &$CONFIG;
+		//$this->RADIUS = &$RADIUS;
 
 		//$this->_revision = preg_replace('/^.Revision: ([0-9.]+).*/', '\1', $this->_revision);
 		$this->_revision = '';
@@ -258,7 +259,13 @@ class LMS {
 		return $name;
 	}
 
-	function GetUserNames() { // returns short list of users
+	function GetUserPhone($id) // returns user phone
+	{
+		return $this->DB->GetOne('SELECT phone FROM users WHERE id=?', array($id));
+	}
+
+	function GetUserNames() // returns short list of users
+	{
 		return $this->DB->GetAll('SELECT id, name FROM users WHERE deleted=0 ORDER BY login ASC');
 	}
 
@@ -483,9 +490,9 @@ class LMS {
 				    post_name, post_address, post_zip, post_city, post_countryid,
 				    creatorid, info, notes, message, pin, regon, rbe,
 				    icn, cutoffstop, consentdate, einvoice, divisionid, paytime, paytype,
-				    invoicenotice, mailingnotice)
+				    deliverer, invoicenotice, mailingnotice)
 				    VALUES (?, UPPER(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?NOW?,
-				    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', array(lms_ucwords($customeradd['name']),
+				    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', array(lms_ucwords($customeradd['name']),
 						$customeradd['lastname'],
 						empty($customeradd['type']) ? 0 : 1,
 						$customeradd['address'],
@@ -515,8 +522,9 @@ class LMS {
 						$customeradd['divisionid'],
 						$customeradd['paytime'],
 						!empty($customeradd['paytype']) ? $customeradd['paytype'] : NULL,
+					    $customeradd['deliverer'],
 						$customeradd['invoicenotice'],
-						$customeradd['mailingnotice'],
+						$customeradd['mailingnotice']
 				))
 		) {
 			$this->UpdateCountryState($customeradd['zip'], $customeradd['stateid']);
@@ -563,7 +571,7 @@ class LMS {
 				info=?, notes=?, lastname=UPPER(?), name=?,
 				deleted=0, message=?, pin=?, regon=?, icn=?, rbe=?,
 				cutoffstop=?, consentdate=?, einvoice=?, invoicenotice=?, mailingnotice=?,
-				divisionid=?, paytime=?, paytype=?
+				divisionid=?, paytime=?, paytype=?, deliverer=?
 				WHERE id=?', array($customerdata['status'],
 				empty($customerdata['type']) ? 0 : 1,
 				$customerdata['address'],
@@ -596,6 +604,7 @@ class LMS {
 				$customerdata['divisionid'],
 				$customerdata['paytime'],
 				$customerdata['paytype'] ? $customerdata['paytype'] : null,
+				$customerdata['deliverer'],
 				$customerdata['id'],
 				));
 
@@ -632,7 +641,7 @@ class LMS {
 
 		if ($result = $this->DB->GetRow('SELECT c.*, '
 				. $this->DB->Concat('UPPER(c.lastname)', "' '", 'c.name') . ' AS customername,
-			d.shortname AS division, d.account
+			d.shortname AS division, d.account, deliverer
 			FROM customers' . (defined('LMS-UI') ? 'view' : '') . ' c 
 			LEFT JOIN divisions d ON (d.id = c.divisionid)
 			WHERE c.id = ?', array($id))) {
@@ -654,6 +663,10 @@ class LMS {
 					else if ($result['post_countryid'])
 						$result['country'] = $this->DB->GetOne('SELECT name FROM countries WHERE id = ?', array($result['post_countryid']));
 				}
+				else if ($result['post_countryid']) {
+    				$result['country'] = $this->DB->GetOne('SELECT name FROM countries WHERE id = ?',
+	    			    array($result['post_countryid']));
+                }
 
 				// Get state name
 				if ($cstate = $this->DB->GetRow('SELECT s.id, s.name
@@ -780,6 +793,10 @@ class LMS {
 				break;
 			case 12: $indebted3 = 1;
 				break;
+			case 100: $deliverer = 1; 
+				break; // todo
+			case 101: $niewiemcoto = 1; 
+				break; // todo
 		}
 	if($state == 99)
           {
@@ -871,6 +888,12 @@ class LMS {
 							AND (dateto >= ?NOW? OR dateto = 0)
 							AND (tariffid IN (' . $value . ')))';
 							break;
+						case 'deliverer':
+							$searchargs[] = 'deliverer = '.intval($value);
+						break;
+						case 'deliverer_nozero':
+							if ($value == 1) $searchargs[] = 'COALESCE(b.value, 0) <> 0 ';
+						break;
 						default:
 							$searchargs[] = "$key ?LIKE? " . $this->DB->Escape("%$value%");
 					}
@@ -963,6 +986,7 @@ class LMS {
 								    AND (dateto >= ?NOW? OR dateto = 0)
 								    AND suspended = 1)
 								))' : '')
+			    .(isset($deliverer) ? ' AND deliverer = 1' : '')
 				. (isset($sqlsarg) ? ' AND (' . $sqlsarg . ')' : '')
 				. ($sqlord != '' ? $sqlord . ' ' . $direction : '')
 		)) {
@@ -1014,6 +1038,9 @@ class LMS {
 							$result[$idx]['network_pub'] = $net;
 							break;
 						}
+				{
+					$result[$idx]['spam'] = $this->CheckSpamer($node['ipaddr']);
+				}
 			}
 
 			// get EtherWerX channels
@@ -1039,7 +1066,97 @@ class LMS {
 		return $result;
 	}
 
+	function SetCustomerAccessByBalance($id,$balance)
+	{
+		$blokada = $this->DB->GetAll("SELECT access,warning
+									   FROM nodes 
+									  WHERE (access=0 or warning=1)
+										AND ownerid=?",array($id)); 
+		if (sizeof($blokada)>0)
+		{
+			
+				# sprawdzamy bilans jesli 0 to odlokowujemy i wychodzimy
+				$bilans = $this->GetCustomerBalance($id);
+
+				if ($bilans >= 0)
+				{
+					$this->SetAccessToOnForCustomerNodes($id,$balance);
+					return TRUE;
+				} 
+				
+				# sprawdzamy ostatnia fakture jesli bilans = fakturze i nie uplytnal termin platnosci - odblokowujemy i wychodzimy
+				$lastinvoice = $this->DB->GetAll(
+				   "SELECT sum(invoicecontents.value*invoicecontents.count)*-1 as value, 
+						   id,
+						   cdate,
+						   cdate+(paytime+1)*24*60*60 as pdate
+					  FROM invoicecontents 
+				 LEFT JOIN documents ON documents.id = invoicecontents.docid
+					 WHERE documents.customerid = ?
+					   AND documents.type = 1
+				  GROUP BY id 
+				  ORDER BY id DESC 
+					 LIMIT 1;",array($id));
+
+				if(isset($lastinvoice[0]['value']))
+				{
+					if($lastinvoice[0]['value'] == $bilans && $lastinvoice[0]['pdate'] > time())
+					{
+						$this->SetAccessToOnForCustomerNodes($id,$balance);
+						return TRUE;
+					}
+				}
+		}
+		return FALSE;
+	}
+
 	/* added balance totime - tcpdf invoice */
+
+	function SetAccessToOnForCustomerNodes($id,$balance)
+	{
+		$this->DB->Execute("UPDATE nodes 
+							   SET access=1, warning=1 
+							 WHERE ownerid=? 
+							   AND access=0",array($id));
+
+		$message = "<h1>Dziękujemy za wpłatę.</h1>
+					 Informujemy, że w dniu: ".strftime("%d.%m.%Y",time()).
+					 " zaksięgowaliśmy wpłatę w wysokości: ".$balance['value'].'zł'.
+					 ".<br> Po naciśnięciu przycisku poniżej - strony internetowe zostaną odblokowane.";						
+        $this->DB->Execute("UPDATE customers
+							   SET message = ?
+							 WHERE id=?",array($message,$id));
+	}
+
+	function CheckSpamer($ipaddr)
+	{
+		$value = $this->DB->GetOne("select count(*) as spam
+					      from ulog 
+					     where ip_saddr=?
+					       and oob_time_sec>unix_timestamp()-60
+					       and oob_prefix='SMTP'",array($ipaddr));
+		return $value;
+	}
+
+	function GetListSpamers()
+	{
+		$value = $this->DB->GetAll("select count(if(oob_time_sec>unix_timestamp()-604800,1,NULL)) as tydzien,
+						   count(if(oob_time_sec>unix_timestamp()-84400,1,NULL )) as dzien,
+						   count(if(oob_time_sec>unix_timestamp()-3600,1,NULL)) as godzina,
+						   inet_ntoa(ip_saddr) as ip4
+					      from ulog 
+					     where oob_prefix='SMTP'
+					       and oob_time_sec>unix_timestamp()-606800
+					     group by ip_saddr",array($ipaddr));
+
+		foreach($value as $idx=>$node)
+		{
+			$value[$idx]['customerid'] = $this->GetCustomerIDByIP($node['ip4']);
+			$value[$idx]['customername'] = $this->GetCustomerName($value[$idx]['customerid']);
+		}			     
+					     
+		return $value;
+	}
 
 	function GetCustomerBalance($id, $totime = NULL) {
 		return $this->DB->GetOne('SELECT SUM(value) FROM cash WHERE customerid = ?' . ($totime ? ' AND time < ' . intval($totime) : ''), array($id));
@@ -1114,6 +1231,85 @@ reset($tslist);
 
 		return $result;
 	}
+	
+	function GetCustomerInvoiceList($id)
+	{
+		$teraz = time();
+		// wrapper do starego formatu
+		if($tlist = $this->DB->GetAll('SELECT cash.id AS id, time, time+paytime*24*60*60 as dataplatnosci, 
+                                                       cash.type AS type, sum(cash.value) AS value, cdate, docid,number,paytime,template
+	                    			  FROM cash
+	                    			  LEFT JOIN users ON users.id = cash.userid
+	                    			  LEFT JOIN documents ON documents.id = docid
+	                    			  LEFT JOIN numberplans ON documents.numberplanid = numberplans.id
+	                    			 WHERE cash.customerid=? GROUP BY time ORDER BY time', array($id)))
+
+		if(sizeof($tlist) > 0)
+		{
+			foreach($tlist as $key => $row)
+			{
+				$tlist[$key]['balance']     = ($key == 0) ? $tlist[$key]['value'] : round($tlist[$key-1]['balance']+$tlist[$key]['value'],2);
+				$tlist[$key]['daysafter']	= round(($teraz-$row['dataplatnosci'])/(60*60*24),0);
+				// jesli termin platnosci nie minal to ustawiamy dni przeterminowania na 0
+				$tlist[$key]['daysafter']   = $tlist[$key]['daysafter'] > 0 ? $tlist[$key]['daysafter'] : 0;
+				$tlist[$key]['numerfv']		= docnumber($row['number'],$row['template'],$row['cdate']);
+			}
+			
+//			print('<pre>');
+//			print_r($tlist);
+//			print('</pre>');
+			
+
+			//znalezienie punktu 0 lub > od 0 w balance idac od dolu.
+			$balance = $tlist[sizeof($tlist)-1]['balance'];
+			for($key = (sizeof($tlist)-1); $key >= 0; $key--)
+			{
+				//czytamy rekord i jesli jest on faktura
+				if($tlist[$key]['type'] == 0)
+				{
+					//obliczamy czy jest choc czesciowo zaplacona
+					if($balance < $tlist[$key]['value'])
+					{
+						$tlist[$key]['pozostalo'] = round($tlist[$key]['value']*-1,2);
+						$balance = round($balance-$tlist[$key]['value'],2);
+						$fvlist[] = $tlist[$key];
+					} else {
+						$tlist[$key]['pozostalo'] = round($balance*-1,2);
+						$fvlist[] = $tlist[$key];
+						break;
+					}
+				}
+			}
+
+			foreach($fvlist as $key => $row)
+			{
+				
+				$fvlist[$key]['value']     = round($row['value']*-1,2);
+				
+				if($row['daysafter'] > 0)
+				{
+					//licz odsetki
+					$fvlist[$key]['odsetki'] = round( ($fvlist[$key]['pozostalo']*0.115/365*$row['daysafter']) ,2);	  
+				} else {
+					//nie licz odsetek
+					$fvlist[$key]['odsetki'] = 0;
+				}
+			}
+
+//			print('<pre>');
+//			print_r($fvlist);
+//			print('</pre>');
+//			die();
+			
+			return $fvlist;
+
+		} else {
+			
+			return NULL;
+			
+		}
+	}
+	
 
 	/*
 	 * Customer groups
@@ -1375,6 +1571,15 @@ reset($tslist);
 			$result['moddateh'] = date('Y/m/d, H:i', $result['moddate']);
 			$result['lastonlinedate'] = lastonline_date($result['lastonline']);
 
+			if($this->CONFIG['phpui']['radius'] == 'YES')
+			{
+				//$result['lastonline'] = 
+			//	$radius_status = $this->RADIUS->GetLastStatus($result['name']);
+				$result['lastonline'] = ($radius_status['AcctStopTime'] == 0) ? time() : $radius_status['AcctStopTime'];
+				//$result['lastonline'] = ($radius_status['AcctStopTime'] = '') ? 0 : $radius_status['AcctStopTime'];
+				//print($result['lastonline']);
+			}
+
 			$result['mac'] = preg_split('/,/', $result['mac']);
 			foreach ($result['mac'] as $mac)
 				$result['macs'][] = array('mac' => $mac, 'producer' => get_producer($mac));
@@ -1384,6 +1589,15 @@ reset($tslist);
 				WHERE address = (inet_aton(?) & inet_aton(mask))', array($result['ip']))) {
 				$result['netid'] = $net['id'];
 				$result['netname'] = $net['name'];
+			}
+
+            // Get state name
+	        if ($result['location_zip'] && ($cstate = $this->DB->GetRow('SELECT s.id, s.name
+			    FROM states s, zipcodes
+				WHERE zip = ? AND stateid = s.id', array($result['location_zip'])))
+			) {
+				$result['stateid'] = $cstate['id'];
+				$result['cstate'] = $cstate['name'];
 			}
 
 			return $result;
@@ -1578,6 +1792,8 @@ reset($tslist);
 				))) {
 			$id = $this->DB->GetLastInsertID('nodes');
 
+            $this->UpdateCountryState($nodedata['location_zip'], $nodedata['stateid']);
+
 			foreach ($nodedata['macs'] as $mac)
 				$this->DB->Execute('INSERT INTO macs (mac, nodeid) VALUES(?, ?)', array(strtoupper($mac), $id));
 
@@ -1621,6 +1837,9 @@ reset($tslist);
 				FROM nodes WHERE ownerid > 0', array($this->CONFIG['phpui']['lastonline_limit']));
 
 		$result['total'] = $result['connected'] + $result['disconnected'];
+		// todo
+		$result['spamers']      = $this->DB->GetOne("select count(distinct ip_saddr)  from ulog where oob_time_sec>unix_timestamp()-3600 and oob_prefix='SMTP'");
+
 		return $result;
 	}
 
@@ -2128,10 +2347,10 @@ reset($tslist);
 	function GetInvoiceContent($invoiceid) {
 		global $PAYTYPES;
 
-		if ($result = $this->DB->GetRow('SELECT d.id, d.number, d.name, d.customerid,
+		if ($result = $this->DB->GetRow('SELECT d.id, d.type, d.number, d.name, d.customerid,
 				d.userid, d.address, d.zip, d.city, d.countryid, cn.name AS country,
 				d.ten, d.ssn, d.cdate, d.sdate, d.paytime, d.paytype, d.numberplanid,
-				d.closed, d.reference, d.reason, d.divisionid,
+				d.closed, d.reference, d.reason, d.divisionid, d.extnumber,
 				(SELECT name FROM users WHERE id = d.userid) AS user, n.template,
 				ds.name AS division_name, ds.shortname AS division_shortname,
 				ds.address AS division_address, ds.zip AS division_zip,
@@ -2146,7 +2365,7 @@ reset($tslist);
 				LEFT JOIN countries cn ON (cn.id = d.countryid)
 				LEFT JOIN divisions ds ON (ds.id = d.divisionid)
 				LEFT JOIN numberplans n ON (d.numberplanid = n.id)
-				WHERE d.id = ? AND (d.type = ? OR d.type = ?)', array($invoiceid, DOC_INVOICE, DOC_CNOTE))) {
+				WHERE d.id = ? AND (d.type = ? OR d.type = ? OR d.type = ? OR d.type = ?)', array($invoiceid, DOC_INVOICE, DOC_CNOTE,DOC_DELIV_INVOICE,DOC_DELIV_CNOTE))) {
 			$result['pdiscount'] = 0;
 			$result['vdiscount'] = 0;
 			$result['totalbase'] = 0;
@@ -2217,6 +2436,9 @@ reset($tslist);
 			}
 			$result['valuep'] = round(($result['value'] - floor($result['value'])) * 100);
 
+			// to do sprawidzć czy to działa jak nie to odkomentować
+			// $result['customerpin'] = $this->DB->GetOne('SELECT pin FROM customers WHERE id=?', array($result['customerid']));
+			
 			// NOTE: don't waste CPU/mem when printing history is not set:
 			if (chkconfig($this->CONFIG['invoices']['print_balance_history'])) {
 				if (isset($this->CONFIG['invoices']['print_balance_history_save']) && chkconfig($this->CONFIG['invoices']['print_balance_history_save']))
@@ -2226,7 +2448,8 @@ reset($tslist);
 				$result['customerbalancelistlimit'] = $this->CONFIG['invoices']['print_balance_history_limit'];
 			}
 
-			$result['paytypename'] = $PAYTYPES[$result['paytype']];
+            $result['paytypename'] = $PAYTYPES[$result['paytype']];
+			$result['customerbalance'] = $this->GetCustomerBalance($result['customerid']);
 
 			// for backward compat.
 			$result['totalg'] = round(($result['value'] - floor($result['value'])) * 100);
@@ -2571,109 +2794,511 @@ reset($tslist);
 	}
 
 	/*
+	 *  Neter Manager - Konta Ksiegowe
+	 */
+	function GetKontaKsiegowe()
+	{
+		if ($kontalist = $this->DB->GetAll('SELECT nkk_id, (if(nkk_parent_id=-1,nkk_id,nkk_parent_id)) as nkk_order, nkk_parent_id, nkk_nr, nkk_opis
+						    				  FROM nm_konta_ksiegowe ORDER BY nkk_order ASC'))
+			foreach($kontalist as $idx => $row)
+			{
+/*
+				switch($row['period'])
+				{
+					case DAILY:
+						$row['payday'] = trans('daily');
+					break;
+					case WEEKLY:
+						$row['payday'] = trans('weekly ($a)', strftime("%a",mktime(0,0,0,0,$row['at']+5,0)));
+					break;
+					case MONTHLY:
+						$row['payday'] = trans('monthly ($a)',$row['at']);
+					break;
+					case QUARTERLY:
+						$row['payday'] = trans('quarterly ($a)', sprintf('%02d/%02d', $row['at']%100, $row['at']/100+1));
+					break;
+					case YEARLY:
+						$row['payday'] = trans('yearly ($a)', date('d/m',($row['at']-1)*86400));
+					break;
+				}
+*/
+
+				$kontalist[$idx] = $row;
+			}
+
+			#$kontalist['total'] = sizeof($kontalist);
+
+			return $kontalist;
+	}
+
+	function GetKontaKsiegoweIDNr()
+	{
+		if ($kontalist = $this->DB->GetAll('SELECT nkk_id, nkk_nr, nkk_opis 
+						    				  FROM nm_konta_ksiegowe 
+						    				 WHERE nkk_parent_id = -1
+						    				 ORDER BY nkk_nr ASC'))
+			foreach($kontalist as $idx => $row)
+				$kontalist[$idx] = $row;
+
+		return $kontalist;
+	}
+
+	function KontoKsiegoweAdd($kontodata)
+	{
+		if($this->DB->Execute('INSERT INTO nm_konta_ksiegowe (nkk_nr, nkk_parent_id, nkk_opis)
+			VALUES (?, ?, ?)',
+			array(
+				$kontodata['nkk_nr'],
+				$kontodata['nkk_parent_id'],
+				$kontodata['nkk_opis'],
+			)
+		))
+			return $this->DB->GetLastInsertID('nm_konta_ksiegowe');
+		else
+			return FALSE;
+	}
+
+	function KontaKsiegoweDelete($id)
+	{
+		return $this->DB->Execute('DELETE FROM nm_konta_ksiegowe WHERE nkk_id=?', array($id));
+	}
+
+	function KontoKsiegoweExists($id)
+	{
+		return ($this->DB->GetOne('SELECT nkk_id FROM nm_konta_ksiegowe WHERE nkk_id=?', array($id))?TRUE:FALSE);
+	}
+
+	function GetKontoKsiegowe($id)
+	{
+		$kontoksiegowe = $this->DB->GetRow('SELECT nkk_id, nkk_parent_id, nkk_nr, nkk_opis
+		                                      FROM nm_konta_ksiegowe
+		                                     WHERE nkk_id=?', array($id));
+
+		return $kontoksiegowe;
+	}
+
+	function KontoKsiegoweUpdate($kontodata)
+	{
+		return $this->DB->Execute('UPDATE nm_konta_ksiegowe
+								      SET nkk_nr=?, nkk_parent_id=?, nkk_opis=?
+								    WHERE nkk_id=?',
+			array(
+				$kontodata['nkk_nr'],
+				$kontodata['nkk_parent_id'],
+				$kontodata['nkk_opis'],
+				$kontodata['nkk_id']
+			)
+		);
+	}
+
+	/*
+	 *  Dostawcy
+	 */
+	  
+	function GetDostawcyNames() // returns short list of users
+	{
+		return $this->DB->GetAll('SELECT id, '.$this->DB->Concat('UPPER(lastname)',"' '",'name').' AS customername 
+				FROM customersview WHERE deliverer = 1 AND deleted = 0 
+				ORDER BY customername');
+	}
+
+	function GetDostawcyLista($where)
+	{
+		$where_cause = $where = '' ? '' : ' WHERE '.$where;
+		
+		if ($DostawcyLista = $this->DB->GetAll('SELECT ndo_id, ndo_customer_id, ndo_konto, ndo_domyslne_kkosztowe,
+		                                               ndo_bank, ndo_nr_konta 
+						    				  FROM nm_dostawcy' .
+						    				  $where_caute))
+
+			foreach($DostawcyLista as $idx => $row)
+			{
+				$DostawcyLista[$idx] = $row;
+				
+				$customer = $this->GetCustomer($row['ndo_customer_id']);
+				
+				$DostawcyLista[$idx]['customername'] = $customer['customername'];
+				$DostawcyLista[$idx]['address']      = $customer['address'];
+				$DostawcyLista[$idx]['zip']          = $customer['zip'];
+				$DostawcyLista[$idx]['city']         = $customer['city'];
+				$DostawcyLista[$idx]['nip']          = $customer['ten'];
+				
+				$kontoksiegowe = $this->GetKontoKsiegowe($row['ndo_domyslne_kkosztowe']);
+								
+				$DostawcyLista[$idx]['kontoksiegowe'] = $kontoksiegowe['nkk_nr'].' '.$kontoksiegowe['nkk_opis'];
+			}
+
+		return $DostawcyLista;
+	}
+
+	function DostawcaAdd($dostawca)
+	{
+		if($this->DB->Execute('INSERT INTO nm_dostawcy (ndo_customer_id, ndo_konto, ndo_domyslne_kkosztowe, ndo_bank, ndo_nr_konta, ndo_notatki)
+			VALUES (?, ?, ?, ?, ?, ?)',
+			array(
+				$dostawca['ndo_customer_id'],
+				$dostawca['ndo_konto'],
+				$dostawca['ndo_domyslne_kkosztowe'],
+				$dostawca['ndo_bank'],
+				$dostawca['ndo_nr_konta'],
+				$dostawca['ndo_notaki']
+			)
+		))
+			return $this->DB->GetLastInsertID('nm_dostawcy');
+		else
+			return FALSE;
+	}
+
+	function DostawcaExists($id)
+	{
+		switch($this->DB->GetOne('SELECT 1 FROM nm_dostawcy WHERE ndo_id=?', array($id)))
+		{
+			case '1':
+				return TRUE;
+				break;
+			case '':
+			default:
+				return FALSE;
+				break;
+		}
+	}
+
+	/*
+	 * Faktury kosztowe
+	 */
+	function AddDelivererInvoice($invoice)
+	{
+		$cdate  = $invoice['invoice']['cdate'] ? $invoice['invoice']['cdate'] : time();
+		$number = $invoice['invoice']['number'];
+		$type   = $invoice['invoice']['type'];
+		
+		$this->DB->Execute('INSERT INTO documents (
+								extnumber, 
+								type, 
+								cdate, 
+								paytime, 
+								paytype, 
+								userid, 
+								customerid, 
+								name, 
+								address, 
+								ten, 
+								ssn, 
+								zip, 
+								city)
+				    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+				    array(
+				    	$number, 
+					    $type, 
+					    $cdate, 
+					    $invoice['invoice']['paytime'], 
+					    $invoice['invoice']['paytype'], 
+					    $this->AUTH->id, 
+					    $invoice['customer']['id'], 
+					    $invoice['customer']['customername'], 
+					    $invoice['customer']['address'], 
+					    $invoice['customer']['ten'], 
+					    $invoice['customer']['ssn'], 
+					    $invoice['customer']['zip'], 
+					    $invoice['customer']['city']
+					));
+					
+		$iid = $this->DB->GetLastInsertID('documents');
+
+		$itemid=0;
+		foreach($invoice['contents'] as $idx => $item)
+		{
+			$itemid++;
+			$item['valuebrutto'] 	= str_replace(',','.',$item['valuebrutto']);
+			$item['count'] 			= str_replace(',','.',$item['count']);
+			$item['discount']		= str_replace(',','.',$item['discount']);
+			$item['taxid'] 			= isset($item['taxid']) ? $item['taxid'] : 0;
+
+			$this->DB->Execute('INSERT INTO invoicecontents (docid, 
+															itemid, 
+															value, 
+															taxid, 
+															content, 
+															count, 
+															description, 
+															tariffid) 
+								VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+							array(
+								$iid,
+								$itemid,
+								$item['valuebrutto'],
+								$item['taxid'],
+								$item['jm'],
+								$item['count'],
+								$item['name'],
+								$item['tariffid']
+			));
+
+			$this->AddBalance(array(
+				'time' 			=> $cdate,
+				'value' 		=> $item['valuebrutto']*$item['count'],
+				'taxid' 		=> $item['taxid'],
+				'customerid' 	=> $invoice['customer']['id'],
+				'comment' 		=> $item['name'],
+				'docid' 		=> $iid,
+				'itemid'		=> $itemid
+			));
+		}
+
+		return $iid;
+	}
+
+	function DelivererInvoiceUpdate($invoice)
+	{
+		$cdate = $invoice['invoice']['cdate'] ? $invoice['invoice']['cdate'] : time();
+		$iid   = $invoice['invoice']['id'];
+		
+		$this->DB->BeginTrans();
+		
+		$this->DB->Execute('UPDATE documents SET cdate = ?, 
+												 paytime = ?, 
+												 paytype = ?, 
+												 customerid = ?, 
+												 name = ?, 
+												 address = ?, 
+												 ten = ?, 
+												 ssn = ?, 
+												 zip = ?, 
+												 city = ?,
+												 extnumber = ?,
+												 reason = ?
+										   WHERE id = ?', 
+								array($cdate, 
+									  $invoice['invoice']['paytime'], 
+									  $invoice['invoice']['paytype'], 
+									  $invoice['customer']['id'], 
+									  $invoice['customer']['customername'], 
+									  $invoice['customer']['address'], 
+									  $invoice['customer']['ten'], 
+									  $invoice['customer']['ssn'], 
+									  $invoice['customer']['zip'], 
+									  $invoice['customer']['city'], 
+									  $invoice['invoice']['extnumber'],
+									  $invoice['invoice']['reason'],
+									  $iid));
+		// usuwamy pozycje faktur
+		$this->DB->Execute('DELETE FROM invoicecontents WHERE docid = ?', array($iid));
+		// usuwamy zobowiazania
+		$this->DB->Execute('DELETE FROM cash WHERE type = 0 and docid = ?', array($iid));
+		// przepinamy platnosc na nowego customera
+		$this->DB->Execute('UPDATE cash SET customerid = ? WHERE docid = ?', array($invoice['customer']['id'],$iid));
+
+
+		$itemid=0;
+		foreach($invoice['contents'] as $idx => $item)
+		{
+			$itemid++;
+
+			$this->DB->Execute('INSERT INTO invoicecontents (docid, itemid, value, 
+				taxid, prodid, content, count, pdiscount, vdiscount, description, tariffid) 
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+				array(
+					$iid,
+					$itemid,
+					$item['valuebrutto'],
+					$item['taxid'],
+					'',
+					$item['jm'],
+					$item['count'],
+					$item['pdiscount'],
+					$item['vdiscount'],
+					$item['name'],
+					$item['tariffid']
+			));
+			
+			$this->AddBalance(array(
+				'time' 			=> $cdate, 
+				'value' 		=> $item['valuebrutto']*$item['count'], 
+				'taxid' 		=> $item['taxid'], 
+				'customerid'	=> $invoice['customer']['id'], 
+				'comment' 		=> $item['name'], 
+				'docid' 		=> $iid, 
+				'itemid'		=> $itemid
+			));
+		}
+		
+		$this->DB->CommitTrans();
+	}
+
+
+	/*
 	 *   Payments
 	 */
 
-	function GetPaymentList() {
-		if ($paymentlist = $this->DB->GetAll('SELECT id, name, creditor, value, period, at, description FROM payments ORDER BY name ASC'))
-			foreach ($paymentlist as $idx => $row) {
-				switch ($row['period']) {
+	function GetPaymentList()
+	{
+		if ($paymentlist = $this->DB->GetAll('SELECT customers.id as cus_id,
+													 customers.name as cus_name,
+													 customers.lastname as cus_lastname,
+													 customers.ten as cus_nip, 
+													 sum( pay_value ) as pay_value,
+													 sum( pay_value * taxes.value /100 ) as pay_vatvalue,
+													 count(pay_value) as pay_count,
+													 pay_period,
+													 pay_at,
+													 documents.cdate as dok_cdate
+												FROM payments 
+										   LEFT JOIN customers on customers.id = pay_cus_id 
+										   LEFT JOIN taxes on taxes.id = pay_tax_id
+										   LEFT JOIN documents on documents.id = pay_last_dok_id
+										       GROUP BY cus_id,pay_period,pay_at
+										       ORDER BY cus_lastname,cus_name ASC'))
+			foreach($paymentlist as $idx => $row)
+			{
+				$row['pay_bvalue'] = $row['pay_value'] + $row['pay_vatvalue'];
+				$lastdate = isset($row['dok_cdate']) ? $row['dok_cdate'] : time();
+				
+				switch($row['pay_period'])
+				{
 					case DAILY:
-						$row['payday'] = trans('daily');
-						break;
+						$row['pay_payday']      = trans('daily');
+						$row['pay_next_payday'] = mktime(0,0,0,date("n",$lastdate),date("j",$lastdate)+1,date("Y",$lastdate));
+					break;
 					case WEEKLY:
-						$row['payday'] = trans('weekly ($a)', strftime("%a", mktime(0, 0, 0, 0, $row['at'] + 5, 0)));
-						break;
+						$row['pay_payday'] = trans('weekly ($a)', strftime("%a",mktime(0,0,0,0,$row['pay_at']+5,0)));
+					break;
 					case MONTHLY:
-						$row['payday'] = trans('monthly ($a)', $row['at']);
-						break;
+						$row['pay_payday'] = trans('monthly ($a)',$row['pay_at']);
+						$row['pay_next_payday'] = mktime(0,0,0,date("n",$lastdate)+1,date("j",$lastdate),date("Y",$lastdate));
+					break;
 					case QUARTERLY:
-						$row['payday'] = trans('quarterly ($a)', sprintf('%02d/%02d', $row['at'] % 100, $row['at'] / 100 + 1));
-						break;
-					case HALFYEARLY:
-						$row['payday'] = trans('half-yearly ($a)', sprintf('%02d/%02d', $row['at'] % 100, $row['at'] / 100 + 1));
-						break;
+						$row['pay_payday'] = trans('quarterly ($a)', sprintf('%02d/%02d', $row['pay_at']%100, $row['pay_at']/100+1));
+					break;
 					case YEARLY:
-						$row['payday'] = trans('yearly ($a)', date('d/m', ($row['at'] - 1) * 86400));
-						break;
+						$row['pay_payday'] = trans('yearly ($a)', date('d/m',($row['pay_at']-1)*86400));
+						$row['pay_next_payday'] = mktime(0,0,0,date("n",$lastdate),date("j",$lastdate),date("Y",$lastdate)+1);
+					break;
+					case HALFYEAR:
+						$row['pay_payday'] = trans('co 6 mies. ($a)', date('d/m',($row['pay_at']-1)*86400));
+						$row['pay_next_payday'] = mktime(0,0,0,date("n",$lastdate)+6,date("j",$lastdate),date("Y",$lastdate));
+					break;
+					case TWOMONTHS:
+						$row['pay_payday'] = trans('co 2 mies. ($a)', date('d/m',($row['pay_at']-1)*86400));
+						$row['pay_next_payday'] = mktime(0,0,0,date("n",$lastdate)+2,date("j",$lastdate),date("Y",$lastdate));
+					break;
 				}
 
+				if($row['pay_next_payday'] < time())
+					$row['pay_add'] = 1;
+	
 				$paymentlist[$idx] = $row;
 			}
 
-		$paymentlist['total'] = sizeof($paymentlist);
+			$paymentlist['total'] = sizeof($paymentlist);
 
-		return $paymentlist;
+			return $paymentlist;
 	}
 
-	function GetPayment($id) {
-		$payment = $this->DB->GetRow('SELECT id, name, creditor, value, period, at, description FROM payments WHERE id=?', array($id));
+	function GetPayment($id)
+	{
+		$payment = $this->DB->GetRow('SELECT pay_id,
+											 pay_name, 
+											 pay_value, 
+											 pay_period, 
+											 pay_at, 
+											 pay_description,
+											 pay_cus_id,
+											 pay_tax_id,
+											 pay_nkk_id 
+									    FROM payments 
+									   WHERE pay_id=?', array($id));
 
-		switch ($payment['period']) {
+		switch($payment['pay_period'])
+		{
 			case DAILY:
-				$payment['payday'] = trans('daily');
-				break;
+				$payment['pay_payday'] = trans('daily');
+			break;
 			case WEEKLY:
-				$payment['payday'] = trans('weekly ($a)', strftime("%a", mktime(0, 0, 0, 0, $payment['at'] + 5, 0)));
-				break;
+				$payment['pay_payday'] = trans('weekly ($a)', strftime("%a",mktime(0,0,0,0,$payment['pay_at']+5,0)));
+			break;
 			case MONTHLY:
-				$payment['payday'] = trans('monthly ($a)', $payment['at']);
-				break;
+				$payment['pay_payday'] = trans('monthly ($a)',$payment['pay_at']);
+			break;
 			case QUARTERLY:
-				$payment['payday'] = trans('quarterly ($a)', sprintf('%02d/%02d', $payment['at'] % 100, $payment['at'] / 100 + 1));
-				break;
-			case HALFYEARLY:
-				$payment['payday'] = trans('half-yearly ($a)', sprintf('%02d/%02d', $payment['at'] % 100, $payment['at'] / 100 + 1));
-				break;
+				$payment['pay_payday'] = trans('quarterly ($a)', sprintf('%02d/%02d', $payment['pay_at']%100, $payment['pay_at']/100+1));
+			break;
 			case YEARLY:
-				$payment['payday'] = trans('yearly ($a)', date('d/m', ($payment['at'] - 1) * 86400));
-				break;
+				$payment['payday'] = trans('yearly ($a)', date('d/m',($payment['at']-1)*86400));
+			break;
 		}
 		return $payment;
 	}
 
-	function GetPaymentName($id) {
-		return $this->DB->GetOne('SELECT name FROM payments WHERE id=?', array($id));
+	function GetPaymentName($id)
+	{
+		return $this->DB->GetOne('SELECT pay_name FROM payments WHERE pay_id=?', array($id));
 	}
 
-	function GetPaymentIDByName($name) {
-		return $this->DB->GetOne('SELECT id FROM payments WHERE name=?', array($name));
+	function GetPaymentIDByName($name)
+	{
+		return $this->DB->GetOne('SELECT pay_id FROM payments WHERE pay_name=?', array($name));
 	}
 
-	function PaymentExists($id) {
-		return ($this->DB->GetOne('SELECT id FROM payments WHERE id=?', array($id)) ? TRUE : FALSE);
+	function PaymentExists($id)
+	{
+		return ($this->DB->GetOne('SELECT pay_id FROM payments WHERE pay_id=?', array($id))?TRUE:FALSE);
 	}
 
-	function PaymentAdd($paymentdata) {
-		if ($this->DB->Execute('INSERT INTO payments (name, creditor, description, value, period, at)
-			VALUES (?, ?, ?, ?, ?, ?)', array(
-						$paymentdata['name'],
-						$paymentdata['creditor'],
-						$paymentdata['description'],
-						$paymentdata['value'],
-						$paymentdata['period'],
-						$paymentdata['at'],
-						)
+	function PaymentAdd($paymentdata)
+	{
+		if($this->DB->Execute('INSERT INTO payments (
+											pay_name, 
+											pay_value, 
+											pay_period, 
+											pay_at, 
+											pay_description, 
+											pay_cus_id, 
+											pay_nkk_id, 
+											pay_tax_id)
+									 VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+			array(
+				$paymentdata['name'],
+				$paymentdata['value'],
+				$paymentdata['period'],
+				$paymentdata['at'],
+				$paymentdata['description'],
+				$paymentdata['customerid'],
+				$paymentdata['pay_nkk_id'], 
+ 				$paymentdata['taxid'],
+			)
 		))
 			return $this->DB->GetLastInsertID('payments');
 		else
 			return FALSE;
 	}
 
-	function PaymentDelete($id) {
-		return $this->DB->Execute('DELETE FROM payments WHERE id=?', array($id));
+	function PaymentDelete($id)
+	{
+		return $this->DB->Execute('DELETE FROM payments WHERE pay_id=?', array($id));
 	}
 
-	function PaymentUpdate($paymentdata) {
-		return $this->DB->Execute('UPDATE payments SET name=?, creditor=?, description=?, value=?, period=?, at=? WHERE id=?', array(
-						$paymentdata['name'],
-						$paymentdata['creditor'],
-						$paymentdata['description'],
-						$paymentdata['value'],
-						$paymentdata['period'],
-						$paymentdata['at'],
-						$paymentdata['id']
-						)
+	function PaymentUpdate($paymentdata)
+	{
+		return $this->DB->Execute('UPDATE payments SET pay_name=?, 
+													   pay_description=?, 
+													   pay_value=?, 
+													   pay_period=?, 
+													   pay_at=?,
+													   pay_cus_id=?,
+													   pay_tax_id=?,
+													   pay_nkk_id=? 
+												 WHERE pay_id=?',
+			array(
+				$paymentdata['name'],
+				$paymentdata['description'],
+				$paymentdata['value'],
+				$paymentdata['period'],
+				$paymentdata['at'],
+				$paymentdata['cus_id'],
+				$paymentdata['taxid'],
+				$paymentdata['pay_nkk_id'],
+				$paymentdata['id']
+			)
 		);
 	}
 
@@ -3574,10 +4199,11 @@ reset($tslist);
 		$ts = time();
 		$this->DB->Execute('INSERT INTO rttickets (queueid, customerid, requestor, subject, 
 				state, owner, createtime, cause, creatorid)
-				VALUES (?, ?, ?, ?, 0, 0, ?, ?, ?)', array($ticket['queue'],
+				VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?)', array($ticket['queue'],
 				$ticket['customerid'],
 				$ticket['requestor'],
 				$ticket['subject'],
+				isset($ticket['owner']) ? $ticket['owner'] : $this->AUTH-id,
 				$ts,
 				isset($ticket['cause']) ? $ticket['cause'] : 0,
 				isset($this->AUTH->id) ? $this->AUTH->id : 0
@@ -3645,6 +4271,51 @@ reset($tslist);
 
 		return $ticket;
 	}
+
+	function LogTicketChange($ticket_id, $ticket_new)
+	{
+		$old=$this->DB->GetRow('SELECT 
+			`id`, `queueid`, `requestor`, `subject`, `state`, `owner`, `createtime`, `customerid`, `resolvetime`, `cause`, `creatorid` 
+			FROM rttickets WHERE id=?', array($ticket_id));
+
+		if($ticket_new['state'] != $old['state'])
+			{
+			switch ($old['state']) 
+				{
+				case 0: $status_old=trans('new'); break;
+				case 1: $status_old=trans('opened'); break;
+				case 2: $status_old=trans('resolved'); break;
+				case 3: $status_old=trans('dead'); break;
+				case 11: $status_old=trans('external'); break;
+				}
+			switch ($ticket_new['state']) 
+				{
+				case 0: $status_new=trans('new'); break;
+				case 1: $status_new=trans('opened'); break;
+				case 2: $status_new=trans('resolved'); break;
+				case 3: $status_new=trans('dead'); break;
+				case 11: $status_new=trans('external'); break;
+				}
+
+			$this->DB->Execute('INSERT INTO rtticketshistory 
+				(ticketid, subject_old, subject, owner_old, owner, queueid_old, queueid, state_old, state, body, createtime, creatorid) 
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+				array($ticket_id,
+				$old['subject'],
+				$old['subject'],
+				$old['owner'],
+				$old['owner'],
+				$old['queueid'],
+				$old['queueid'],
+				$old['state'],
+				$ticket_new['state'],
+				'Zmiana statusu: '.$status_old.'->'.$status_new,
+				time(),
+				$this->AUTH->id)
+				);
+			}			
+	}
+
 
 	function SetTicketState($ticket, $state) {
 		($state == 2 ? $resolvetime = time() : $resolvetime = 0);
@@ -4122,11 +4793,12 @@ reset($tslist);
 				if ($fp = fopen($filename, 'w')) {
 					fwrite($fp, $file);
 					fclose($fp);
+					chmod($filename,0666);
 				}
 				else
 					return trans('Unable to create file $a!', $filename);
 
-				return MSG_NEW;
+				return MSG_SENT;
 				break;
 			default:
 				return trans('Unknown SMS service!');
@@ -4197,6 +4869,7 @@ reset($tslist);
 				. (!empty($search['datefrom']) ? ' AND date >= ' . intval($search['datefrom']) : '')
 				. (!empty($search['dateto']) ? ' AND date <= ' . intval($search['dateto']) : '')
 				. (!empty($search['customerid']) ? ' AND customerid = ' . intval($search['customerid']) : '')
+				. (!empty($search['rtticketid']) ? ' AND rtticketid = '.intval($search['rtticketid']) : '')
 				. (!empty($search['title']) ? ' AND title ?LIKE? ' . $this->DB->Escape('%' . $search['title'] . '%') : '')
 				. (!empty($search['description']) ? ' AND description ?LIKE? ' . $this->DB->Escape('%' . $search['description'] . '%') : '')
 				. (!empty($search['note']) ? ' AND note ?LIKE? ' . $this->DB->Escape('%' . $search['note'] . '%') : '')

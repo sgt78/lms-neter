@@ -42,12 +42,14 @@ define('RT_NEW', 0);
 define('RT_OPEN', 1);
 define('RT_RESOLVED', 2);
 define('RT_DEAD', 3);
+define('RT_EXTERNAL', 11);
 
 $RT_STATES = array(
     RT_NEW      => trans('new'),
     RT_OPEN     => trans('opened'),
     RT_RESOLVED => trans('resolved'),
-    RT_DEAD     => trans('dead')
+    RT_DEAD     => trans('dead'),
+	RT_EXTERNAL => trans('external')
 );
 
 // Messages status and type
@@ -71,6 +73,8 @@ define('ACCOUNT_SQL', 16);
 define('DOC_INVOICE', 1);
 define('DOC_RECEIPT', 2);
 define('DOC_CNOTE', 3);
+define('DOC_DELIV_INVOICE',10);
+define('DOC_DELIV_CNOTE',11);
 //define('DOC_CMEMO', 4);
 define('DOC_DNOTE', 5);
 define('DOC_INVOICE_PRO',6);
@@ -81,6 +85,10 @@ define('DOC_ANNEX', -2);
 define('DOC_PROTOCOL', -3);
 define('DOC_ORDER', -4);
 define('DOC_SHEET', -5);
+define('DOC_UPOMNIENIE', -100);
+define('DOC_WEZWANIE', -101);
+define('DOC_UM_ZLECENIE', -102);
+define('DOC_ZLEC_BLITZ', -103);
 define('DOC_OTHER', -10);
 
 $DOCTYPES = array(
@@ -90,6 +98,8 @@ $DOCTYPES = array(
     DOC_RECEIPT 	=>	trans('cash receipt'),
     DOC_CNOTE	    =>	trans('credit note'), // faktura korygujaca
 //    DOC_CMEMO	    =>	trans('credit memo'), // nota korygujaca
+    10  			=>	'Faktura kosztowa',
+    11  			=>  'Korekta faktury kosztowej',
     DOC_DNOTE	    =>	trans('debit note'), // nota obciazeniowa/debetowa/odsetkowa
     DOC_CONTRACT	=>	trans('contract'),
     DOC_ANNEX	    =>	trans('annex'),
@@ -100,6 +110,10 @@ $DOCTYPES = array(
     -7  =>	trans('payments book'), // ksiazeczka oplat
     -8  =>	trans('payment summons'), // wezwanie do zapłaty
     -9	=>	trans('payment pre-summons'), // przedsądowe wezw. do zapłaty
+    DOC_UPOMNIENIE  =>	trans('Upomnienie'),
+    DOC_WEZWANIE  =>	trans('Wezwania'),
+    DOC_UM_ZLECENIE  =>	trans('Umowy Zlecenia'),
+    DOC_ZLEC_BLITZ  =>	trans('Zlecenia dla BLITZ'),
     DOC_OTHER       =>	trans('other'),
 );
 
@@ -133,6 +147,7 @@ define('QUARTERLY', 4);
 define('YEARLY', 5);
 define('CONTINUOUS', 6);
 define('HALFYEARLY', 7);
+define('TWOMONTHS',11);
 
 // Accounting periods
 $PERIODS = array(

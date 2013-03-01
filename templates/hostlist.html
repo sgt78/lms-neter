@@ -27,6 +27,12 @@
 			<B>{$host.name}</B>
 		</TD>
 		<TD onClick="return self.location.href='?m=hostedit&id={$host.id}';">
+			<IMG src="img/ip.gif" alt="">&nbsp;{$host.ipaddr}
+		</TD>
+		<TD onClick="return self.location.href='?m=hostedit&id={$host.id}';">
+			{$host.servicetype}
+		</TD>
+		<TD onClick="return self.location.href='?m=hostedit&id={$host.id}';">
 			({$host.id|string_format:"%04d"})
 		</TD>
 		<TD onClick="return self.location.href='?m=hostedit&id={$host.id}';" nowrap>

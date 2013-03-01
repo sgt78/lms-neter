@@ -93,6 +93,7 @@ if(isset($_POST['ticket']))
 			else
 				$mailfrom =  $ticket['mailfrom'];
 
+			$headers['Date'] = date('r');
 			$headers['From'] = $mailfname.' <'.$mailfrom.'>';
 			$headers['Subject'] = sprintf("[RT#%06d] %s", $id, $ticket['subject']);
 			$headers['Reply-To'] = $headers['From'];
@@ -204,8 +205,11 @@ if(isset($ticket['customerid']) && $ticket['customerid'])
 
 $SMARTY->assign('queue', $queue);
 $SMARTY->assign('queuelist', $LMS->GetQueueNames());
+$SMARTY->assign('userlist', $LMS->GetUserNames());
+$SMARTY->assign('currentuser', $AUTH->id);
 $SMARTY->assign('categories', $categories);
 $SMARTY->assign('customerid', $ticket['customerid']);
+$SMARTY->assign('backto', '?'.$SESSION->get('backto'));
 $SMARTY->display('rtticketadd.html');
 
 ?>

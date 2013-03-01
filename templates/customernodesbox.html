@@ -114,6 +114,7 @@ function setgroup(act)
 				<A HREF="?m=nodedel&id={$customernodes[customernodes].id}" onClick="return confirmLink(this, '{t a=$customernodes[customernodes].name}Are you sure, you want to remove node \'$a\' from database?{/t}')"><IMG SRC="img/delete.gif" alt="[ {trans("Delete")} ]" title="[ {trans("Delete")} ]"></A>
 				<A HREF="?m=nodeedit&id={$customernodes[customernodes].id}"><IMG SRC="img/edit.gif" alt="[ {trans("Edit")} ]" title="[ {trans("Edit")} ]"></A>
 				<A HREF="?m=nodeinfo&id={$customernodes[customernodes].id}"><IMG SRC="img/info.gif" alt="[ {trans("Info")} ]" title="[ {trans("Info")} ]"></A>&nbsp;
+				<A HREF="?m=rad_nodeinfo&name={$customernodes[customernodes].name}"><IMG SRC="img/radius.png" alt="[ radius ]" title="[ radius ]"></A>&nbsp;
 				<INPUT TYPE="checkbox" NAME="marks[{$customernodes[customernodes].id}]" VALUE="{$customernodes[customernodes].id}" CHECKED>
 			    </TD>
 			</TR>

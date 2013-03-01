@@ -39,6 +39,12 @@ function invoice_body() {
 		case "FT-0100":
 			invoice_body_ft0100();
 			break;
+		case "NETER":
+			invoice_body_neter();
+			break;	
+		case "NETERBW":
+			invoice_body_neterbw();
+			break;
 		default:
 			require($template);
 	}

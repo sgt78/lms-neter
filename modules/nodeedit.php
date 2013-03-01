@@ -184,6 +184,12 @@ if (isset($_POST['nodeedit'])) {
 	else if ($nodeedit['access'] && $LMS->GetCustomerStatus($nodeedit['ownerid']) < 3)
 		$error['access'] = trans('Node owner is not connected!');
 
+    if($nodeedit['location_zip'] !='' && !check_zip($nodeedit['location_zip']) && !isset($nodeedit['zipwarning']))
+    {
+        $error['location_zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
+        $zipwarning = 1;
+    }
+
 	if (!$error) {
 		if (empty($nodeedit['teryt'])) {
 			$nodeedit['location_city'] = null;
@@ -212,6 +218,7 @@ if (isset($_POST['nodeedit'])) {
 	$nodeinfo['halfduplex'] = $nodeedit['halfduplex'];
 	$nodeinfo['port'] = $nodeedit['port'];
 	$nodeinfo['zipwarning'] = empty($zipwarning) ? 0 : 1;
+	$nodeinfo['location_zip'] = $nodeedit['location_zip'];
 	$nodeinfo['location'] = $nodeedit['location'];
 	$nodeinfo['location_city'] = $nodeedit['location_city'];
 	$nodeinfo['location_street'] = $nodeedit['location_street'];
@@ -257,6 +264,7 @@ include(MODULES_DIR . '/nodexajax.inc.php');
 
 $SMARTY->assign('xajax', $LMS->RunXajax());
 
+$SMARTY->assign('cstateslist',$LMS->GetCountryStates());
 $SMARTY->assign('netdevices', $LMS->GetNetDevNames());
 $SMARTY->assign('nodegroups', $LMS->GetNodeGroupNamesByNode($nodeid));
 $SMARTY->assign('othernodegroups', $LMS->GetNodeGroupNamesWithoutNode($nodeid));

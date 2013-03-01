@@ -24,9 +24,55 @@
  *  $Id$
  */
 
+function EventSearch($search)
+{
+	global $DB, $AUTH;
+
+	$list = $DB->GetAll(
+	        'SELECT events.id AS id, title, description, date, begintime, endtime, customerid, closed, '
+		.$DB->Concat('UPPER(customers.lastname)',"' '",'customers.name').' AS customername 
+		 FROM events LEFT JOIN customers ON (customerid = customers.id)
+		 WHERE (private = 0 OR (private = 1 AND userid = ?)) '
+		.($search['datefrom'] ? ' AND date >= '.$search['datefrom'] : '')
+		.($search['dateto'] ? ' AND date <= '.$search['dateto'] : '')
+		.($search['customerid'] ? ' AND customerid = '.$search['customerid'] : '')
+		.($search['title'] ? ' AND title ?LIKE? \'%'.$search['title'].'%\'' : '')
+		.($search['description'] ? ' AND description ?LIKE? \'%'.$search['description'].'%\'' : '')
+		.($search['note'] ? ' AND note ?LIKE? \'%'.$search['note'].'%\'' : '')
+		.' ORDER BY date, begintime', array($AUTH->id));
+	
+	if($list)
+		foreach($list as $idx => $row)
+		{
+			$list[$idx]['userlist'] = $DB->GetAll('SELECT userid AS id, users.name
+								    FROM eventassignments, users
+								    WHERE userid = users.id AND eventid = ? ',
+								    array($row['id']));
+
+			if($search['userid'] && sizeof($list[$idx]['userlist']))
+				foreach($list[$idx]['userlist'] as $user)
+					if($user['id'] == $search['userid'])
+					{
+						$list2[] = $list[$idx];
+						break;
+					}
+		}
+	
+	if($search['userid'])
+		return $list2;	
+	else	
+		return $list;
+}
+
 $layout['pagetitle'] = trans('Event Search');
 
 $SESSION->save('backto', $_SERVER['QUERY_STRING']);
+
+// wyszukiwanie w terminarzu po id klienta
+if(isset($_GET['id']))
+{
+	$_POST['event']['customerid'] = $_GET['id'];
+}
 
 if(isset($_POST['event']))
 {
@@ -43,8 +89,9 @@ if(isset($_POST['event']))
 		list($year, $month, $day) = explode('/', $event['dateto']);
 		$event['dateto'] = mktime(0,0,0, $month, $day, $year);
 	}
-	
-	$eventlist = $LMS->EventSearch($event);
+
+#	$eventlist = $LMS->EventSearch($event);	
+	$eventlist = EventSearch($event);
 	$daylist = array();
 
 	if(sizeof($eventlist))

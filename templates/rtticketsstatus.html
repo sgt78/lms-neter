@@ -1,0 +1,247 @@
+{if $mobile}
+	{include file="header_mobile.html"}
+{else}
+	{include file="header.html"}
+{/if}
+<!-- $Id: rtqueuelist.html,v 1.20 2009/08/26 09:22:22 alec Exp $ -->
+<H1><B>{$layout.pagetitle}</B></H1>
+<P>
+<SCRIPT type="text/javascript">
+{literal}
+function postwith (p) {
+  var myForm = document.createElement("form");
+  myForm.method="post" ;
+  myForm.action = "?m=rtsearch" ;
+  for (var k in p) {
+    var myInput = document.createElement("input") ;
+    myInput.setAttribute("name", "search["+p[k][0]+"]") ;
+    myInput.setAttribute("value", p[k][1]);
+    myForm.appendChild(myInput) ;
+  }
+  document.body.appendChild(myForm) ;
+  myForm.submit() ;
+  document.body.removeChild(myForm) ;
+}
+{/literal}
+</SCRIPT>
+<TABLE width="{if $mobile}320px{else}100%{/if}" cellpadding="3">
+    <TR class="dark">
+		<TD class="fleftu" width="1%" NOWRAP>
+			<IMG src="img/open.gif" alt=""> <B>{t}Statystyki zgłoszeń serwisowych{/t}</B>
+		</TD>
+		<TD WIDTH="99%" CLASS="frightu">
+			<FORM method="POST" name="search" action="?m=rtticketsstatus">
+			<INPUT type="submit" class="hiddenbtn">
+			<IMG src="img/users.gif" alt="">
+			<B>{t}Owner:{/t}</B>
+			<SELECT size="1" name="search[owner]" {tip text="Select user/owner of the ticket"}>
+				<OPTION value="0">{t}- all owners -{/t}</OPTION>
+				{foreach from=$userlist item=userlistitem}
+			        <OPTION value="{$userlistitem.id}" {if $userlistitem.id == $search.owner}SELECTED{/if}>{$userlistitem.name}</OPTION>
+				{/foreach}
+			</SELECT>
+			<A href="javascript: document.search.submit();" accesskey="s">{t}Search{/t}<IMG src="img/search.gif" alt=""></A>
+			</FORM>
+		</TD>
+	</TR>
+	<TR><TD></TD></TR>
+    {*	
+    <TR class="light">
+		<TD class="fall" colspan="2" width="100%">
+			<TABLE width="100%" cellpadding="3">
+				<TR class="DARK">
+					<TD width="1%" class="fbt" colspan=8 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>Liczba zadań zaplanowanych</B>
+					</TD>
+				</TR>
+				<TR class="DARK">
+					<TD width="1%" class="fbt" colspan=2 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>W sumie</B>
+					</TD>
+					<TD width="1%" class="fbt" ALIGN="RIGHT">
+						<B>&nbsp;</B>
+					</TD>
+					<TD width="1%" class="fbt" colspan=2 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>WARNINIG</B>
+					</TD>
+					<TD width="1%" class="fbt" ALIGN="RIGHT">
+						<B>&nbsp;</B>
+					</TD>
+					<TD width="1%" class="fbt" colspan=2 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>CRITICAL</B>
+					</TD>
+				</TR>
+				{section name=planedlist loop=$planedlist}
+				<TR class="LIGHT">
+					<TD width="5%" class="fbt superlight" NOWRAP ALIGN="RIGHT">
+						{$planedlist[planedlist].name}
+					</TD>
+					<TD width="25%" class="fbt superlight" NOWRAP ALIGN="LEFT">
+						{$planedlist[planedlist].suma}
+					</TD>
+					<TD  width="5%" class="fbt superlight">
+						&nbsp;
+					</TD>
+					<TD width="5%" class="fbt superlight" NOWRAP ALIGN="RIGHT">
+						{$planedlist[planedlist].name}
+					</TD>
+					<TD width="25%" class="fbt superlight" NOWRAP ALIGN="LEFT">
+						{$planedlist[planedlist].warning}
+					</TD>
+					<TD  width="5%" class="fbt superlight">
+						&nbsp;
+					</TD>
+					<TD width="5%" class="fbt superlight" NOWRAP ALIGN="RIGHT">
+						{$planedlist[planedlist].name}
+					</TD>
+					<TD width="25%" class="fbt superlight" NOWRAP ALIGN="LEFT">
+						{$planedlist[planedlist].critical}
+					</TD>
+				</TR>
+				{/section}
+			</TABLE>
+		</TD>
+    </TR>
+	<TR><TD></TD></TR>
+    *}
+    <TR class="light">
+		<TD class="fall" colspan="2" width="100%">
+			<TABLE width="100%" cellpadding="3">
+				<TR class="DARK">
+					<TD width="1%" class="fbt" colspan=8 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>Liczba zadań wg. statusu zadania</B>
+					</TD>
+				</TR>
+				<TR class="DARK">
+					<TD width="1%" class="fbt" colspan=2 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>W sumie</B>
+					</TD>
+					<TD width="1%" class="fbt" ALIGN="RIGHT">
+						<B>&nbsp;</B>
+					</TD>
+					<TD width="1%" class="fbt" colspan=2 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>WARNINIG</B>
+					</TD>
+					<TD width="1%" class="fbt" ALIGN="RIGHT">
+						<B>&nbsp;</B>
+					</TD>
+					<TD width="1%" class="fbt" colspan=2 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>CRITICAL</B>
+					</TD>
+				</TR>
+				{section name=statuslist loop=$statuslist}
+				<TR class="LIGHT">
+					<TD width="5%" class="fbt superlight" ALIGN="RIGHT">
+						<a href="javascript:postwith([['owner','{$statuslist[statuslist].owner}'],['state','{$statuslist[statuslist].state}']])">{$statuslist[statuslist].name}</a>
+					</TD>
+					<TD width="25%" class="fbt superlight" ALIGN="LEFT">
+						<a href="javascript:postwith([['owner','{$statuslist[statuslist].owner}'],['state','{$statuslist[statuslist].state}']])">{$statuslist[statuslist].suma}</a>
+					</TD>
+					<TD  width="5%" class="fbt superlight">
+						&nbsp;
+					</TD>
+					<TD width="5%" class="fbt superlight" ALIGN="RIGHT">
+						<a href="javascript:postwith([['owner','{$statuslist[statuslist].owner}'],['state','{$statuslist[statuslist].state}'],['uptime','{$warning}']])">{$statuslist[statuslist].name}</a>
+					</TD>
+					<TD width="25%" class="fbt superlight" ALIGN="LEFT">
+						<a href="javascript:postwith([['owner','{$statuslist[statuslist].owner}'],['state','{$statuslist[statuslist].state}'],['uptime','{$warning}']])">{$statuslist[statuslist].warning}</a>
+					</TD>
+					<TD  width="5%" class="fbt superlight">
+						&nbsp;
+					</TD>
+					<TD width="5%" class="fbt superlight" ALIGN="RIGHT">
+						<a href="javascript:postwith([['owner','{$statuslist[statuslist].owner}'],['state','{$statuslist[statuslist].state}'],['uptime','{$critical}']])">{$statuslist[statuslist].name}</a>
+					</TD>
+					<TD width="25%" class="fbt superlight" ALIGN="LEFT">
+						<a href="javascript:postwith([['owner','{$statuslist[statuslist].owner}'],['state','{$statuslist[statuslist].state}'],['uptime','{$critical}']])">{$statuslist[statuslist].critical}</a>
+					</TD>
+				</TR>
+				{/section}
+			</TABLE>
+		</TD>
+    </TR>
+	<TR><TD></TD></TR>
+
+    <TR class="light">
+		<TD class="fall" colspan="2" width="100%">
+			<TABLE width="100%" cellpadding="3">
+				<TR class="DARK">
+					<TD width="1%" class="fbt" colspan=8 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>Liczba zadań wg. kolejek</B>
+					</TD>
+				</TR>
+				<TR class="DARK">
+					<TD width="1%" class="fbt" colspan=2 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>W sumie</B>
+					</TD>
+					<TD width="1%" class="fbt" ALIGN="RIGHT">
+						<B>&nbsp;</B>
+					</TD>
+					<TD width="1%" class="fbt" colspan=2 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>WARNINIG</B>
+					</TD>
+					<TD width="1%" class="fbt" ALIGN="RIGHT">
+						<B>&nbsp;</B>
+					</TD>
+					<TD width="1%" class="fbt" colspan=2 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>CRITICAL</B>
+					</TD>
+				</TR>
+				{section name=queuedlist loop=$queuedlist}
+				<TR class="LIGHT">
+					<TD width="25%" class="fbt superlight" ALIGN="RIGHT">
+						<a href="javascript:postwith([['owner','{$queuedlist[queuedlist].owner}'],['queue','{$queuedlist[queuedlist].queueid}'],['state','-1']])">{$queuedlist[queuedlist].name}</a>
+					</TD>
+					<TD width="5%" class="fbt superlight" ALIGN="LEFT">
+						<a href="javascript:postwith([['owner','{$queuedlist[queuedlist].owner}'],['queue','{$queuedlist[queuedlist].queueid}'],['state','-1']])">{$queuedlist[queuedlist].suma}</a>
+					</TD>
+					<TD  width="5%" class="fbt superlight">
+						&nbsp;
+					</TD>
+					<TD width="25%" class="fbt superlight" ALIGN="RIGHT">
+						<a href="javascript:postwith([['owner','{$queuedlist[queuedlist].owner}'],['queue','{$queuedlist[queuedlist].queueid}'],['uptime','{$warning}'],['state','-1']])">{$queuedlist[queuedlist].name}</a>
+					</TD>
+					<TD width="5%" class="fbt superlight" ALIGN="LEFT">
+						<a href="javascript:postwith([['owner','{$queuedlist[queuedlist].owner}'],['queue','{$queuedlist[queuedlist].queueid}'],['uptime','{$warning}'],['state','-1']])">{$queuedlist[queuedlist].warning}</a>
+					</TD>
+					<TD  width="5%" class="fbt superlight">
+						&nbsp;
+					</TD>
+					<TD width="25%" class="fbt superlight" ALIGN="RIGHT">
+						<a href="javascript:postwith([['owner','{$queuedlist[queuedlist].owner}'],['queue','{$queuedlist[queuedlist].queueid}'],['uptime','{$critical}'],['state','-1']])">{$queuedlist[queuedlist].name}</a>
+					</TD>
+					<TD width="5%" class="fbt superlight" ALIGN="LEFT">
+						<a href="javascript:postwith([['owner','{$queuedlist[queuedlist].owner}'],['queue','{$queuedlist[queuedlist].queueid}'],['uptime','{$critical}'],['state','-1']])">{$queuedlist[queuedlist].critical}</a>
+					</TD>
+				</TR>
+				{/section}
+			</TABLE>
+		</TD>
+    </TR>
+	<TR><TD></TD></TR>
+
+    <TR class="light">
+		<TD class="fall" colspan="2" width="100%">
+			<TABLE width="100%" cellpadding="3">
+				<TR class="DARK">
+					<TD width="1%" class="fbt" colspan=8 ALIGN="LEFT" NOWRAP style="vertical-align: top;">
+						<B>Terminarz na najbliższe {$forward} dni</B>
+					</TD>
+				</TR>
+				<TR class="LIGHT">
+					<TD width="5%" class="fbt superlight">
+						{include file="eventsbox1.html"}
+					</TD>
+				</TR>
+			</TABLE>
+		</TD>
+    </TR>
+
+</TABLE>
+</P>
+{if $mobile}
+	{include file="footer_mobile.html"}
+{else}
+	{include file="footer.html"}
+{/if}
+

@@ -1,0 +1,60 @@
+{include file="header.html"}
+<!--// $Id: welcome.html,v 1.81.2.1 2007/09/11 06:54:23 alec Exp $ //-->
+<H1>{$layout.pagetitle}</H1>
+<P>
+<TABLE width="100%" cellpadding="3">
+	<TR>
+		<TD WIDTH="100%" style="vertical-align: top;">
+			<TABLE WIDTH="100%" CELLPADDING="3">
+				<TR CLASS="DARK">
+					<TD ALIGN="left" CLASS="fleftu">
+						<IMG SRC="img/logo-ico.gif" ALT=""> <B>Nazwa/Nazwisko i Imię:</B>
+					</TD>
+					<TD ALIGN="left" CLASS="fbt">
+						<B>Adres IP</B>
+					</TD>
+					<TD ALIGN="left" CLASS="fbt">
+						<B>W tygodniu:</B>
+					</TD>
+					<TD ALIGN="left" CLASS="fbt">
+						<B>24 godziny:</B>
+					</TD>
+					<TD ALIGN="left" CLASS="frightu">
+						<B>Ostatnia godzina:</B>
+					</TD>
+				</TR>
+				{cycle values="light,lucid" print=false}
+				{section name=spamlist loop=$spamlist}
+				<TR CLASS="{cycle}">
+					<TD  ALIGN="LEFT" CLASS="FLEFT" {if $spamlist[spamlist].godzina > 0} STYLE="color: red"{/if}>
+						<a href="?m=customerinfo&id={$spamlist[spamlist].customerid}">
+					    ({$spamlist[spamlist].customerid|string_format:"%04d"})&nbsp;
+					    {$spamlist[spamlist].customername}
+					    </a>
+					</TD>
+					<TD {if $spamlist[spamlist].godzina > 0} STYLE="color: red"{/if}>
+						{$spamlist[spamlist].ip4}
+					</TD>
+					<TD {if $spamlist[spamlist].godzina > 0} STYLE="color: red"{/if}>
+						{$spamlist[spamlist].tydzien}						
+					</TD>
+					<TD {if $spamlist[spamlist].godzina > 0} STYLE="color: red"{/if}>
+						{$spamlist[spamlist].dzien}
+					</TD>
+					<TD CLASS="FRIGHT" {if $spamlist[spamlist].godzina > 0} STYLE="color: red"{/if}>
+						{$spamlist[spamlist].godzina}
+					</TD>
+				</TR>
+				{/section}
+				<TR CLASS="DARK">
+					<TD COLSPAN="5" ALIGN="RIGHT" CLASS="FALL">
+						&nbsp;
+					</TD>
+				</TR>
+			</TABLE>
+		</TD>
+	</TR>
+
+</TABLE>
+</P>
+{include file="footer.html"}

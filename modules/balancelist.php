@@ -202,7 +202,15 @@ if(!empty($_POST['from']))
 elseif($SESSION->is_set('blf'))
 	$SESSION->restore('blf', $from);
 else
-	$from = '';
+//org	$from = '';
+//NETER fix
+	{
+	$year=date("Y", time());
+	$month=date("m", time());
+	$day=1;
+	$from = mktime(0,0,0, $month, $day, $year);
+	}
+
 $SESSION->save('blf', $from);
 
 if(!empty($_POST['to']))
@@ -213,7 +221,17 @@ if(!empty($_POST['to']))
 elseif($SESSION->is_set('blt'))
 	$SESSION->restore('blt', $to);
 else
-	$to = '';
+//org	$to = '';
+//NETER fix
+	{
+	$year=date("Y", time());
+//	$month=date("m", time())+1;
+//	$day=1;
+	$month=date("m", time());
+	$day=cal_days_in_month(CAL_GREGORIAN, $month, $year);
+	$to = mktime(0,0,0, $month, $day, $year);
+	}
+
 $SESSION->save('blt', $to);
 
 $pagelimit = $CONFIG['phpui']['balancelist_pagelimit'];

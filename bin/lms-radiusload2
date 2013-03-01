@@ -1,0 +1,233 @@
+#!/usr/bin/perl -Tw
+#
+#  LMS version 1.10.4 Pyrus
+#
+#  Copyright (C) 2001-2008 LMS Developers
+#
+#  Please, see the doc/AUTHORS for more information about authors!
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License Version 2 as
+#  published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#  USA.
+#
+#  $Id: lms-payments,v 1.97.2.2 2008/01/04 07:57:21 alec Exp $
+
+use strict;
+use DBI;
+use Config::IniFiles;
+use Getopt::Long;
+use vars qw($configfile $quiet $help $version);
+use POSIX qw(strftime);
+use POSIX qw(mktime);
+use Time::Local;
+use File::Temp qw/ tempfile /;
+use Math::Round qw/ round /;
+
+my ($fh,$filename,$template);
+
+my $_version = '1.10.4 Pyrus';
+
+my %options = (
+	"--config-file|C=s"	=>	\$configfile,
+	"--quiet|q"		=>	\$quiet,
+	"--help|h"		=>	\$help,
+	"--version|v"		=>	\$version,
+);
+
+Getopt::Long::config("no_ignore_case");
+GetOptions(%options);
+
+if($help)
+{
+	print STDERR <<EOF;
+lms-loadradius, version $_version
+(C) 2001-2008 LMS Developers
+
+-C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
+-h, --help			print this help and exit;
+-v, --version			print version info and exit;
+-q, --quiet			suppress any output, except errors;
+
+EOF
+	exit 0;
+}
+
+if($version)
+{
+	print STDERR <<EOF;
+lms-loadradius, version $_version
+(C) 2001-2008 LMS Developers
+
+EOF
+	exit 0;
+}
+
+if(!$configfile)
+{
+	$configfile = "/etc/lms/lms.ini";
+}
+
+if(!$quiet)
+{
+	print STDOUT "lms-loadradius, version $_version\n";
+	print STDOUT "(C) 2001-2008 LMS Developers\n";
+	print STDOUT "Using file $configfile as config.\n";
+}
+
+if(! -r $configfile)
+{
+	print STDERR "Fatal error: Unable to read configuration file $configfile, exiting.\n";
+	exit 1;
+}
+
+my $ini = new Config::IniFiles -file => $configfile;
+print @Config::IniFiles::errors;
+
+my $dbtype = $ini->val('database', 'type') || 'mysql';
+my $dbhost = $ini->val('database', 'host') || 'localhost';
+my $dbuser = $ini->val('database', 'user') || 'root';
+my $dbpasswd = $ini->val('database', 'password') || '';
+my $dbname = $ini->val('database', 'database') || 'lms';
+
+my $rad_dbtype = 'mysql';
+my $rad_dbhost = '91.210.245.1';
+my $rad_dbuser = 'lms_radius';
+my $rad_dbpasswd = 'nuskucnu';
+my $rad_dbname = 'radius';
+
+
+# Connect to lms database
+my $dbase;
+my $utsfmt;
+
+	$dbase = DBI->connect("DBI:mysql:database=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$dbase->do("SET NAMES utf8");
+	$utsfmt = "UNIX_TIMESTAMP()";
+
+# Connect to radius database
+my $rad_dbase;
+my $rad_utsfmt;
+
+	$rad_dbase = DBI->connect("DBI:mysql:database=$rad_dbname;host=$rad_dbhost","$rad_dbuser","$rad_dbpasswd", { RaiseError => 1 });
+	$rad_dbase->do("SET NAMES utf8");
+	$rad_utsfmt = "UNIX_TIMESTAMP()";
+
+
+sub localtime2()
+{
+		return localtime();
+}
+
+my $today;
+$today = time();
+
+
+
+my $dbq;
+my $row;
+
+my $rad_dbq;
+my $rad_row;
+
+my $start = 0;
+my $end = 0;
+
+my $number = $row->{'number'} || 0;
+my %gotinv;
+my $icdbq;
+my $cdbq;
+my $suspended = 0;
+my $skipped = 0;
+my $tested = 0;
+my $itemid;
+
+    my $service_id   = $row->{'id'};
+    my $service_ip   = $row->{'description'};
+    my $lastreload   = $row->{'lastreload'};
+
+    $dbq = $dbase->prepare("
+	SELECT 
+	ownerid AS customerid, SUM(upceil) AS upceil, SUM(downceil) AS downceil, name AS nod_name, 
+	inet_ntoa(ipaddr) as nod_ipaddr, passwd AS nod_passwd 
+	FROM (
+		SELECT na.*,
+		t.`name` AS tariffname, t.`uprate`, t.`downrate`, t.`upceil`, t.`downceil`
+		FROM (
+			SELECT
+			n.`id`, n.`name`, n.`ipaddr`, n.`ownerid`, n.`passwd`, 
+			a1.`id` AS `assignmentid`, a1.`tariffid`, a1.`datefrom`, a1.`dateto`, a1.`suspended`
+			FROM `nodes` n join `nodeassignments` na ON n.`id`=na.`nodeid`
+			LEFT JOIN `assignments` a1 ON na.`assignmentid`=a1.`id`
+			UNION
+			SELECT
+			n.`id`, n.`name`, n.`ipaddr`, n.`ownerid`, n.`passwd`, 
+			a2.`id` AS `assignmentid`, a2.`tariffid`, a2.`datefrom`, a2.`dateto`, a2.`suspended`
+			FROM `nodes` n LEFT JOIN `assignments` a2 ON n.`ownerid`=a2.`customerid`
+			WHERE n.`id` NOT IN (SELECT nodeid FROM `nodeassignments`)
+		) na /*nodes, assignments, nodeassignments*/
+		JOIN `tariffs` t ON na.`tariffid`=t.`id`
+		WHERE na.`suspended`=0 
+		AND (na.`datefrom`<=UNIX_TIMESTAMP() OR na.`datefrom`=0) 
+		AND (na.`dateto`>=UNIX_TIMESTAMP() OR  na.`dateto`=0)
+		AND na.`passwd`<>''
+	) aasd
+	GROUP BY name");
+
+    $dbq->execute();
+
+
+    # truncate table
+
+    $rad_dbq = $rad_dbase->prepare("TRUNCATE radreply");
+    $rad_dbq->execute();
+
+    $rad_dbq = $rad_dbase->prepare("TRUNCATE radcheck");
+    $rad_dbq->execute();
+    $rad_dbq->finish();
+
+
+    while (my $row = $dbq->fetchrow_hashref())
+    {
+		print "id: $row->{'customerid'}\tip:$row->{'nod_ipaddr'}\tdown:$row->{'downceil'}\tup:$row->{'upceil'}\tlogin:$row->{'nod_name'}\tPasswd:$row->{'nod_passwd'}\n";
+
+	$rad_dbq = $rad_dbase->prepare("INSERT INTO radcheck (UserName,Attribute,op,Value)
+					values ('$row->{'nod_name'}','User-Password','==','$row->{'nod_passwd'}')");
+	$rad_dbq->execute();
+	$rad_dbq->finish();
+
+	$rad_dbq = $rad_dbase->prepare("INSERT INTO radreply (UserName,Attribute,op,Value)
+                                        values ('$row->{'nod_name'}','Framed-IP-Address','=','$row->{'nod_ipaddr'}')");
+
+	$rad_dbq->execute();
+	$rad_dbq->finish();
+
+	# 256k/1M :rate 512k/2M :burst 256K/1M :treshold 30/30 :time 7 :prio
+	my $uprate    = round($row->{'upceil'}+$row->{'upceil'}/10);
+	my $downrate  = round($row->{'downceil'}+$row->{'downceil'}/10);
+	my $upburst   = round($uprate*2);
+	my $downburst = round($downrate*2);
+	my $time  = ' 30/30 ';
+	my $priorytet = ' 8 ';
+	
+	my $ratelimit = $uprate.'k/'.$downrate.'k '.$upburst.'k/'.$downburst.'k '.$uprate.'k/'.$downrate.'k '.$time.$priorytet;
+	$rad_dbq = $rad_dbase->prepare("INSERT INTO radreply (UserName,Attribute,op,Value)
+                                        values ('$row->{'nod_name'}','Mikrotik-Rate-Limit','=','$ratelimit')");
+
+	$rad_dbq->execute();
+	$rad_dbq->finish();
+    }
+
+$dbq->finish();
+
+$dbase->disconnect();
+$rad_dbase->disconnect();

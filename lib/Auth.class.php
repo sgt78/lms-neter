@@ -98,6 +98,7 @@ class Auth {
 			if (isset($loginform))
 			{
 				$this->DB->Execute('UPDATE users SET lastlogindate=?, lastloginip=? WHERE id=?', array(time(), $this->ip ,$this->id));
+				$this->DB->Execute('INSERT into userlog (usl_action,usl_userid,usl_logdate,usl_logip) values (?,?,?,?)',array('I',$this->id,time(),$this->ip));
 				writesyslog('User '.$this->login.' logged in.', LOG_INFO);
 			}
 
@@ -138,6 +139,7 @@ class Auth {
 
 	function LogOut() {
 		if ($this->islogged)
+			$this->DB->Execute('INSERT into userlog (usl_action,usl_userid,usl_logdate,usl_logip) values (?,?,?,?)',array('O',$this->id,time(),$this->ip));
 			writesyslog('User ' . $this->login . ' logged out.', LOG_INFO);
 		$this->SESSION->finish();
 	}

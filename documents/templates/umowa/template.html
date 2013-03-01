@@ -1,0 +1,364 @@
+<html>
+<head>
+<title>{t}Contract{/t}</title>
+{literal}
+<STYLE type="text/css"><!--
+BODY	{ font-size: 7pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1		{ font-size: 10pt; text-align: center; }
+H2		{ font-size: 8pt; text-align: center; color: red;}
+TD		{ font-size: 7pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TABLE	{ border-collapse: collapse; }
+P		{ font-size: 7pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: center; }
+TD.pass	{ font-size: 10pt; font-family: "Courier New", Courier, monospace; font-weight:bold;}
+//-->
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+<DIV STYLE="page-break-after: always">
+<h1>Umowa na świadczenie usług telekomunikacyjnych Nr: {$document.nr}</h1>
+<p>Zawarta w dniu {$smarty.now|date_format:"%Y-%m-%d"} w Poznaniu pomiędzy 
+Firmą Neter Sp. z o.o. z siedzibą w Poznaniu przy ulicy Sieradzkiej 28; 60-163 wpisaną do rejestru KRS pod 
+numerem 0000202092, NIP 779-22-07-498, Regon 634350031 zwanym dalej Usługodawcą reprezentowanym 
+przez: {$layout.logname} a: </p>
+<TABLE BORDER="0">
+	<TR>
+		<TD valign="top">Nazwa/Nazwisko i imię: </TD>
+		<TD><b>{$customerinfo.customername}</b></TD>
+    	</TR>
+    <TR>
+		<TD>Adres: </TD> 
+		<TD><b>{$customerinfo.address}<br>{$customerinfo.zip} {$customerinfo.city}</b></TD>
+    	</TR>
+    {if $customerinfo.ssn}	
+    <TR>
+		<TD>PESEL: </TD>
+		<TD><b>{$customerinfo.ssn}</b></TD>
+    	</TR>
+	{/if}
+	{if $customerinfo.ten}
+    <TR>
+	   	<TD>NIP: </TD>
+    	<TD><b>{$customerinfo.ten}</b></TD>
+    	</TR>
+    {/if}
+    {if $customerinfo.icn}
+    <tr>
+    	<td>Dowód osobisty: </td>
+    	<td><b>{$customerinfo.icn}</b></td>
+    	</tr>
+    {/if}
+    {if $customerinfo.regon}
+    <tr>
+    	<td>REGON: </td>
+    	<td><b>{$customerinfo.regon}</b></td>
+    	</tr>
+    {/if}
+    {if $customerinfo.rbe}
+    <tr>
+    	<td>EDG/KRS: </td>
+    	<td><b>{$customerinfo.rbe}</b></td>
+    	</tr>
+    {/if}
+    
+</TABLE>
+
+<p>Zwanym dalej Użytkownikiem o następującej treści:</p>
+
+<TABLE BORDER="0" WIDTH="100%">
+	<tr>
+		<td valign="top">1.</td>
+		<td>Przedmiotem umowy jest korzystanie przez użytkownika z wybranych usług świadczonych przez operatora na zasadach przewidzianych w regulaminie dostępu do sieci. Operator zobowiązuje się do wykonania Przyłącza Abonenckiego, a także do rozpoczęcia świadczenia Usług wyszczególnionych w punkcie 4 na zasadach określonych w Regulaminie i Cenniku w ciągu 30 dni od podpisania niniejszej umowy.</td>
+		</tr>
+	<tr>
+		<td valign="top">2.</td>
+		<td>Strony zgodnie oświadczają, że regulamin dostępu do sieci stanowi integralną część umowy, zaś użytkownik oświadcza,  że zapoznał 	się z treścią regulaminu dostępu do sieci i jest dla niego w pełni zrozumiały, akceptuje go w całości i zobowiązuje się do jego przestrzegania.</td>
+		</tr>
+	<tr>
+		<td valign="top">3.</td>
+		<td>Usługi wyceniane są według cennika obowiązującego w dniu podpisania umowy, z zastrzeżeniem iż cennik może ulec zmianie w przypadku wystąpienia zmian w systemie podatkowym. O każdorazowej zmianie cennika operator zobowiązuje się powiadomić użytkownika, do końca miesiąca poprzedzającego miesiąc w którym nastąpi zmiana cen. Cennik ten stanowi załącznik do umowy.</td>
+		</tr>		
+	<tr>
+		<td valign="top">4.</td>
+		<td>Umowa zawarta zostaje na  czas od <b>{$document.fromdate|date_format:"%Y.%m.%d"}</b> do <b>{$document.todate|date_format:"%Y.%m.%d"}</b> z automatycznym przedłużeniem na czas nieokreślony, jeśli żadna ze stron nie postanowi inaczej.<br>
+		Począwszy od daty podpisania Protokołu Technicznego płatność za:</td>
+		</tr>
+	<tr>
+		<td></td>
+		<td>
+			<TABLE cellpadding="3" cellspacing="0" border="1" WIDTH="100%">
+				<TR>
+				<TD WIDTH="50%" NOWRAP>{t}Service:{/t}</TD>
+				<TD WIDTH="10%" NOWRAP ALIGN="RIGHT">{t}Value:{/t}</TD>
+				<TD WIDTH="10%" NOWRAP>{t}Payment:{/t}</TD>
+				<TD WIDTH="30%" NOWRAP>Aktywna:</TD>
+				</TR>
+				{foreach from=$assignments item=a}
+				<TR>
+				<TD NOWRAP><b>{$a.name}</b></TD>
+				<TD NOWRAP ALIGN="RIGHT">{$a.value|money_format}</TD>
+				<TD NOWRAP>{$a.period}</TD>
+				<TD>
+				od: {if $a.datefrom}{$a.datefrom|date_format:"%Y.%m.%d"}{else}-{/if}
+				do: {if $a.dateto}{$a.dateto|date_format:"%Y.%m.%d"}{else}-{/if}
+				</TD>
+				</TR>
+				{/foreach}
+				<TR>
+				<TD ALIGN="RIGHT">{t}Total:{/t}</TD>
+				<TD NOWRAP ALIGN="RIGHT"><b>{sum array=$assignments column="value" string_format="%01.2f"}</b></TD>
+				<TD>&nbsp;</TD>
+				<TD>&nbsp;</TD>
+				</TR>
+			</TABLE><br>
+			powinna następować z góry do 15 dnia miesiąca bez dodatkowego wezwania, na wskazany rachunek bankowy. Abonent wyraża zgodę na wyłączenie dostępu do wyżej wymienionych usług, gdy opłata za te usługi nie zostanie zaksięgowana na koncie operatora do 15 dnia miesiąca, a także dobrowolnie poddaje się egzekucji z tutułu windykacji i ponownego włączenia usług.
+		</td>
+		</tr>
+	<tr>
+		<td valign="top">5.</td>
+		<td>Operator zobowiązuje się do wystawienia faktury VAT za każdy kolejny miesiąc do ostatniego dnia danego miesiąca. Podatek VAT będzie naliczany zgodnie z obowiązującymi w danym dniu przepisami.
+</td>
+	</tr>
+	<tr>
+		<td valign="top">6.</td>
+		<td>Użytkownik wyraża zgodę na wystawianie faktur VAT bez podpisu odbiorcy.</td>
+		</tr>
+	<tr>
+		<td valign="top">7.</td>
+		<td>Użytkownik może rozwiązać Umowę przed upływem teminu określonego w punkcie 4, ale w takim przypadku zobowiązany jest zapłacić na rzecz Operatora opłatę, będącą sumą:
+a) różnicy pomiędzy promocyjną opłatą aktywacyjną określoną w niniejszej umowie, a opłatą aktywacyjną określoną w Cenniku obowiązującym w dniu zawarcia Umowy dla Umów zawieranych na czas nieokreślony.
+b) sumy upustów w opłatach abonamentowych wynikających z rożnicy między opłatami określonymi w Umowie a opłatami określonymi w Cenniku dla danej taryfy na czas nieokreślony obowiązującego Cennika w dniu zawarcia Umowy.</td>
+		</td>
+		</tr>
+	<tr>
+		<td valign="top">8.</td>
+		<td>W przypadku rezygnacji z Usługi w czasie pomiędzy dniem zawarcia Umowy a dniem wykonania Przyłącza, Użytkownik będzie zobowiązany do zapłacenia kary umownej w wysokości jednej Opłaty Abonamentowej.
+		</td>
+		</tr>
+	<tr>
+		<td valign="top">9.</td>
+		<td>Operator może odstąpić od realizacji niniejszej Umowy, gdy nie można wykonać przyłącza z przyczyn technicznych, lub gdy pojemność Systemu nie pozwala na świadczenie Usługi.
+Z tytułu odstąpienia od umowy Użytkownikowi nie przysługują roszczenia odszkodowawcze wobec Operatora.
+</td>
+		</tr>
+	<tr>
+		<td valign="top">10.</td>
+		<td>Użytkownik oświadcza, że wszystkie podane dane osobowe są zgodne z prawdą i wyraża zgodę na ich przetwarzanie dla celów realizacji niniejszej Umowy. Operator gwarantuje zachowanie poufności danych osobowych zawartych w niniejszej umowie z wyjątkiem sytuacji przewidzianych przepisami prawa zgodnie z ustawą z dnia 29 sierpnia 1997 roku o ochronie danych osobowych (Dz. U. Nr 133, poz. 883).
+</td>
+		</tr>	
+	<tr>
+		<td valign="top">11.</td>
+		<td>Wszelkie zmiany i uzupełnienia niniejszej umowy dla swej ważności wymagają sporządzenia aneksu w formie pisemnej pod rygorem nieważności.
+</td>
+		</tr>
+	<tr>
+		<td valign="top">12.</td>
+		<td>Wszelkie spory powstałe w trakcie realizacji postanowień umowy rozstrzygać będzie właściwy rzeczowo Sąd Powszechny w Poznaniu.
+</td>
+		</tr>
+	<tr>
+		<td valign="top">13.</td>
+		<td>Umowa została sporządzona w dwóch jednobrzmiących egzemplarzach.</td>
+		</tr>
+    <TR>
+		<TD VALIGN="top">14.</TD>
+		<TD>W kontaktach z Biurem Obsługi Klienta Usługobiorca zobowiązany jest do podawania Identyfikatora Użytkownika: <b>{$customerinfo.id|string_format:"%04d"}</b> oraz numeru PIN: <b>{$customerinfo.pin}</b></TD>
+    	</TR> 
+</TABLE>
+
+<BR><BR><br><br><br><br> <br>
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+    </TR>
+    <TR>
+	<TD ALIGN="CENTER">Użytkownik</TD>
+	<TD ALIGN="CENTER">Operator</TD>
+    </TR>
+    <tr>
+    	<td align="center"></td>
+    	<td align="center">{$layout.logname}</td>
+</TABLE>
+
+<!-- Koniec strony -->
+</div>
+<div>
+
+<h1>Protokół Odbioru Technicznego do Umowy na świadczenie usług telekomunikacyjnych Nr: {$document.nr}</h1>
+<br><br>
+<TABLE BORDER="0">
+	<TR>
+		<TD valign="top">Nazwa/Nazwisko i imię: </TD>
+		<TD><b>{$customerinfo.customername}</b></TD>
+    	</TR>
+    <TR>
+		<TD>Adres: </TD> 
+		<TD><b>{$customerinfo.address}<br>{$customerinfo.zip} {$customerinfo.city}</b></TD>
+    	</TR>
+    {if $customerinfo.ssn}	
+    <TR>
+		<TD>PESEL: </TD>
+		<TD><b>{$customerinfo.ssn}</b></TD>
+    	</TR>
+	{/if}
+	{if $customerinfo.ten}
+    <TR>
+	   	<TD>NIP: </TD>
+    	<TD><b>{$customerinfo.ten}</b></TD>
+    	</TR>
+    {/if}
+    <tr>
+    	<td>Data wykonania przyłącza: </td>
+    	<td><br>.................................................................................................</td></tr>
+</TABLE>
+
+<br><br>
+
+Zainstalowane urządzenia:
+<table border="1" WIDTH="100%">
+    <tr>
+        <td width="5%">Lp</td>
+        <td width="50%">Nazwa</td>
+        <td width="20%">Oznaczenie</td>
+        <td width="10%">Własność<br>Operatora</td>
+        <td width="10%">Własność<br>Użytkownika</td>
+    </tr>
+    <tr>
+    	<td>1</td>
+    	<td></td>
+    	<td></td>
+    	<td></td>
+    	<td></td>
+    </tr>
+    <tr>
+    	<td>2</td>
+    	<td></td>
+    	<td></td>
+    	<td></td>
+    	<td></td>
+    </tr>
+    <tr>
+    	<td>3</td>
+    	<td></td>
+    	<td></td>
+    	<td></td>
+    	<td></td>
+    </tr>
+    <tr>
+    	<td>4</td>
+    	<td></td>
+    	<td></td>
+    	<td></td>
+    	<td></td>
+    </tr>
+</table>
+<br>
+Operator gwarantuje sprawne działanie wyżej wymienionego zestawu. Urządzenia, będące  własnością operatora podlegają naprawie / wymianie w ciągu 7 dni od zgłoszenia, urządzenia sprzedane na własność klientowi ulegają naprawie wymianie w ciągu 21 dni roboczych, w określonym okresie gwarancyjnym (12 miesięcy gdy nie wyszczególniono inaczej). W przypadku awarii dostępu do internetu z powodu awarii urządzeń operatora, użytkownikowi przysługuje rabat zgodnie z regulaminem.<br><br>
+
+Wartość urządzeń (zestawu abonenckiego), będącego własnością operatora wycenia się na 450zł. Użytkownik zobowiązuje się do zwrotu zestawu abonenckiego w ciągu 7dni od rozwiązania lub wygaśnięcia umowy. W przypadku nie wywiązania się z tego obowiązku operator będzie naliczał 3% wartości sprzętu za każdy dzień opóźnienia.<br><br>
+
+Operator oświadcza iż przekazał wszelkie dane autoryzacyjne, niezbędne do  uzyskanie dostępu do usług. (Klucze WEP, hasła PPPoE).
+Abonent oświadcza, iż dane te mu są znane i wie jak ich używać.<br><br>
+
+<b>UWAGA!!! Udostępnienie danych autoryzacyjnych osobom trzecich jest surowo zabronione, winę za udostępnienie ponosi abonent.</b><br><br>
+
+Parametry logowania PPPoE:<br>
+
+<TABLE cellpadding="3" cellspacing="0" border="1" width="100%">
+    <TR>
+	<TD WIDTH="70%">Miejsce instalacji:</TD>
+	<TD WIDTH="10%">{t}Name:{/t}</TD>
+	<TD WIDTH="10%">{t}IP Address:{/t}</TD>
+	<TD WIDTH="10%">Hasło:</TD>
+    </TR>
+    {section name=customernodes loop=$customernodes}
+    <TR>
+		<TD>{if $customernodes[customernodes].location ne ""}
+				{$customernodes[customernodes].location}
+			{else}
+				{$customerinfo.address} {$customerinfo.zip} {$customerinfo.city}
+			{/if}
+			</TD>
+		<TD class='pass'>{$customernodes[customernodes].name}</TD>
+		<TD>{$customernodes[customernodes].ip}</TD>
+		<td class='pass'>{$customernodes[customernodes].passwd}</td>
+    	</TR>
+    {/section}
+</TABLE>
+
+<br><br>
+
+<table border="1" width="100%">
+    <tr>
+        <td width="20%">Parametry sygnału:</td>
+        <td width="80%"></td>
+    	</tr>
+    <tr>
+    	<td>Opłaty</td>
+    	<td></td>
+    	</tr>
+    <tr>
+    	<td>Promocyjna aktywacja:</td>
+    	<td></td>
+    	</tr>
+    <tr>
+    	<td>&nbsp;</td><td></td></tr>
+    <tr>
+    	<td>&nbsp;</td><td></td></tr>
+    <tr>
+    	<td>&nbsp;</td><td></td></tr>
+    <tr>
+    	<td>&nbsp;</td><td></td></tr>
+</table>
+
+{if $customeraccounts}
+KONTA POCZTOWE (I INNE)<br>
+<TABLE cellpadding="3" cellspacing="0" border="1">
+    <TR>
+	<TD>{t}Login:{/t}</TD>
+	<TD>{t}Domain:{/t}</TD>
+	<TD>{t}Password:{/t}</TD>
+	<TD>{t}Aliases:{/t}</TD>
+	<TD>{t}Type:{/t}</TD>
+    </TR>
+    {foreach from=$customeraccounts item=account}
+    <TR>
+	<TD>{$account.login}</TD>
+	<TD>{$account.domain}</TD>
+	<TD>{$account.password}</TD>
+	<TD>
+	{foreach from=$account.aliases item=alias}
+		{$alias}<BR>
+	{/foreach}
+	</TD>
+	<TD>
+	{if ($account.type & 1) == 1}{t}shell{/t}{/if}
+	{if ($account.type & 2) == 2}{t}mail{/t}{/if}
+	{if ($account.type & 4) == 4}{t}www{/t}{/if}
+	{if ($account.type & 8) == 8}{t}ftp{/t}{/if}
+	</TD>
+    </TR>
+    {/foreach}
+</TABLE>	
+{/if}
+</div>
+
+<BR><BR><br><br><br><br> <br> <br>
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+    </TR>
+    <TR>
+	<TD ALIGN="CENTER">Użytkownik</TD>
+	<TD ALIGN="CENTER">Operator</TD>
+    </TR>
+</TABLE>
+
+</body>
+</html>
+

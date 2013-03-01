@@ -1,0 +1,85 @@
+{include file="header.html"}
+<!-- $Id: paymentlist.html,v 1.14 2007/03/06 09:29:10 alec Exp $ -->
+<H1>{$layout.pagetitle}</H1>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR class="dark">
+		<TD WIDTH="1%" CLASS="fleftu">
+			<IMG SRC="img/payment.gif" ALT=""><BR>
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" ALIGN="left" NOWRAP>
+			<B>Numer konta:</B>
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" ALIGN="left">
+			Opis:
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" ALIGN="right">
+            Bieżący miesiąc:
+		</TD>	
+		<TD NOWRAP WIDTH="1%" CLASS="fbt" ALIGN="right">
+            Bieżacy rok:
+		</TD>
+		<TD NOWRAP WIDTH="1%" CLASS="frightu" ALIGN="RIGHT">
+			<a href="?m=nm_konta_ksiegowe_dodaj">Dodaj</a>
+		</TD>
+	</TR>
+	{cycle values="light,lucid" print=false}
+	{section name=konta loop=$kontaksiegowe}
+	<FORM NAME="addbalance{$smarty.section.payments.index}" METHOD="POST" ACTION="?m=balanceadd">
+	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD WIDTH="1%" CLASS="fleft" onClick="return self.location.href='?m=nm_konta_ksiegowe_info&nkk_id={$kontaksiegowe[konta].nkk_id}';" class="fleft">
+			<IMG SRC="img/pay.gif" ALT=""><BR>
+		</TD>
+		<TD WIDTH="1%" onClick="return self.location.href='?m=nm_konto_ksiegowe_info&nkk_id={$kontaksiegowe[konta].nkk_id}';">
+			<B>{if $kontaksiegowe[konta].nkk_parent_id > -1 } - {/if}{$kontaksiegowe[konta].nkk_nr}</B>
+		</TD>
+		<TD WIDTH="1%" ALIGN="left" onClick="return self.location.href='?m=nm_konto_ksiegowe_info&nkk_id={$kontaksiegowe[konta].nkk_id}';" NOWRAP>
+			{$kontaksiegowe[konta].nkk_opis}
+		</TD>
+		<TD WIDTH="48%" ALIGN="right" onClick="return self.location.href='?m=nm_konto_ksiegowe_info&nkk_id={$kontaksiegowe[konta].nkk_id}';">
+			<NOBR>
+            {$kontoksiegowe[konta].miesiac}
+			</NOBR>
+		</TD>
+		<TD WIDTH="48%" ALIGN="right" onClick="return self.location.href='?m=nm_konto_ksiegowe_info&nkk_id={$kontaksiegowe[konta].nkk_id}';">
+			<NOBR>
+            {$kontoksiegowe[konta].rok}
+			</NOBR>
+		</TD>
+		<TD WIDTH="1%" CLASS="fright" ALIGN="right" >
+			<INPUT type="submit" class="hiddenbtn">
+			<INPUT TYPE="HIDDEN" NAME="m" VALUE="balanceadd">
+			<INPUT TYPE="HIDDEN" NAME="addbalance[value]" VALUE="{$value}">
+			<INPUT TYPE="HIDDEN" NAME="addbalance[comment]" VALUE="{$paymentlist[payments].name} / {$paymentlist[payments].creditor}">
+			<NOBR>
+			<A HREF="?m=nm_konta_ksiegowe_usun&nkk_id={$kontaksiegowe[konta].nkk_id}" onClick="return confirmLink(this,'Jesteś pewny że chcesz usunąć to konto?');"><IMG src="img/delete.gif" alt="[ {t}Delete{/t} ]" title="[ {t}Delete{/t} ]"></A>
+			<A HREF="?m=nm_konta_ksiegowe_edytuj&nkk_id={$kontaksiegowe[konta].nkk_id}"><IMG SRC="img/edit.gif" alt="[ {t}Edit{/t} ]" title="[ {t}Edit{/t} ]"></A>
+			<A HREF="?m=nm_konto_ksiegowe_info&nkk_id={$kontaksiegowe[konta].nkk_id}"><IMG SRC="img/info.gif" alt="[ {t}Info{/t} ]" title="[ {t}Info{/t} ]"></A>&nbsp;
+			</NOBR>
+		</TD>
+	</TR>
+	</FORM>
+	{sectionelse}
+	<TR>
+		<TD COLSPAN="6" ALIGN="center" CLASS="fall">
+			<p>&nbsp;</p>
+			<p><B>{t}No such standing payments in database.{/t}</B></p>
+			<p>&nbsp;</p>
+		</TD>
+	</TR>
+	{/section}
+	<TR CLASS="light">
+		<TD CLASS="fleftu" WIDTH="1%">
+			<IMG SRC="img/info2.gif" ALT="">
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="left">
+			<B>{t}Total:{/t}</B>
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="left" COLSPAN="3">
+			<B>{$listdata.total}</B>
+		</TD>
+		<TD CLASS="frightu" WIDTH="1%" ALIGN="right">
+			<a href="?m=nm_konta_ksiegowe_dodaj">Dodaj</a>
+		</TD>
+	</TR>
+</TABLE>
+{include file="footer.html"}

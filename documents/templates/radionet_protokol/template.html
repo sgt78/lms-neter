@@ -1,0 +1,104 @@
+<html>
+<head>
+<title>Protokół techniczny</title>
+{literal}
+<STYLE type="text/css"><!--
+BODY		{ font-size: 10pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1		{ font-size: 12pt; text-align: center; }
+H2		{ font-size: 10pt; text-align: center; color: red;}
+TD		{ font-size: 10pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TABLE		{ border-collapse: collapse; }
+P		{ font-size: 10pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: center; }
+//-->
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+
+<div>
+
+<h1>Protokół podłączenia do sieci RADIO-NET Nr: {$document.nr}</h1>
+<br><br>
+<b>DANE KLIENTA :</b><br><br>
+<b>Nawa/Nazwisko i imie: </b>{$customerinfo.customername}<br>
+<b>Adres: </b>{$customerinfo.address}, {$customerinfo.zip} {$customerinfo.city}<br>
+<b>NIP: </b>{$customerinfo.ten}<br>
+<b>Adres instalacji:
+</b>    {section name=customernodes loop=$customernodes}
+
+		{if $customernodes[customernodes].location ne ""}
+				{$customernodes[customernodes].location}
+			{else}
+				{$customerinfo.address}, {$customerinfo.zip} {$customerinfo.city}
+			{/if}
+
+    {/section}
+<br><br>
+    {section name=customernodes loop=$customernodes}
+
+<b>DANE LACZA:</b><br>
+<b>Adres IP: </b>{$customernodes[customernodes].ip}<br>
+<b>MAC adres: </b>{$customernodes[customernodes].mac}<br>
+
+    {/section}
+
+<b>Predosc download: </b>{sum array=$assignments column="downceil" string_format="%01.0f"} kbit<br>
+<b>Predkosc upload: </b>{sum array=$assignments column="upceil" string_format="%01.0f"} kbit<br>
+
+<br>
+
+<b>Data instalacji: </b>{$smarty.now|date_format:"%Y-%m-%d"}<br>
+<b>Czas trwania umowy: </b> 
+<INPUT TYPE="radio" NAME="czas" VALUE="1 rok">1 rok
+<INPUT TYPE="radio" NAME="czas" VALUE="2 lata" checked> 2 lata
+<INPUT TYPE="radio" NAME="czas" VALUE="czas nie okreslony">czas nie okreslony<br>
+<b>Koszt instalacji: </b><input type="text" name="nazwa" size="5"> zl<br>
+
+<br>
+<b>
+Zainstalowane urządzenia:
+</b>
+<table border="1" width="100%">
+    <tr>
+        <td width="2%">Lp</td>
+        <td width="90%">Nazwa</td>
+    </tr>
+    <tr>
+    	<td>1</td>
+	<td><input type="text" name="nazwa1" size="54"></td>
+    </tr>
+    <tr>
+    	<td>2</td>
+	<td><input type="text" name="nazwa2" size="54"></td>
+    </tr>
+    <tr>
+    	<td>3</td>
+	<td><input type="text" name="nazwa3" size="54"></td>
+    </tr>
+    <tr>
+    	<td>4</td>
+	<td><input type="text" name="nazwa4" size="54"></td>
+    </tr>
+</table>
+<br>
+<table border="1" width="100%">
+    <tr><td width="100%"><b>Uwagi:</b></td></tr>
+	<tr><td width="100%"><textarea name="nazwa1" cols="93" rows="5"></textarea></tr>
+	</table>
+<BR><BR><br><br><br><br> <br> <br>
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+    </TR>
+    <TR>
+	<TD ALIGN="CENTER">Użytkownik - Abonent</TD>
+	<TD ALIGN="CENTER">Operator</TD>
+    </TR>
+</TABLE>
+
+</body>
+</html>
+

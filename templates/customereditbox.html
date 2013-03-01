@@ -102,6 +102,14 @@
 		</TD>
 	</TR>
 	<TR CLASS="LIGHT">
+	    <TD WIDTH="1%">
+			<IMG SRC="img/folder.gif" ALT="">
+	    </TD>
+	    <TD WIDTH="98%" COLSPAN="2">
+	        <INPUT TYPE="CHECKBOX" NAME="customerdata[deliverer]" VALUE="1" SIZE="6" ID="deliverer" {if $customerinfo.deliverer==1}CHECKED{/if} {tip text="Klient jest dostawcą" trigger="deliverer"}><A HREF="javascript:checkElement('deliverer')">{trans("delivers<!singular>")}</A>
+	    </TD>
+	</TR>
+	<TR CLASS="LIGHT">
 		<TD WIDTH="1%" style="vertical-align: top">
 			<IMG SRC="img/home.gif" ALT="">
 		</TD>

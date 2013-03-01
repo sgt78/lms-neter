@@ -70,8 +70,11 @@ $_LANG['Userpanel hints style. Chose modern for animated assistant, classic for 
 $_LANG['Userpanel module <b>$a</b> not found!'] = 'Nie znaleziono modułu <b>$a</b>!';
 $_LANG['Userpanel Rights:'] = 'Uprawnienia w Userpanelu:';
 $_LANG['Userpanel style:'] = 'Styl Userpanela:';
-$_LANG['VCS'] = 'wBOK';
-$_LANG['Virtual Customer Service'] = 'Wirtualne Biuro Obsługi Klienta';
+//Neter sgt
+#$_LANG['VCS'] = 'wBOK';
+#$_LANG['Virtual Customer Service'] = 'Wirtualne Biuro Obsługi Klienta';
+$_LANG['VCS'] = 'eBOK';
+$_LANG['Virtual Customer Service'] = 'Elektroniczne Biuro Obsługi Klienta';
 $_LANG['weekly'] = 'tygodniowo';
 $_LANG['yearly'] = 'rocznie';
 $_LANG['Rights'] = 'Uprawnienia';

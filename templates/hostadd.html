@@ -17,6 +17,37 @@
 	</TR>
 	<TR class="light">
 		<TD width="1%" class="fleft">
+			<img src="img/ip.gif" alt="">
+		</TD>
+		<TD width="1%" NOWRAP>
+			<B>{t}IP Address:{/t}</B>
+		</TD>
+		<TD width="98%" class="fright">
+			<INPUT size="53" name="hostadd[ipaddr]" value="{$hostadd.ipaddr}" {tip text="Enter ip address" trigger="ipaddr"}>
+		</TD>
+	</TR>
+	<TR class="light">
+		<TD width="1%" class="fleft">
+			<img src="img/settings.gif" alt="">
+		</TD>
+		<TD width="1%" NOWRAP>
+			<B>{t}Type:{/t}</B>
+		</TD>
+		<TD width="98%" class="fright">
+			<SELECT size="1" name="hostadd[servicetype]" {tip text="Wybierz typ usługi" trigger="servicetype"}>
+				<OPTION VALUE="0">Wybierz typ usługi</OPTION>
+				<OPTION VALUE="B">Blokady i ostrzeżenia</OPTION>
+				<OPTION VALUE="F">Firewall</OPTION>
+				<OPTION VALUE="D">DNS Server</OPTION>
+				<OPTION VALUE="W">WWW Server</OPTION>
+				<OPTION VALUE="S">SQL Server</OPTION>
+				<OPTION VALUE="M">MX Server</OPTION>
+				<OPTION VALUE="R">RADIUS Server</OPTION>
+			</SELECT>
+		</TD>
+	</TR>	
+	<TR class="light">
+		<TD width="1%" class="fleft">
 			<img src="img/info.gif" alt="">
 		</TD>
 		<TD width="1%">

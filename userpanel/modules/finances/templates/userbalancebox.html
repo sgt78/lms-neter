@@ -13,8 +13,25 @@ function confirmLink(theLink, message)
 }
 {/literal}
 -->
+</script>{box title="Your balance"}
+<script type="text/javascript">
+{literal}
+function CheckAll()
+{
+    for (var i=0; i<document.invoices.elements.length; i++)
+    {
+        var e = document.invoices.elements[i];
+        if (e.name != 'allbox')
+            e.checked = document.invoices.allbox.checked;
+    }
+}
+function CheckAll2()
+{
+        document.invoices.allbox.checked = !document.invoices.allbox.checked;
+        CheckAll();
+}
+{/literal}
 </script>
-{box title="Your balance"}
 {$disable_invoices = check_conf('userpanel.disable_invoices')}
 <form name="invoices" action="?m=finances&f=invoice" method="POST" target="_blank">
 <table style="width: 100%;" cellpadding="3">
@@ -53,7 +70,7 @@ function confirmLink(theLink, message)
 	</tr>
 	{sectionelse}
 	<tr>
-		<td align="center" width="100%" colspan="7">
+		<td align="center" width="100%" colspan="6">
 			<p>&nbsp;</p>
 			<p><b>{trans("No such transactions on your account.")}</b></p>
 			<p>&nbsp;</p>
@@ -62,7 +79,7 @@ function confirmLink(theLink, message)
 	{/section}
 	{if !$disable_invoices}
 	<tr class="darkest">
-		<td colspan="7" width="100%">
+		<td colspan="6" width="100%">
 			<table width="100%" cellpadding="0" cellspacing="0">
 			    <tr>
 				<td width="50%">

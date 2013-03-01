@@ -1,0 +1,315 @@
+#!/usr/bin/perl -Tw
+#
+#  LMS version 1.10.4 Pyrus
+#
+#  Copyright (C) 2001-2008 LMS Developers
+#
+#  Please, see the doc/AUTHORS for more information about authors!
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License Version 2 as
+#  published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#  USA.
+#
+#  $Id: lms-cutoff,v 1.36.2.2 2008/01/04 07:57:17 alec Exp $
+
+use strict;
+use DBI;
+use Config::IniFiles;
+use Getopt::Long;
+use vars qw($configfile $quiet $help $version);
+use POSIX qw(strftime);
+use Switch;
+use Math::Round;
+use DateTime;
+use DateTime::Duration;
+
+my $now_date  = strftime "%Y/%m/%d", localtime;
+my $now_day   = strftime "%e", localtime;
+my @miesiace  = qw(Styczeń Luty Marzec Kwiecień Maj Czerwiec Lipiec Sierpień Wrzesień Październik Listopad Grudzień);
+my $now_month = strftime "%m", localtime;
+my $now_year  = strftime "%Y", localtime;
+my $miesiac   = "$miesiace[$now_month] $now_year";
+
+my $current_unix_time = time;
+
+$now_day =~ s/^\s+//; # usuniecie _ z przodu dla 1-9
+
+my $blk_date = DateTime->new(
+  year      =>    $now_year,
+  month     =>    $now_month,
+  day       =>    1,
+  locale    => 'pl_PL',
+);
+
+my $duration = DateTime::Duration->new(
+  months        =>          1,
+  end_of_month  => 'preserve',
+);
+
+$blk_date->add( $duration );  # One month more
+my $data_blokady = $blk_date->dmy('.');
+
+my $_version = '1.10.4 Pyrus';
+
+my %options = (
+	"--config-file|C=s"	=>	\$configfile,
+	"--quiet|q"		=>	\$quiet,
+	"--help|h"		=>	\$help,
+	"--version|v"		=>	\$version,
+);
+
+Getopt::Long::config("no_ignore_case");
+GetOptions(%options);
+
+if($help)
+{
+	print STDERR <<EOF;
+lms-cutoff, version $_version
+(C) 2001-2008 LMS Developers
+
+-C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
+-h, --help			print this help and exit;
+-v, --version			print version info and exit;
+-q, --quiet			suppress any output, except errors;
+
+EOF
+	exit 0;
+}
+
+if($version)
+{
+	print STDERR <<EOF;
+lms-cutoff, version $_version
+(C) 2001-2008 LMS Developers
+
+EOF
+	exit 0;
+}
+
+if(!$configfile)
+{
+	$configfile = "/etc/lms/lms.ini";
+}
+
+if(!$quiet)
+{
+	print STDOUT "lms-blokady-wlacz, version $_version\n";
+	print STDOUT "(C) 2001-2008 LMS Developers\n";
+	print STDOUT "Using file $configfile as config.\n";
+}
+
+if(! -r $configfile)
+{
+	print STDERR "Fatal error: Unable to read configuration file $configfile, exiting.\n";
+	exit 1;
+}
+
+my $ini = new Config::IniFiles -file => $configfile;
+print @Config::IniFiles::errors;
+
+my $dbtype = $ini->val('database', 'type') || 'mysql';
+my $dbhost = $ini->val('database', 'host') || 'localhost';
+my $dbuser = $ini->val('database', 'user') || 'root';
+my $dbpasswd = $ini->val('database', 'password') || '';
+my $dbname = $ini->val('database', 'database') || 'lms';
+
+my $msg_info_poterminie = "Informujemy, iż do dzisiaj nie odnotowaliśmy wpłaty na Państwa koncie abonenckim.
+<br>Wpłata kwoty %b zł uchroni Państwa przed planowaną blokadą przeglądania stron www!";
+my $msg_info_blokada    = "Dostęp do stron www został zablokowany z powodu nieuregulowanych płatności.<br>Całkowita suma zadłużenia wynosi %b zł.<br>Blokada zostanie zdjęta tylko po uregulowaniu wszystkich zobowiązań.";
+
+my $dbase;
+my $utsfmt;
+
+if($dbtype =~ /mysql/)
+{
+	$dbase = DBI->connect("DBI:mysql:database=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$dbase->do("SET NAMES utf8");
+	$utsfmt = "UNIX_TIMESTAMP()";
+}
+elsif($dbtype eq "postgres")
+{
+	$dbase = DBI->connect("DBI:Pg:dbname=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$utsfmt = "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))";
+}
+else
+{
+	print STDERR "Fatal error: unsupported database type: $dbtype, exiting.\n";
+	exit 1;
+}
+
+
+
+my $absolute = 0;
+my $message;
+my $lastinvoice = 0;
+
+my $dbq = $dbase->prepare("
+    SELECT customers.id AS id, UPPER(lastname) AS lastname, 
+           name, SUM(cash.value) AS balance 
+      FROM customers LEFT JOIN cash ON customers.id = cash.customerid
+     WHERE deleted = 0
+     GROUP BY customers.id, lastname, name, customerid
+    HAVING SUM(cash.value) < 0 
+     ORDER BY lastname, name
+");
+
+# pętla po customerach z ujemnym saldem.
+$dbq->execute();
+while (my $row = $dbq->fetchrow_hashref())
+{
+	if(!$quiet)
+	{
+		print STDOUT "== ".localtime($current_unix_time)." ====================================================\n";
+		print STDOUT "CID: $row->{'id'} Nazwisko: $row->{'lastname'} $row->{'name'} bilans: $row->{'balance'}\n";
+	}
+
+	# sprawdzenie czy nie odłączalny (id grupy = 6)
+	my $sdbqgrp = $dbase->prepare("
+		SELECT id
+		  FROM customerassignments
+		 WHERE customerassignments.customerid = $row->{'id'}
+		   AND customerassignments.customergroupid = 6
+	");
+	$sdbqgrp->execute();
+
+	if (my $test_row = $sdbqgrp->fetchrow_hashref())
+	{
+		print STDOUT "CID: $row->{'id'} Znaleziono w grupie nieodlaczalnych - POMIJAM\n";
+	 	next;
+	}
+
+	my $dbqs = $dbase->prepare("
+	select sum(invoicecontents.value*invoicecontents.count)*-1 as lastinvoice,
+			id,
+			cdate,
+			cdate+(paytime+1)*24*60*60 as pdate
+	  from invoicecontents left join documents on documents.id = invoicecontents.docid
+	 where documents.customerid = $row->{'id'}
+	   and documents.type = 1
+         group by id 
+         order by id desc 
+         limit 1;
+	");
+	$dbqs->execute();
+	my $rows = $dbqs->fetchrow_hashref();
+
+	if (!$rows->{'lastinvoice'}) { 
+		print STDOUT "CID: $row->{'id'} Brak faktury pomijam\n";
+		next;
+	} else {
+		print STDOUT "CID: $row->{'id'} ostatnia faktura: $rows->{'lastinvoice'}\n";
+	}
+
+# ----------------------------------------------------------------------
+	# testujemy ile faktur zalega.
+	my $tester = round($row->{'balance'}/$rows->{'lastinvoice'});
+
+
+	# Jeśli zalega jedną fakturę i upłynął termin płatności to info
+
+	if ($tester == 1)
+	{
+		#upłynął termin płatności -> info
+		if ($current_unix_time > $rows->{'pdate'})
+		{
+
+			my $sdbu = $dbase->prepare("UPDATE nodes SET access=1, warning=1 WHERE ownerid='$row->{'id'}'");
+			$sdbu->execute();
+
+			# data blokady 16 następnego miesiąca
+			$absolute = sprintf("%.2f", -1 * $row->{'balance'});
+			$message  = $msg_info_poterminie;
+			$message  =~ s/%b/$absolute/g;
+
+			$sdbu = $dbase->prepare("UPDATE customers SET message=? WHERE id=?");
+			$sdbu->execute($message, $row->{'id'});
+
+			print STDOUT "CID: $row->{'id'} Ustawiony info (1/1) bo $tester i bilans $row->{'balance'} faktura $rows->{'lastinvoice'} pdate ".localtime($rows->{'pdate'})."\n";
+			
+		}
+	} 
+	
+	# Jeśli zalega dwie faktury i upłynął termin płatności ostatniej to blokada www
+	# Jeśli zalega dwie faktury i nie upłynął termin płatności ostatniej to info
+	
+	if ($tester == 2)
+	{
+		if ($current_unix_time > $rows->{'pdate'})
+		{
+			#upłynął termin płatności -> blokada www
+			my $sdbu = $dbase->prepare("UPDATE nodes SET access=0, warning=1 WHERE ownerid='$row->{'id'}'");
+			$sdbu->execute();
+
+			$message  = $msg_info_blokada;
+			$absolute = sprintf("%.2f", -1 * $row->{'balance'});
+			$message  =~ s/%b/$absolute/g;
+
+			$sdbu = $dbase->prepare("UPDATE customers SET message=? WHERE id=?");
+			$sdbu->execute($message, $row->{'id'});
+
+			print STDOUT "CID: $row->{'id'} Ustawiony blokade (0/1) bo $tester i bilans $row->{'balance'} faktura $rows->{'lastinvoice'} pdate ".localtime($rows->{'pdate'})."\n";
+			
+		} else {
+			#nie upłynął termin płatności -> info
+			
+			my $sdbu = $dbase->prepare("UPDATE nodes SET access=1, warning=1 WHERE ownerid='$row->{'id'}'");
+			$sdbu->execute();
+
+			$absolute = sprintf("%.2f", -1 * $row->{'balance'});
+			$message = $msg_info_poterminie;
+			$message =~ s/%b/$absolute/g;
+
+			$sdbu = $dbase->prepare("UPDATE customers SET message=? WHERE id=?");
+			$sdbu->execute($message, $row->{'id'});
+
+			print STDOUT "CID: $row->{'id'} Ustawiony info (1/1) bo $tester i bilans $row->{'balance'} faktura $rows->{'lastinvoice'} pdate ".localtime($rows->{'pdate'})."\n";
+
+		}
+		
+	} 
+	
+	
+	if ($tester < 1) {
+			print STDOUT "CID: $row->{'id'} pomijam bo $tester i bilans $row->{'balance'} faktura $rows->{'lastinvoice'} pdate ".localtime($rows->{'pdate'})."\n";
+			next;
+		
+	} 
+	
+	
+	if ($tester > 2)
+	{
+		
+		#powyżej 2 abo -> blokada www
+		my $sdbu = $dbase->prepare("UPDATE nodes SET access=0, warning=1 WHERE ownerid='$row->{'id'}'");
+		$sdbu->execute();
+
+		$message  = $msg_info_blokada;
+		$absolute = sprintf("%.2f", -1 * $row->{'balance'});
+		$message  =~ s/%b/$absolute/g;
+
+		$sdbu = $dbase->prepare("UPDATE customers SET message=? WHERE id=?");
+		$sdbu->execute($message, $row->{'id'});
+
+		print STDOUT "CID: $row->{'id'} Ustawiony blokade (0/1) 1 bo $tester i bilans $row->{'balance'} faktura $rows->{'lastinvoice'} pdate ".localtime($rows->{'pdate'})."\n";
+
+	}
+
+}
+
+$dbq->finish();
+
+my $sdbu = $dbase->prepare("UPDATE hosts SET reload=1 WHERE servicetype='B'");
+$sdbu->execute();
+$sdbu->finish();
+
+$dbase->disconnect();

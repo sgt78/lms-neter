@@ -1,0 +1,131 @@
+{include file="header.html"}
+<!-- $Id: rtmessageadd.html,v 1.26 2008/12/28 19:03:28 alec Exp $ -->
+<H1><B>{$layout.pagetitle}</B></H1>
+<P><FORM method="POST" name="ticketowner" action="?m=rtticketowneradd" enctype="multipart/form-data">
+<INPUT type="submit" class="hiddenbtn">
+<INPUT type="hidden" name="ticketowner[ticketid]" value ="{$ticketowner.ticketid}">
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="light">
+		<TD WIDTH="1%" CLASS="ftl" NOWRAP>
+			<IMG src="img/mail.gif" alt="">
+			<B>Poprzedni {t}Subject:{/t}</B>
+		</TD>
+		<TD WIDTH="99%" CLASS="ftr">
+			<INPUT type="text" size="75" readonly name="ticketowner[subject_old]" value="{$ticketowner.subject_old}"></INPUT>
+		</TD>
+	</TR>
+	<TR CLASS="dark">
+		<TD WIDTH="1%" CLASS="fleft" NOWRAP>
+			<IMG src="img/mail.gif" alt="">
+			<B>Nowy {t}Subject:{/t}</B>
+		</TD>
+		<TD WIDTH="99%" CLASS="fright">
+			<INPUT type="text" size="75" name="ticketowner[subject_new]" value="{$ticketowner.subject_old}" {tip text="Enter message subject" trigger="subject"}></INPUT>
+		</TD>
+	</TR>
+	<TR CLASS="light">
+	    <TD WIDTH="1%" CLASS="fleft" NOWRAP>
+			<IMG src="img/users.gif" alt="">
+			<B>Poprzedni {t}Owner:{/t}</B>
+	    </TD>
+		<TD WIDTH="99%" CLASS="fright">
+			<INPUT type="hidden" name="ticketowner[owner_old]" value ="{$ticketowner.owner_old}">
+			<INPUT type="hidden" name="ticketowner[ownername_old]" value ="{$ticketowner.ownername_old}">
+			<A href="?m=userinfo&id={$ticketowner.owner_old}">{$ticketowner.ownername_old}</A>
+	    </TD>
+	</TR>
+	<TR CLASS="dark">
+	    <TD WIDTH="1%" CLASS="fleft" NOWRAP>
+			<IMG src="img/users.gif" alt="">
+			<B>Nowy {t}Owner:{/t}</B>
+	    </TD>
+		<TD WIDTH="99%" CLASS="fright">
+			<SELECT size="1" name="ticketowner[owner_new]" {tip text="Select user" trigger="owner_new"}>
+			{if $ticketowner.owner_new==0}
+				<OPTION value="0" SELECTED>- {t}select user{/t} -</OPTION>
+			{/if}
+			{foreach from=$userlist item=userlistitem}
+				<OPTION value="{$userlistitem.id}" {if $userlistitem.id == $ticketowner.owner_new}SELECTED{/if}>{$userlistitem.name}</OPTION>
+			{/foreach}
+			</SELECT>
+	    </TD>
+	</TR>
+	<TR CLASS="light">
+	    <TD WIDTH="1%" CLASS="fleft" NOWRAP>
+	    	<IMG src="img/queue.gif" alt="">
+			<B>Poprzednia {t}Queue:{/t}</B>
+		</TD>
+		<TD WIDTH="99%" CLASS="fright">
+			<INPUT type="hidden" name="ticketowner[queueid_old]" value ="{$ticketowner.queueid_old}">
+			<INPUT type="hidden" name="ticketowner[queuename_old]" value ="{$ticketowner.queuename_old}">
+			<A HREF="?m=rtqueueview&id={$ticketowner.queueid_old}">{$ticketowner.queuename_old}</A>
+		</TD>
+	</TR>
+	<TR CLASS="dark">
+	    <TD WIDTH="1%" CLASS="fleft" NOWRAP>
+	    	<IMG src="img/queue.gif" alt="">
+			<B>Nowa {t}Queue:{/t}</B>
+		</TD>
+		<TD WIDTH="99%" CLASS="fright">
+			<SELECT size="1" name="ticketowner[queueid_new]" {tip text="Select queue" trigger="queue"}>
+			{foreach from=$queuelist item=queuelistitem}
+				<OPTION value="{$queuelistitem.id}" {if $queuelistitem.id == $ticketowner.queueid_new}SELECTED{/if}>{$queuelistitem.name}</OPTION>
+			{/foreach}
+			</SELECT>
+		</TD>
+	</TR>
+	
+
+	<TR CLASS="light">
+		<TD WIDTH="1%" CLASS="fleft" NOWRAP>
+			<IMG src="img/edit.gif" alt="">
+			<B>Uzasadnienie zmiany</B>
+		</TD>
+		<TD WIDTH="99%" CLASS="fright">
+			<TEXTAREA name="ticketowner[body]" cols="75" rows="10" {tip text="Enter message content" trigger="body"}>{$ticketowner.body}</TEXTAREA>
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD WIDTH="100%" CLASS="fbottomu" colspan="2" align="right">
+			<A href="javascript:document.ticketowner.submit();" accesskey="s">{t}Submit/Send{/t} <IMG src="img/save.gif" alt=""></A>
+			<A href="?m=rtticketview&id={$ticketowner.ticketid}">{t}Cancel{/t} <IMG src="img/cancel.gif" alt=""></A>
+		</TD>
+	</TR>
+</TABLE>
+<BR>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="light">
+		<TD WIDTH="1%" CLASS="fleftu" NOWRAP>
+			<IMG src="img/mail.gif" alt="">
+		        <A HREF="javascript:checkElement('notify');"><B>{t}Notify users:{/t}</B></A>
+		</TD>
+		<TD WIDTH="99%" CLASS="frightu">
+			<INPUT type="checkbox" name="ticketowner[notify]" id="notify" value="1"{if $ticketowner.notify} CHECKED{/if}>
+		</TD>
+	</TR>
+<!--
+	<TR CLASS="light">
+		<TD WIDTH="1%" CLASS="fbl" NOWRAP>
+			<IMG src="img/resolved.gif" alt="">
+		        <A HREF="javascript:checkElement('state');"><B>{t}Resolve ticket:{/t}</B></A>
+		</TD>
+		<TD WIDTH="99%" CLASS="fbr">
+			<INPUT type="checkbox" name="message[state]" id="state" value="{$smarty.const.RT_RESOLVED}"{if $message.state==$smarty.const.RT_RESOLVED} CHECKED{/if}>
+-->
+		</TD>
+	</TR>
+</TABLE>
+</FORM></P>
+{include file="footer.html"}
+<SCRIPT type='text/javascript'>
+<!--
+
+	function setSubmitter(id)
+	{
+		document.forms['ticketowner'].elements[id].checked = true;
+	}
+
+	document.forms['ticketowner'].elements['ticketowner[body]'].focus();
+
+//-->
+</SCRIPT>

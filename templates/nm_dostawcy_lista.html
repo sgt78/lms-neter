@@ -1,0 +1,95 @@
+{include file="header.html"}
+<!-- $Id: paymentlist.html,v 1.14 2007/03/06 09:29:10 alec Exp $ -->
+<H1>{$layout.pagetitle}</H1>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR class="dark">
+		<TD WIDTH="1%" CLASS="fleftu">
+			<IMG SRC="img/customer.gif" ALT=""></IMG><BR>
+			<IMG SRC="img/home.gif" ALT=""><BR>
+			<IMG SRC="img/card.gif" ALT="">
+		</TD>
+		<TD WIDTH="40%" CLASS="fbt" ALIGN="left" NOWRAP>
+			<B>Nazwa:</B><BR>
+			<B>Adres:</B><br>
+			<B>Nr konta bankowego:</B>
+		</TD>
+		<TD WIDTH="40%" CLASS="fbt" ALIGN="left">
+			<B>NIP:</B><br>
+			<B>Konto syntetyczne:</B><br>
+			<B>Domyślne konto kosztowe:</B>
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" ALIGN="right">
+			<br><br>Saldo:
+		</TD>	
+		<TD NOWRAP WIDTH="1%" CLASS="fbt" ALIGN="right">
+			&nbsp;
+		</TD>
+		<TD NOWRAP WIDTH="1%" CLASS="frightu" ALIGN="RIGHT">
+			<a href="?m=nm_dostawca_dodaj">Dodaj</a>
+		</TD>
+	</TR>
+	{cycle values="light,lucid" print=false}
+	{section name=dostawcy loop=$listdata}
+	<FORM NAME="addbalance{$smarty.section.payments.index}" METHOD="POST" ACTION="?m=balanceadd">
+	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD WIDTH="1%" CLASS="fleft" onClick="return self.location.href='?m=nm_dostawca_info&ndo_id={$listdata[dostawcy].ndo_id}';" class="fleft">
+			<IMG SRC="img/customer.gif" ALT=""><BR>
+			<IMG SRC="img/home.gif" ALT=""></IMG><BR>
+			<IMG SRC="img/card.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%" onClick="return self.location.href='?m=nm_dostawca_info&ndo_id={$listdata[dostawcy].ndo_id}';">
+			<B>{$listdata[dostawcy].customername}</B><BR>
+			{$listdata[dostawcy].zip}; {$listdata[dostawcy].city} {$listdata[dostawcy].address}<br>
+			{$listdata[dostawcy].ndo_bank}: {$listdata[dostawcy].ndo_nr_konta}
+		</TD>
+		<TD WIDTH="1%" ALIGN="left" onClick="return self.location.href='?m=nm_dostawca_info&ndo_id={$listdata[dostawcy].ndo_id}';">
+			{$listdata[dostawcy].nip}<br>
+			{$listdata[dostawcy].ndo_konto}<br>
+			{$listdata[dostawcy].kontoksiegowe}
+		</TD>
+		<TD WIDTH="48%" ALIGN="right" onClick="return self.location.href='?m=nm_dostawca_info&ndo_id={$listdata[dostawcy].ndo_id}';">
+			<NOBR>
+			</NOBR>
+		</TD>
+		<TD WIDTH="48%" ALIGN="right" onClick="return self.location.href='?m=nm_dostawca_info&ndo_id={$listdata[dostawcy].ndo_id}';">
+			<NOBR>
+			</NOBR>
+		</TD>
+		<TD WIDTH="1%" CLASS="fright" ALIGN="right" >
+			<INPUT type="submit" class="hiddenbtn">
+			<INPUT TYPE="HIDDEN" NAME="m" VALUE="balanceadd">
+			<INPUT TYPE="HIDDEN" NAME="addbalance[value]" VALUE="{$value}">
+			<INPUT TYPE="HIDDEN" NAME="addbalance[comment]" VALUE="{$paymentlist[payments].name} / {$paymentlist[payments].creditor}">
+			<NOBR>
+			<A HREF="?m=nm_dostawca_usun&ndo_id={$listdata[dostawcy].ndo_id}" onClick="return confirmLink(this,'Jesteś pewny że chcesz usunąć dostawcę?');"><IMG src="img/delete.gif" alt="[ {t}Delete{/t} ]" title="[ {t}Delete{/t} ]"></A>
+			<A HREF="?m=nm_dostawca_edytuj&ndo_id={$listdata[dostawcy].ndo_id}"><IMG SRC="img/edit.gif" alt="[ {t}Edit{/t} ]" title="[ {t}Edit{/t} ]"></A>
+			<A HREF="?m=nm_dostawca_info&ndo_id={$listdata[dostawcy].ndo_id}"><IMG SRC="img/info.gif" alt="[ {t}Info{/t} ]" title="[ {t}Info{/t} ]"></A>&nbsp;
+			</NOBR>
+		</TD>
+	</TR>
+	</FORM>
+	{sectionelse}
+	<TR>
+		<TD COLSPAN="6" ALIGN="center" CLASS="fall">
+			<p>&nbsp;</p>
+			<p><B>Brak dostawców w bazie danych</B></p>
+			<p>&nbsp;</p>
+		</TD>
+	</TR>
+	{/section}
+	<TR CLASS="light">
+		<TD CLASS="fleftu" WIDTH="1%">
+			<IMG SRC="img/info2.gif" ALT="">
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="left">
+			<B>{t}Total:{/t} {$total}</B>
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="left" COLSPAN="3">
+			<B></B>
+		</TD>
+		<TD CLASS="frightu" WIDTH="1%" ALIGN="right">
+			<a href="?m=nm_dostawca_dodaj">Dodaj</a>
+		</TD>
+	</TR>
+</TABLE>
+{include file="footer.html"}

@@ -23,6 +23,13 @@
  *
  *  $Id$
  */
+function GetScoreList()
+{
+	global $DB;
+	
+	$scorelist = $DB->GetAll("SELECT evs_id, evs_name from eventscore WHERE evs_deleted = 0 ORDER by evs_name");
+	return($scorelist);
+}
 
 if(isset($_GET['action']) && $_GET['action'] == 'open')
 {
@@ -40,8 +47,8 @@ elseif(isset($_GET['action']) && $_GET['action'] == 'dropuser')
 	$SESSION->redirect('?'.$SESSION->get('backto'));
 }
 
-$event = $DB->GetRow('SELECT events.id AS id, title, description, note, 
-			date, begintime, endtime, customerid, private, closed, ' 
+$event = $DB->GetRow('SELECT events.id AS id, title, description, note, rtticketid,
+			date, begintime, endtime, customerid, private, closed, evn_evs_id as category,' 
 			.$DB->Concat('UPPER(customers.lastname)',"' '",'customers.name').' AS customername
 			FROM events LEFT JOIN customers ON (customers.id = customerid)
 			WHERE events.id = ?', array($_GET['id']));
@@ -74,9 +81,10 @@ if(isset($_POST['event']))
 	{
 		$date = mktime(0, 0, 0, $month, $day, $year);
 		$event['private'] = isset($event['private']) ? 1 : 0;
+		$event['score']   = $DB->GetOne("SELECT evs_score FROM eventscore WHERE evs_id=?",array($event['category']));
 
-		$DB->Execute('UPDATE events SET title=?, description=?, date=?, begintime=?, endtime=?, private=?, note=?, customerid=? WHERE id=?',
-				array($event['title'], $event['description'], $date, $event['begintime'], $event['endtime'], $event['private'], $event['note'], $event['customerid'], $event['id']));
+		$DB->Execute('UPDATE events SET title=?, description=?, date=?, begintime=?, endtime=?, private=?, note=?, customerid=?,evn_evs_id=?,evn_evs_score=?, rtticketid=? WHERE id=?',
+				array($event['title'], $event['description'], $date, $event['begintime'], $event['endtime'], $event['private'], $event['note'], $event['customerid'], $event['category'], $event['score'], $event['rtticketid'], $event['id']));
 				
 		if($event['user'])
 		{
@@ -93,23 +101,26 @@ if(isset($_POST['event']))
 				$event['id']
 				));
 
-		$SESSION->redirect('?m=eventlist');
+		//$SESSION->redirect('?m=eventlist');
+		$SESSION->redirect('?'.$SESSION->get('backto'));
 	}
 }
 
 $event['userlist'] = $eventuserlist;
 
 $layout['pagetitle'] = trans('Event Edit');
-
-$SESSION->save('backto', $_SERVER['QUERY_STRING']);
+//$SESSION->save('backto', $_SERVER['QUERY_STRING']);
 
 $userlist = $LMS->GetUserNames();
+$scorelist = GetScoreList();
 
+$SMARTY->assign('scorelist',$scorelist);
 $SMARTY->assign('customerlist', $LMS->GetCustomerNames());
 $SMARTY->assign('userlist', $userlist);
 $SMARTY->assign('userlistsize', sizeof($userlist));
 $SMARTY->assign('error', $error);
 $SMARTY->assign('event', $event);
+$SMARTY->assign('backto', '?'.$SESSION->get('backto'));
 $SMARTY->assign('hours', 
 		array(0,30,100,130,200,230,300,330,400,430,500,530,
 		600,630,700,730,800,830,900,930,1000,1030,1100,1130,

@@ -106,6 +106,15 @@
 						<INPUT TYPE="radio" NAME="customeradd[type]" VALUE="1" ID="company" {tip text="Select legal personality type" trigger="type"}{if $customeradd.type == $smarty.const.CTYPES_COMPANY} CHECKED{/if}><label for="company">{assign var='type' value=$smarty.const.CTYPES_COMPANY}{$_CTYPES.$type}</label>
 					</TD>
 				</TR>
+				<TR CLASS="LIGHT">
+					<TD WIDTH="1%">
+						<IMG SRC="img/folder.gif" ALT="">
+					</TD>
+					<TD WIDTH="98%" COLSPAN="2">
+						<INPUT TYPE="CHECKBOX" NAME="customeradd[deliverer]" VALUE="1" SIZE="6" ID="deliverer" {if $customerinfo.deliverer==1}CHECKED{/if} {tip text="Klient jest dostawcą" trigger="deliverer"}>
+						<label for="deliverer">{trans("delivers<!singular>")}</label>
+					</TD>
+				</TR>
 				<TR>
 					<TD width="1%" style="vertical-align: top">
 						<IMG src="img/home.gif" alt="">

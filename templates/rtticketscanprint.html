@@ -1,0 +1,284 @@
+{include file="clearheader.html"}
+<!--// $Id: rtticketprint.html,v 1.11 2007/02/21 14:02:58 alec Exp $ //-->
+<TABLE width="100%" align="center">
+	<TR>
+		<TD width="100%" align="RIGHT">
+			LMS {$layout.lmsv} @ {$layout.hostname}<BR>
+			{$smarty.now|date_format:"%A, %x"}<BR>
+			{t a=$layout.logname}Created by: $a{/t}
+		</TD>
+	</TR>
+</TABLE>
+
+<P>
+<TABLE width="100%" cellpadding="3" border="1" align="CENTER">
+	<TR>
+		<TD class="HEAD" colspan="2">
+			<H1>{t a=$ticket.ticketid|string_format:"%06d"}PROTOKÓŁ POMIAROWY do Zgłoszena Nr $a{/t}</H1>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%">
+			<B>{t}Subject:{/t}</B>
+		</TD>
+		<TD width="99%" NOWRAP>
+		        <B>{$ticket.subject|escape|truncate:50:"..."}</B>
+		</TD>
+	</TR>
+	<TR>
+	        <TD width="1%">
+			<B>{t}Submitter:{/t}</B>
+	        </TD>
+	        <TD width="99%" NOWRAP>
+			{if $ticket.customerid}
+				{$ticket.customername|escape}
+			{else}
+				{$ticket.requestor|escape} 
+			{/if}
+			{if $ticket.requestoremail && !$ticket.customerid}
+				{$ticket.requestoremail}
+			{/if}
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" NOWRAP>
+			<B>{t}Create time:{/t}</B>
+		</TD>
+		<TD width="99%">
+			{$ticket.createtime|date_format:"%Y/%m/%d %H:%M:%S"}
+		</TD>
+	</TR>
+	{if $ticket.ownername}
+	<TR>
+		<TD width="1%">
+			<B>{t}Owner:{/t}</B>
+		</TD>
+		<TD width="99%" NOWRAP>
+			{$ticket.ownername}
+		</TD>
+	</TR>
+	{/if}
+{*
+	<TR>
+	        <TD width="1%">
+			<B>{t}Status:{/t}</B>
+		</TD>
+		<TD width="99%">
+			{$ticket.status}
+		</TD>
+	</TR>
+	<TR>
+	        <TD width="1%">
+			<B>{t}Uptime:{/t}</B>
+		</TD>
+		<TD width="99%" NOWRAP>
+			{$ticket.uptime}
+		</TD>
+	</TR>
+	<TR>
+	        <TD width="1%">
+			<B>{t}Queue:{/t}</B>
+		</TD>
+		<TD width="99%" NOWRAP>
+			{$ticket.queuename}
+		</TD>
+	</TR>
+*}
+	<TR>
+	        <TD width="1%">
+			<B>{t}Message:{/t}</B>
+		</TD>
+		<TD width="99%">
+			{$ticket.messages.0.body|escape|replace:"\n":"<BR>"}
+		</TD>
+	</TR>
+</TABLE>
+
+<P>
+<TABLE width="100%" cellpadding="3" align="CENTER">
+	<TR>
+		<TD width="30%" class="HEAD" nowrap>
+			Parametry sygnału :
+		</TD>
+		<TD width="63%" class="HEAD" nowrap>
+			Opis :
+		</TD>
+		<TD width="7%" class="HEAD" align="right" nowrap>
+			Wartość :
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<P>Proponowany SSID do instalacji:</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<P>Poziom sygnału:</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<P>Poziom szumów:</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<P>Stosunek sygnału do szumu:</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+</TABLE>
+</p>
+
+<P>
+<TABLE width="100%" cellpadding="3" align="CENTER">
+	<TR>
+		<TD width="33%" class="HEAD" nowrap>
+			Części i materiały potrzebne do wykonania przyłącza :
+		</TD>
+		<TD width="33%" class="HEAD" nowrap>
+		</TD>
+		<TD width="33%" class="HEAD" nowrap>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="24" value="24"> CPE 2,4GHz</input>
+		</TD>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> CPE 5GHz 18dBi</input>
+		</TD>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> CPE 5GHz 23dBi</input>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> Maszt antenowy z montażem (100zł)</input>
+		</TD>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> Uchwyt antenowy z montażem "L" (50zł)</input>
+		</TD>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> Router przewodowy (99zł)</input>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> Router bezprzewodowy (199zł)</input>
+		</TD>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> Karta radiowa USB (65zł)</input>
+		</TD>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> Karta ethernet 10/100Mbit (35zł)</input>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> inne:</input>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<input type="checkbox" name="5" value="5"> inne:</input>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+</TABLE>
+</p>
+
+
+
+<TABLE width="100%" cellpadding="3" align="CENTER">
+	<TR>
+		<TD width="100%" class="HEAD">
+		Opis wykonania instalacji:	
+		</TD>
+	</TR>
+	<TR>
+		<TD width="100%" class="fall">
+			<P>&nbsp;
+			<P>&nbsp;
+			<P>&nbsp;
+			<P>&nbsp;
+			<P>&nbsp;
+			<P>&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+<P>
+<TABLE width="100%" cellpadding="3" align="center">
+        <TR>
+	        <TD width="100%" nowrap colspan="2" class="head">
+		        <B>Potwierdzam zgodność danych zawartych w niniejszym protokole ze stanem faktycznym:</B>
+			</TD>
+		</TR>
+		<TR>
+			<TD WIDTH="50%" class="fall" align="center">
+		 		<b>podpis Zgłaszającego:</b>
+			</TD>
+			<TD WIDTH="50%" class="fall" align="center">
+		 		<b>podpis Serwisanta:</b>
+			</TD>
+		</TR>
+		<TR>
+			<TD WIDTH="50%" class="fall" align="center">
+		 		<p>&nbsp</p>
+		 		<p>&nbsp</p>
+		 		<p>&nbsp</p>
+			</TD>
+			<TD WIDTH="50%" class="fall" align="center">
+		 		<p>&nbsp</p>
+		 		<p>&nbsp</p>
+		 		<p>&nbsp</p>
+			</TD>
+		</TR>
+</TABLE>
+{include file="clearfooter.html"}

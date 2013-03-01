@@ -1,0 +1,62 @@
+{include file="header.html"}
+<!-- $Id: paymentadd.html,v 1.18 2007/03/06 09:29:10 alec Exp $ -->
+<H1>{$layout.pagetitle}</H1>
+<FORM METHOD="POST" NAME="kontoksiegoweadd" ACTION="?m=nm_konta_ksiegowe_dodaj">
+<INPUT type="submit" class="hiddenbtn">
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD WIDTH="1%" CLASS="fleftu">
+			<IMG SRC="img/pay.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" NOWRAP>
+			<B>Numer konta:</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="frightu">
+			<INPUT TYPE="TEXT" NAME="kontoksiegowe[nkk_nr]" VALUE="{$kontoksiegowe.nkk_nr}" {tip text="Wpisz numer konta" trigger="nkk_nr" bold=1}>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/payment.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>Subkonto do:</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			<SELECT SIZE="1" NAME="kontoksiegowe[nkk_parent_id]" {tip text="Wybierz konto główne"}>
+				<OPTION VALUE="-1">-- Główne --</OPTION>
+				{section loop=$kontaglowne name=konto}
+				{if $kontaglowne[konto].nkk_id>0}
+				<OPTION VALUE="{$kontaglowne[konto].nkk_id}">{$kontaglowne[konto].nkk_nr}|{$kontaglowne[konto].nkk_opis}</OPTION>
+				{/if}
+				{/section}
+			</SELECT>
+		</TD>
+	</TR>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/info1.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>{t}Description:{/t}</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			<TEXTAREA NAME="kontoksiegowe[nkk_opis]" COLS="50" ROWS="5" {tip text="Enter additional informations (optional)"}>{$kontoksiegowe.nkk_opis}</TEXTAREA>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="100%" COLSPAN="3" CLASS="FBOTTOMU" ALIGN="RIGHT"> 
+			<A HREF="javascript:document.kontoksiegoweadd.submit();" accesskey="s">{t}Submit{/t} <IMG SRC="img/save.gif" alt=""></A>
+			<A HREF="?m=nm_konta_ksiegowe">{t}Cancel{/t} <IMG SRC="img/cancel.gif" alt=""></A><BR>
+			<INPUT TYPE="checkbox" NAME="kontoksiegowe[reuse]" VALUE="ON" class="box light" {if $kontoksiegowe.reuse} checked{/if}> Po dodaniu konta wyświetl ten formularz ponownie
+		</TD>
+	</TR>
+</TABLE></FORM>
+</P>
+<SCRIPT type="text/javascript">
+<!--
+document.forms['kontaksiegoweadd'].elements['kontoksiegowe[nkk_nr]'].focus();
+//-->
+</SCRIPT>
+{include file="footer.html"}

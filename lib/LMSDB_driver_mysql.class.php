@@ -126,7 +126,7 @@ class LMSDB_driver_mysql extends LMSDB_common
 	function _driver_affected_rows()
 	{
 		if(! $this->_error)
-			return mysql_affected_rows();
+			return mysql_affected_rows($this->_dblink);
 		else
 			return FALSE;
 	}

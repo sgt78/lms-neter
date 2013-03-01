@@ -259,6 +259,9 @@ sub parse_data
 		$last10_dbq->finish();
 		$l10 = $l10."-----------+-----------+----------------------------------------------------\n";
 		$data =~ s/\%last_10_in_a_table/$l10/;
+	}
+	if ($data =~ /\%customer/ ) {
+		$data =~ s/\%customer/$row->{'name'}/g;
 	} 
 # invoices, debit notes
 	if ($data =~ /\%invoice/) { # for backward compat.
@@ -396,24 +399,39 @@ if ($invoices_file)
 	my $template = join('', <MAILFILE>);
 	close MAILFILE;
 
+#	my $dbq = $dbase->prepare("SELECT d.id AS docid, c.id, c.pin, d.name,
+#		d.number, n.template, d.cdate, d.paytime, c.email,
+#		COALESCE(ca.balance, 0) AS balance, v.value
+#		FROM documents d
+#		JOIN customers c ON (c.id = d.customerid)
+#		JOIN (SELECT SUM(value) * -1 AS value, docid
+#			FROM cash
+#			GROUP BY docid
+#		) v ON (v.docid = d.id)
+#		LEFT JOIN numberplans n ON (d.numberplanid = n.id)
+#		LEFT JOIN (SELECT SUM(value) AS balance, customerid
+#			FROM cash
+#			GROUP BY customerid
+#		) ca ON (ca.customerid = d.customerid)
+#		WHERE d.type = 1
+#	    		AND d.cdate > $utsfmt - 86400
+#			AND c.email != ''
+#		");
+
+
 	my $dbq = $dbase->prepare("SELECT d.id AS docid, c.id, c.pin, d.name,
-		d.number, n.template, d.cdate, d.paytime, c.email,
-		COALESCE(ca.balance, 0) AS balance, v.value
-		FROM documents d
-		JOIN customers c ON (c.id = d.customerid)
-		JOIN (SELECT SUM(value) * -1 AS value, docid
-			FROM cash
-			GROUP BY docid
-		) v ON (v.docid = d.id)
-		LEFT JOIN numberplans n ON (d.numberplanid = n.id)
-		LEFT JOIN (SELECT SUM(value) AS balance, customerid
-			FROM cash
-			GROUP BY customerid
-		) ca ON (ca.customerid = d.customerid)
-		WHERE d.type = 1
-	    		AND d.cdate > $utsfmt - 86400
-			AND c.email != ''
-		");
+					    d.number, n.template, d.cdate, d.paytime, c.email,
+					    sum(d_balance.value)*-1 AS value,get_customer_balance(d.customerid) as balance
+				       FROM documents d
+				       JOIN customers c ON (c.id = d.customerid)
+				       LEFT JOIN cash d_balance ON d_balance.docid = d.id
+				       LEFT JOIN numberplans n ON (d.numberplanid = n.id)
+				      WHERE d.type = 1
+	    		                AND d.cdate > $utsfmt - 2*24*60*60
+				      GROUP BY d.id
+				   ");
+
+
 	$dbq->execute();
 
 	my $msgid;
@@ -452,26 +470,45 @@ if ($deadline_file)
 	my $template = join('', <MAILFILE>);
 	close MAILFILE;
 
+#	my $dbq = $dbase->prepare("SELECT d.id AS docid, c.id, c.pin, d.name,
+#		d.number, n.template, d.cdate, d.paytime, c.email,
+#		COALESCE(ca.balance, 0) AS balance, v.value
+#		FROM documents d
+#		JOIN (SELECT SUM(value) AS balance, customerid
+#			FROM cash
+#			GROUP BY customerid
+#			HAVING SUM(value) < 0
+#		) ca ON (ca.customerid = d.customerid)
+#		JOIN customers c ON (c.id = d.customerid)
+#		JOIN (SELECT SUM(value) * -1 AS value, docid
+#			FROM cash
+#			GROUP BY docid
+#		) v ON (v.docid = d.id)
+#		LEFT JOIN numberplans n ON (d.numberplanid = n.id)
+#		WHERE d.type = 1 AND d.closed = 0
+#			AND c.email != ''
+#			AND d.cdate >  $utsfmt - (30*24*60*60)
+#			AND d.cdate <  $utsfmt - (24*60*60)
+#			AND d.cdate <  $utsfmt - ((d.paytime +1) * 24*60*60)
+#		");
+
 	my $dbq = $dbase->prepare("SELECT d.id AS docid, c.id, c.pin, d.name,
-		d.number, n.template, d.cdate, d.paytime, c.email,
-		COALESCE(ca.balance, 0) AS balance, v.value
-		FROM documents d
-		JOIN (SELECT SUM(value) AS balance, customerid
-			FROM cash
-			GROUP BY customerid
-			HAVING SUM(value) < 0
-		) ca ON (ca.customerid = d.customerid)
-		JOIN customers c ON (c.id = d.customerid)
-		JOIN (SELECT SUM(value) * -1 AS value, docid
-			FROM cash
-			GROUP BY docid
-		) v ON (v.docid = d.id)
-		LEFT JOIN numberplans n ON (d.numberplanid = n.id)
-		WHERE d.type = 1 AND d.closed = 0
-			AND c.email != ''
-			AND d.cdate > $utsfmt - ((d.paytime + 1) * 86400)
-			AND d.cdate < $utsfmt - (d.paytime * 86400)
-		");
+					    d.number, n.template, d.cdate, d.paytime, c.email,
+					    sum(d_balance.value)*-1 AS value,get_customer_balance(d.customerid) as balance
+				       FROM documents d
+				       JOIN customers c ON (c.id = d.customerid)
+				       LEFT JOIN cash d_balance ON d_balance.docid = d.id
+				       LEFT JOIN numberplans n ON (d.numberplanid = n.id)
+				      WHERE d.type = 1 AND d.closed = 0
+      			                AND d.cdate >  $utsfmt - (30*24*60*60)
+			                AND d.cdate <  $utsfmt - (24*60*60)
+			                AND d.cdate <  $utsfmt - ((d.paytime +1) * 24*60*60)
+				      GROUP BY d.id
+				     HAVING balance < 0
+				   ");
+
+
+
 	$dbq->execute();
 
 	my $msgid;

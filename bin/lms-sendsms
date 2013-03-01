@@ -1,0 +1,217 @@
+#!/usr/bin/perl -Tw
+#
+#  LMS version 1.10.4 Pyrus
+#
+#  Copyright (C) 2001-2008 LMS Developers
+#
+#  Please, see the doc/AUTHORS for more information about authors!
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License Version 2 as
+#  published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#  USA.
+#
+#  $Id: lms-payments,v 1.97.2.2 2008/01/04 07:57:21 alec Exp $
+
+use strict;
+use DBI;
+use Config::IniFiles;
+use Getopt::Long;
+use vars qw($configfile $quiet $help $version $fakephone);
+use POSIX qw(strftime);
+use POSIX qw(mktime);
+use Time::Local;
+use File::Temp qw/ tempfile /;
+
+my ($fh,$filename,$template);
+
+my $_version = '1.10.4 Pyrus';
+
+my %options = (
+	"--config-file|C=s"	=>	\$configfile,
+	"--quiet|q"		=>	\$quiet,
+	"--help|h"		=>	\$help,
+	"--version|v"		=>	\$version,
+	"--fakephone|f=s"	=>	\$fakephone,
+);
+
+Getopt::Long::config("no_ignore_case");
+GetOptions(%options);
+
+if($help)
+{
+	print STDERR <<EOF;
+lms-payments, version $_version
+(C) 2001-2008 LMS Developers
+
+-C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
+-h, --help			print this help and exit;
+-v, --version			print version info and exit;
+-q, --quiet			suppress any output, except errors;
+-f, --fakephone=XXXXXXXXX	override phone - for debug only
+
+EOF
+	exit 0;
+}
+
+if($version)
+{
+	print STDERR <<EOF;
+lms-sendsms, version $_version
+(C) 2001-2008 LMS Developers
+
+EOF
+	exit 0;
+}
+
+if(!$configfile)
+{
+	$configfile = "/etc/lms/lms.ini";
+}
+
+if(!$quiet)
+{
+	print STDOUT "lms-sendsms, version $_version\n";
+	print STDOUT "(C) 2001-2008 LMS Developers\n";
+	print STDOUT "Using file $configfile as config.\n";
+}
+
+if(! -r $configfile)
+{
+	print STDERR "Fatal error: Unable to read configuration file $configfile, exiting.\n";
+	exit 1;
+}
+
+my $ini = new Config::IniFiles -file => $configfile;
+print @Config::IniFiles::errors;
+
+my $dbtype = $ini->val('database', 'type') || 'mysql';
+my $dbhost = $ini->val('database', 'host') || 'localhost';
+my $dbuser = $ini->val('database', 'user') || 'root';
+my $dbpasswd = $ini->val('database', 'password') || '';
+my $dbname = $ini->val('database', 'database') || 'lms';
+
+my $customergroups = $ini->val('payments', 'customergroups') || '';
+my $deadline = $ini->val('payments', 'deadline') || '14';
+my $paytype = $ini->val('payments', 'paytype') || 'TRANSFER';
+my $comment = $ini->val('payments', 'comment') || 'Tariff %tariff subscription for period %period';
+my $s_comment = $ini->val('payments', 'settlement_comment') || $comment;
+my $suspension_description = $ini->val('payments', 'suspension_description') || '';
+
+my $suspension_percentage = $ini->val('finances', 'suspension_percentage') || '0';
+
+my $smsdir = $ini->val('sms','smsdir') || '/var/spool/sms/outgoing';
+my $smsfile = $ini->val('sms','smsfile') || 'answer_XXXXXX';
+
+my $dbase;
+my $utsfmt;
+
+if($dbtype =~ /mysql/)
+{
+	$dbase = DBI->connect("DBI:mysql:database=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$dbase->do("SET NAMES utf8");
+	$utsfmt = "UNIX_TIMESTAMP()";
+}
+elsif($dbtype eq "postgres")
+{
+	$dbase = DBI->connect("DBI:Pg:dbname=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$utsfmt = "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))";
+}
+else
+{
+	print STDERR "Fatal error: unsupported database type: $dbtype, exiting.\n";
+	exit 1;
+}
+
+sub localtime2()
+{
+		return localtime();
+}
+
+use constant CONTINUOUS	=> 6;
+use constant YEAR	=> 5;
+use constant QUARTER	=> 4;
+use constant MONTH	=> 3;
+use constant WEEK	=> 2;
+use constant DAY	=> 1;
+use constant DISPOSABLE	=> 0;
+
+my @customergroupslist = split ' ', $customergroups;
+
+my $currtime = strftime("%s",localtime2());
+my $month = sprintf("%d",strftime("%m",localtime2()));
+my $day = strftime("%e",localtime2());
+my $dom = sprintf("%d",strftime("%d",localtime2()));
+my $year = strftime("%Y",localtime2());
+my $weekday = strftime("%u",localtime2());
+my $yearday = strftime("%j",localtime2());
+
+my $today;
+$today = time();
+
+my %txts;
+# special case, ie. you have 01.01.2005-01.31.2005 on invoice, but invoice/
+# assigment is made not January, the 1st:
+
+my $dbq;
+my $row;
+
+my $start = 0;
+my $end = 0;
+
+my $number = $row->{'number'} || 0;
+my %gotinv;
+my $icdbq;
+my $cdbq;
+my $suspended = 0;
+my $skipped = 0;
+my $tested = 0;
+my $itemid;
+
+# let's go, fetch *ALL* sms in given time
+
+$dbq = $dbase->prepare("SELECT i.id as id , i.lastdate as senddate, i.destination as phone, m.body as message
+						  FROM `messageitems` i join messages m on i.messageid = m.id
+						 WHERE i.status = 1 
+						   AND i.lastdate < $today
+						   AND m.type = 2
+						 ORDER BY senddate DESC");
+
+$dbq->execute();
+
+while(my $assign = $dbq->fetchrow_hashref())
+{
+	my $id = $assign->{'id'};
+	my $senddate = $assign->{'senddate'};
+	my $phone = $assign->{'phone'};
+	my $message = $assign->{'message'};
+
+	($fh,$filename) = tempfile($smsfile,DIR=>$smsdir);
+	open(SMSOUT, '>', $filename);
+	print SMSOUT "To: +48$phone\n";
+	print SMSOUT "\n";
+	print SMSOUT "$message";
+	close(SMSOUT);
+	chmod oct(666), $filename;
+
+#	$icdbq = $dbase->prepare("UPDATE sms_outgoing SET status=1 WHERE id=$id");
+	$icdbq = $dbase->prepare("UPDATE messageitems SET status=2, lastdate = $today WHERE id=$id");
+	$icdbq->execute();
+	$icdbq->finish();
+
+		my $datka = localtime($senddate);
+		print STDERR "ID:\t$id\tDATE:\t$datka\tPHONE:\t$phone\tMESSAGE:\t$message\n" if not $quiet;
+
+}	
+$dbq->finish();
+
+$dbase->disconnect();

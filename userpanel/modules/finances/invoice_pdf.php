@@ -41,6 +41,14 @@ function invoice_body()
 	case "FT-0100":
 	    invoice_body_ft0100();
 	break;
+//Neter sgt
+	case "NETER":
+	    invoice_body_neter();
+	break;
+	case "NETERBW":
+	    invoice_body_neterbw();
+	break;
+//Neter end
 	default:
 	    if(file_exists($template))
                     require($template);

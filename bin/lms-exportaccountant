@@ -1,0 +1,351 @@
+#!/usr/bin/perl -Tw
+#
+#  LMS version 1.10.4 Pyrus
+#
+#  Copyright (C) 2001-2008 LMS Developers
+#
+#  Please, see the doc/AUTHORS for more information about authors!
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License Version 2 as
+#  published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#  USA.
+#
+#  $Id: lms-payments,v 1.97.2.2 2008/01/04 07:57:21 alec Exp $
+
+use strict;
+use DBI;
+use Config::IniFiles;
+use Getopt::Long;
+use vars qw($configfile $quiet $help $version $from $to);
+use POSIX qw(strftime);
+use POSIX qw(mktime);
+use Time::Local;
+use MIME::Entity;
+use Text::Iconv;
+use MIME::QuotedPrint;
+use DateTime;
+
+
+my $_version = '1.10.4 Pyrus';
+
+my %options = (
+	"--config-file|C=s"	=>	\$configfile,
+	"--quiet|q"		=>	\$quiet,
+	"--help|h"		=>	\$help,
+	"--version|v"		=>	\$version,
+	"--from|f=s"		=>	\$from,
+	"--to|t=s"		=>	\$to,
+);
+
+Getopt::Long::config("no_ignore_case");
+GetOptions(%options);
+
+if($help)
+{
+	print STDERR <<EOF;
+lms-payments, version $_version
+(C) 2001-2008 LMS Developers
+
+-C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
+-h, --help			print this help and exit;
+-v, --version			print version info and exit;
+-q, --quiet			suppress any output, except errors;
+-f, --from=YYYY/MM/DD		from date;
+-t, --to=YYY/MM/DD		to date;
+
+EOF
+	exit 0;
+}
+
+if($version)
+{
+	print STDERR <<EOF;
+lms-payments, version $_version
+(C) 2001-2008 LMS Developers
+
+EOF
+	exit 0;
+}
+
+if(!$configfile)
+{
+	$configfile = "/home/users/sky24.pl/lms-1.10.4/lms.ini";
+}
+
+if(!$quiet)
+{
+	print STDOUT "lms-payments, version $_version\n";
+	print STDOUT "(C) 2001-2008 LMS Developers\n";
+	print STDOUT "Using file $configfile as config.\n";
+}
+
+if(! -r $configfile)
+{
+	print STDERR "Fatal error: Unable to read configuration file $configfile, exiting.\n";
+	exit 1;
+}
+
+my $timestamp_from_date;
+my $timestamp_to_date;
+
+if(!$from && !$to)
+{
+    # Tworzymy obiekt z current date
+    my $to_date = DateTime->now( time_zone => 'Europe/Warsaw', locale => 'pl_PL'  ); #$blk_date->add( days => -1);
+    my $from_date = DateTime->now( time_zone => 'Europe/Warsaw', locale => 'pl_PL' ); #$blk_date->add( months => -1);
+
+    # ustawiamy na 1 biezacego miesiaca
+    $to_date->set( day => 1, hour => 0, minute => 0, second => 0, nanosecond => 0 );
+    $from_date->set( day =>1, hour => 0, minute => 0, second => 0, nanosecond => 0 );
+
+    # obliczamy ostatni dzień poprzedniego misiaca
+    $to_date->add( days => -1 );
+    # obliczamy pierwszy dzień poprzedniego miesiąca
+    $from_date->add( months => -1);
+
+    # pobieramy timestampy
+    $timestamp_from_date = $from_date->epoch();
+    $timestamp_to_date   = $to_date->epoch();
+    
+    #tworzymy from i to do tematu maila
+    $from = (strftime '%Y.%m.%d', localtime($timestamp_from_date));
+    $to   = (strftime '%Y.%m.%d', localtime($timestamp_to_date));
+} 
+else 
+{
+    my @from = split(/\//,$from);
+    $timestamp_from_date = timelocal(0,0,0,$from[2],$from[1]-1,$from[0]);
+
+    my @to = split(/\//,$to);
+    $timestamp_to_date = timelocal(0,0,0,$to[2],$to[1]-1,$to[0]);
+}
+
+print $timestamp_from_date.' '.$timestamp_to_date."\n";
+
+my $ini = new Config::IniFiles -file => $configfile;
+print @Config::IniFiles::errors;
+
+my $dbtype = $ini->val('database', 'type') || 'mysql';
+my $dbhost = $ini->val('database', 'host') || 'localhost';
+my $dbuser = $ini->val('database', 'user') || 'root';
+my $dbpasswd = $ini->val('database', 'password') || '';
+my $dbname = $ini->val('database', 'database') || 'lms';
+
+my $dbase;
+my $utsfmt;
+
+if($dbtype =~ /mysql/)
+{
+	$dbase = DBI->connect("DBI:mysql:database=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$dbase->do("SET NAMES utf8");
+	$utsfmt = "UNIX_TIMESTAMP()";
+}
+elsif($dbtype eq "postgres")
+{
+	$dbase = DBI->connect("DBI:Pg:dbname=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$utsfmt = "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))";
+}
+else
+{
+	print STDERR "Fatal error: unsupported database type: $dbtype, exiting.\n";
+	exit 1;
+}
+
+sub localtime2()
+{
+
+		return localtime();
+
+
+}
+
+
+
+my $currtime = strftime("%s",localtime2());
+my $month = sprintf("%d",strftime("%m",localtime2()));
+my $day = strftime("%e",localtime2());
+my $dom = sprintf("%d",strftime("%d",localtime2()));
+my $year = strftime("%Y",localtime2());
+my $weekday = strftime("%u",localtime2());
+my $yearday = strftime("%j",localtime2());
+
+my $converter1 = Text::Iconv->new("UTF-8","CP852");
+my $converter2 = Text::Iconv->new("UTF-8","CP852");
+
+my $bufor_faktury;
+
+my $dbq;
+my $row;
+
+# wyciągamy faktury
+	$dbq = $dbase->prepare("select type, number, template, cdate, name, customerid, taxes.value as podatek, sum(invoicecontents.value*invoicecontents.count) as wartosc 
+   from documents left join numberplans on numberplans.id = documents.numberplanid
+                  left join invoicecontents on invoicecontents.docid = documents.id
+		  left join taxes on taxes.id = invoicecontents.taxid
+  where type = 1
+    and cdate >= $timestamp_from_date and cdate <= $timestamp_to_date
+  group by type,number,template,cdate,name,customerid,taxes.value
+  order by cdate, type;
+
+");
+	$dbq->execute();
+
+	my $lp = 0;
+	my $typ;
+	my $netto;
+	my $invoice_number;
+
+	while($row = $dbq->fetchrow_hashref())
+	{
+		$lp++;
+		if ($row->{'type'} == 1) {
+			$typ = 'FraVAT';
+		} else {
+			$typ = 'FraKor';
+		}
+
+		print $lp;
+		print $row->{'name'};
+		print $converter1->convert($row->{'name'});
+		print "\n";
+		$invoice_number = $row->{'template'};
+		$invoice_number =~ s/%(\d*)N/sprintf"%0${1}d",$row->{'number'}/e;
+		$invoice_number = strftime($invoice_number,localtime($row->{'cdate'}));
+		$netto 		= $row->{'wartosc'}/(1+$row->{'podatek'}/100);
+
+		$bufor_faktury .= ($lp.'$');
+		$bufor_faktury .= ($typ.' '.$invoice_number.'$'); 
+		$bufor_faktury .= (sprintf("%05d",$row->{'number'}).'$');
+		$bufor_faktury .= ((strftime '%Y-%m-%d', localtime($row->{'cdate'})).'$');
+		$bufor_faktury .= ($converter1->convert($row->{'name'}).'$');
+		$bufor_faktury .= (sprintf("%04d",$row->{'customerid'}).'$');
+		$bufor_faktury .= (sprintf("%.2f",$row->{'wartosc'}).'$');
+		$bufor_faktury .= (sprintf("%.2f",$netto)); 
+		$bufor_faktury .= ('$'."\r\n");		
+		
+
+	}
+$dbq->finish();
+
+
+# wyciągamy korekty
+	$dbq = $dbase->prepare("select type, number, template, cdate, name, customerid, taxes.value as podatek, sum(invoicecontents.value) as wartosc 
+   from documents left join numberplans on numberplans.id = documents.numberplanid
+                  left join invoicecontents on invoicecontents.docid = documents.id
+		  left join taxes on taxes.id = invoicecontents.taxid
+  where type = 3
+    and cdate >= $timestamp_from_date and cdate <= $timestamp_to_date
+  group by type,number,template,cdate,name,customerid,taxes.value
+  order by cdate, type;
+
+");
+	$dbq->execute();
+
+	while($row = $dbq->fetchrow_hashref())
+	{
+		$lp++;
+		if ($row->{'type'} == 1) {
+			$typ = 'FraVAT';
+		} else {
+			$typ = 'FraKor';
+		}
+
+		$invoice_number = $row->{'template'};
+		$invoice_number =~ s/%(\d*)N/sprintf"%0${1}d",$row->{'number'}/e;
+		$invoice_number = strftime($invoice_number,localtime($row->{'cdate'}));
+		$netto 		= $row->{'wartosc'}/(1+$row->{'podatek'}/100);
+
+		$bufor_faktury .= ($lp.'$');
+		$bufor_faktury .= ($typ.' '.$invoice_number.'$'); 
+		$bufor_faktury .= (sprintf("%05d",$row->{'number'}).'$');
+		$bufor_faktury .= ((strftime '%Y-%m-%d', localtime($row->{'cdate'})).'$');
+		$bufor_faktury .= ($converter1->convert($row->{'name'}).'$');
+		$bufor_faktury .= (sprintf("%04d",$row->{'customerid'}).'$');
+		$bufor_faktury .= ($row->{'wartosc'}.'$');
+		$bufor_faktury .= (sprintf("%.2f",$netto)); 
+		$bufor_faktury .= ('$'."\r\n");		
+		
+
+	}
+
+$dbq->finish();
+
+my $bufor_przelewy;
+	$dbq = $dbase->prepare("select date,customerid,value,description from cashimport
+				 where date >= $timestamp_from_date and date <= $timestamp_to_date;");
+
+	$dbq->execute();
+	while($row = $dbq->fetchrow_hashref())
+	{
+
+		print $row->{'customerid'}.' # '. $converter1->convert($row->{'description'})."\n";
+		$bufor_przelewy .= ((strftime '%Y-%m-%d', localtime($row->{'date'})).'$');
+		$bufor_przelewy .= (sprintf("%04d",$row->{'customerid'}).'$');
+		$bufor_przelewy .= ($row->{'value'}.'$');
+		$bufor_przelewy .= ($converter1->convert($row->{'description'}).'$');
+		$bufor_przelewy .= ('P$'."\r\n");
+	}
+
+
+$dbq->finish();
+$dbase->disconnect();
+
+# wysłanie maila
+
+my $fencoding = 'quoted-printable';
+my $ftype = 'text/html';
+my $fext = 'html';
+
+
+#$bufor_faktury  = $converter1->convert($bufor_faktury);
+#$bufor_przelewy = $converter2->convert($bufor_przelewy);
+
+#	print $bufor_przelewy;
+#	print $bufor_faktury;
+
+
+		
+		my $mail = build MIME::Entity Type=>"multipart/mixed";
+		$mail->head->add('To', '"=?UTF-8?Q?'.encode_qp('Księgowość', '').'?="'.' <faktury@neter.pl>');
+		$mail->head->add('From', '"Neter Sp. z o.o."'.' <finanse@neter.pl>');
+		$mail->head->add('Reply-To', '"Neter Sp. z o.o."'.' <finanse@neter.pl>');
+		$mail->head->add('Subject', '=?UTF-8?Q?'.encode_qp('Faktury za: '.$from.' - '.$to, '').'?=');
+		$mail->head->add('Message-ID', '<lms.send@lms>');
+		$mail->head->add('Return-path', '<finanse@neter.pl>');
+		$mail->attach(
+			Type => 'text/plain',
+			Charset => 'UTF-8',
+			Encoding => 'quoted-printable',
+			Data => [ "Przesyłamy faktury i przelewy za $from - $to\n" ],
+		);
+		$mail->attach(
+			Type => $ftype,
+			Charset => 'UTF-8',
+			Encoding => $fencoding,
+			Filename => 'faktury.txt',
+			Data => [ $bufor_faktury ],
+		);
+		$mail->attach(
+			Type => $ftype,
+			Charset => 'UTF-8',
+			Encoding => $fencoding,
+			Filename => 'przelewy.txt',
+			Data => [ $bufor_przelewy ],
+		);
+		$mail->smtpsend('MailFrom' => 'finanse@neter.pl', 'To' => 'faktury@neter.pl', 'Return-path' => 'finanse@neter.pl');
+#		$mail->smtpsend('MailFrom' => 'finanse@neter.pl', 'To' => 'pawel.rohde@neter.pl', 'Return-path' => 'finanse@neter.pl');
+
+
+
+exit;
+

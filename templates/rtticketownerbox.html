@@ -1,0 +1,49 @@
+<!-- $Id: rtticketmessagesbox.html,v 1.32 2009/01/06 15:06:13 alec Exp $ -->
+<P><TABLE width="100%" cellpadding="3">
+    <TR class="dark">
+	<TD class="fleftu" width="1%" NOWRAP>
+	    <IMG src="img/open.gif" alt=""> <B>Historia przekazywania zadania</B>
+	</TD>
+	<TD class="frightu" colspan="2" width="99%" align="right" NOWRAP>
+	    {if $ticket.state != 2}
+			<A href="?m=rtticketowneradd&ticketid={$ticket.ticketid}">Przekaż zadanie <IMG src="img/open.gif" alt=""></A>
+	    {/if}
+	</TD>
+    <TR class="light">
+	<TD class="fall" colspan="3" width="100%">
+	    <TABLE width="100%" cellpadding="3">
+	    	{counter start=0 skip=1 print=false assign=msgidx}
+			{foreach from=$ticket.ticketowner item=ticketowner}
+		    <TR class="DARK">
+				<TD width="1%" class="fbt" ALIGN="RIGHT" NOWRAP style="vertical-align: top;">
+					<B>{$ticketowner.createtime|date_format:"%Y/%m/%d %H:%M"}</B>
+				</TD>
+				<TD width="1%" class="fbt" ALIGN="RIGHT" NOWRAP>
+					<B>Poprzedni {t}Owner:{/t}</B><BR/>
+					<B>Poprzednia {t}Queue:{/t}</B>
+				</TD>
+				<TD width="1%" class="fbt" NOWRAP>
+					<A href="?m=userinfo&id={$ticketowner.owner_old}">{$ticketowner.ownername_old}</A><BR/>
+					<A HREF="?m=rtqueueview&id={$ticketowner.queueid_old}">{$ticketowner.queuename_old}</A>
+				</TD>
+				<TD width="1%" class="fbt" ALIGN="RIGHT" NOWRAP>
+					<B>Poprzedni {t}Subject:{/t}</B><BR/>
+					<B>Przekazał: </B>
+				</TD>
+				<TD width="96%" class="fbt" NOWRAP>
+					{$ticketowner.subject_old}<BR/>
+					<A href="?m=userinfo&id={$ticketowner.creatorid}">{$ticketowner.creatoridname}</A>
+				</TD>
+		    </TR>
+		    <TR class="LIGHT">
+				<TD COLSPAN="5" class="fbt superlight">
+					{$ticketowner.body|escape|replace:"\n":"<BR>"}
+				</TD>
+		    </TR>
+			{counter print=false}
+			{/foreach}
+	    </TABLE>
+	</TD>
+    </TR>
+</TABLE>
+</P>

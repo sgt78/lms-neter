@@ -33,7 +33,7 @@
 				if (users) users.style.display = 'none';
 			}
 			{/if}
-			document.getElementById('smsbody').style.display = '';
+			document.getElementById('smsbody').style.display = 'table-row';
 			document.getElementById('charscount').style.display = '';
 		} else {
 			document.getElementById('mailbody').style.display = '';
@@ -64,6 +64,19 @@
 		<TD CLASS="FRIGHTU" style="width: 98%;">
 			<span class="bold">{$message.customer} ({$message.customerid|string_format:"%04d"})</span>
 			<INPUT type="hidden" name="message[customerid]" value="{$message.customerid}">
+		</TD>
+	</TR>
+{elseif $message.userid}
+	<TR CLASS="DARK">
+		<TD CLASS="FLEFTU" WIDTH="1%">
+			<IMG SRC="img/users.gif" ALT=""> 
+		</TD>
+		<TD CLASS="FBT" WIDTH="1%" NOWRAP>
+			<B>{trans("Recipient:")}</B>
+		</TD>
+		<TD CLASS="FRIGHTU" WIDTH="98%">
+			<B>{$message.name} ({$message.userid|string_format:"%04d"})</B>
+			<INPUT type="hidden" name="message[userid]" value="{$message.userid}">
 		</TD>
 	</TR>
 {else}

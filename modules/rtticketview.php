@@ -24,9 +24,34 @@
  *  $Id$
  */
 
+function EventSearch($search)
+{
+	global $DB, $AUTH;
+
+	$list = $DB->GetAll(
+	        'SELECT events.id AS id, title, description, date, begintime, endtime, customerid, closed, rtticketid, '
+		.$DB->Concat('UPPER(customers.lastname)',"' '",'customers.name').' AS customername 
+		 FROM events LEFT JOIN customers ON (customerid = customers.id)
+		 WHERE (private = 0 OR (private = 1 AND userid = ?)) AND rtticketid = ? '
+		.' ORDER BY date, begintime', array($AUTH->id,$search));
+	if($list)
+		foreach($list as $idx => $row)
+		{
+			$list[$idx]['userlist'] = $DB->GetAll('SELECT userid AS id, users.name
+								    FROM eventassignments, users
+								    WHERE userid = users.id AND eventid = ? ',
+								    array($row['id']));
+
+		}
+	
+	return $list;
+}
+
+
 if(! $LMS->TicketExists($_GET['id']))
 {
-	$SESSION->redirect('?m=rtqueuelist');
+	//$SESSION->redirect('?m=rtqueuelist');
+	$SESSION->redirect('?'.$SESSION->get('backto'));
 }
 
 $rights = $LMS->GetUserRightsRT($AUTH->id, 0, $_GET['id']);
@@ -40,6 +65,19 @@ if(!$rights || !$catrights)
 }
 
 $ticket = $LMS->GetTicketContents($_GET['id']);
+$events = EventSearch($_GET['id']);
+
+if($_GET['action'] == 'eventadd')
+{
+	$ticketinfo['tic_id']  = $ticket['ticketid'];
+	$ticketinfo['cus_id']  = $ticket['customerid'];
+	$ticketinfo['subject'] = $ticket['subject'];
+	$SESSION->save('ticketinfo',$ticketinfo);
+	$SESSION->redirect('?m=eventlist');
+} else {
+	$SESSION->remove('ticketinfo');
+}
+
 $categories = $LMS->GetCategoryListByUser($AUTH->id);
 
 if($ticket['customerid'] && isset($CONFIG['phpui']['helpdesk_stats']) && chkconfig($CONFIG['phpui']['helpdesk_stats']))
@@ -90,12 +128,43 @@ foreach ($categories as $category)
 }
 $categories = $ncategories;
 
+$ticketowner = $DB->GetAll(
+	        'SELECT th.`id`, th.`ticketid`, 
+			th.`subject_old`, th.`subject`, 
+			th.`owner_old`, uo.name AS ownername_old, 
+			th.`owner`, un.name AS ownername, 
+			th.`queueid_old`, qo.name AS queuename_old,
+			th.`queueid`, qn.name AS queuename,
+			th.`body`,
+--			FROM_UNIXTIME(th.`createtime`) AS createtime, 
+			th.`createtime`, 
+			th.`creatorid`, up.name AS creatoridname  
+			FROM `rtticketshistory` th
+			LEFT JOIN users uo ON th.`owner_old`= uo.id
+			LEFT JOIN users un ON th.`owner`= un.id
+			LEFT JOIN users up ON th.`creatorid`= up.id
+			LEFT JOIN rtqueues qo ON th.`queueid_old` = qo.id
+			LEFT JOIN rtqueues qn ON th.`queueid` = qn.id
+			WHERE th.`ticketid` = ?', array($_GET['id']));
+$ticket['ticketowner'] = $ticketowner;
+
 $layout['pagetitle'] = trans('Ticket Review: $a',sprintf("%06d", $ticket['ticketid']));
 
-$SESSION->save('backto', $_SERVER['QUERY_STRING']);
+//$SESSION->save('backto', $_SERVER['QUERY_STRING']);
 
+
+$daylist = array();
+
+if(sizeof($events))
+	foreach($events as $event)
+		if(!in_array($event['date'], $daylist))
+			$daylist[] = $event['date'];
+		
+$SMARTY->assign('daylist', $daylist);
+$SMARTY->assign('eventlist',$events);
 $SMARTY->assign('ticket', $ticket);
 $SMARTY->assign('categories', $categories);
+$SMARTY->assign('backto', '?'.$SESSION->get('backto'));
 $SMARTY->display('rtticketview.html');
 
 ?>

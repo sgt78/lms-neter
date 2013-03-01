@@ -142,6 +142,9 @@ if (isset($_GET['search'])) {
 
 	$layout['pagetitle'] = trans('Nodes Search Results');
 
+	if(isset($_GET['name']))
+		$nodesearch['name'] = $_GET['name'];
+
 	$nodelist = $LMS->GetNodeList($o, $nodesearch, $k);
 
 	$listdata['total'] = $nodelist['total'];

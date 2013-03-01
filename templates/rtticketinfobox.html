@@ -130,11 +130,15 @@
 	<TR CLASS="light">
 		<TD class="flr" ALIGN="RIGHT" colspan="3">
 			{if $ticket.state < 2}
+			<A href="?m=rtticketview&id={$ticket.ticketid}&action=eventadd">Zaplanuj termin <IMG src="img/calendar.gif" alt=""></IMG></A>
+			<A href="?m=rtticketowneradd&ticketid={$ticket.ticketid}">Przekaż zadanie <IMG src="img/open.gif" alt=""></A>
 			<A href="?m=rtticketedit&id={$ticket.ticketid}&state=2">{trans("Resolve")} <IMG src="img/resolved.gif" alt=""></A>&nbsp;
 			{/if}
 			<A href="?m=rtticketdel&id={$ticket.ticketid}" onClick="return confirmLink(this, '{t a=$ticket.ticketid}Are you sure, you want to remove ticket $a?{/t}')">{trans("Delete")} <IMG src="img/delete.gif" alt=""></A>
 			<A href="?m=rtticketedit&id={$ticket.ticketid}">{trans("Edit")} <IMG src="img/edit.gif" alt=""></A>
-			<A href="?m=rtticketprint&id={$ticket.ticketid}" target="_BLANK">{trans("Print")} <IMG src="img/print.gif" alt=""></A>
+			<A href="?m=rtticketprint&id={$ticket.ticketid}" target="_BLANK">Drukuj PT <IMG src="img/print.gif" alt=""></A>
+			<A href="?m=rtticketscanprint&id={$ticket.ticketid}" target="_BLANK">Drukuj PP <IMG src="img/print.gif" alt=""></A>
+			<A href="{$backto}">{trans("Cancel")} <IMG src="img/cancel.gif" alt=""></A>
 		</TD>
 	</TR>
 	<TR CLASS="dark">
@@ -153,6 +157,9 @@
 		</TD>
 	</TR>
 </TABLE>
+</P>
+<P>
+{include file="rtticketownerbox.html"}
 </P>
 {if $stats}
 <P>

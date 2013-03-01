@@ -177,7 +177,9 @@ if (isset($_POST['customeradd']))
 			$customeradd['consentdate'] = 0;
 		if(!isset($customeradd['divisionid']))
 			$customeradd['divisionid'] = 0;
-
+		if(!isset($customeradd['deliverer']))
+			$customeradd['deliverer'] = 0;
+		
 		$id = $LMS->CustomerAdd($customeradd);
 
 		if(isset($im) && $id)

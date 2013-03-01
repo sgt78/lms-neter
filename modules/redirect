@@ -1,0 +1,37 @@
+ *  (C) Copyright 2001-2011 LMS Developers
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+	$scorelist = $DB->GetAll("SELECT evs_id, evs_name from eventscore WHERE evs_deleted = 0 ORDER by evs_name");
+		$SESSION->redirect('?m=eventlist');
+		$score             = $DB->GetOne("SELECT evs_score FROM eventscore WHERE evs_id=?",array($event['category']));
+		$DB->Execute('INSERT INTO events (title,description, date, begintime, endtime, userid, private, customerid, rtticketid, evn_evs_id, evn_evs_score) 
+					$AUTH->id, 
+			$id = $DB->GetOne('SELECT id FROM events WHERE title=? AND date=? AND begintime=? AND endtime=? AND userid=?',
+				array($event['title'], $date, $event['begintime'], $event['endtime'], $AUTH->id));
+				$DB->Execute('INSERT INTO eventassignments (eventid, userid) 
+				$time_mess = ' w godzinach: '.$begintime.'-'.$endtime;
+				$customer_info = $LMS->GetCustomer($event['customerid']);
+			$createdate = $DB->GetOne('SELECT UNIX_TIMESTAMP()');
+				$hour     = $begintime_arr[0]-$event['whennotify'];
+			$DB->Execute('INSERT INTO messages (type, cdate, subject, body, userid, sender)
+					$AUTH->id,
+			$msgid = $DB->GetLastInsertID('messages');
+				$userphone = $LMS->GetUserPhone($userid);
+				$DB->Execute('INSERT INTO messageitems (messageid, customerid, userid, destination, lastdate, status)
+				$itemid = $DB->GetLastInsertID('messageitems');
+					$smsresult = $LMS->SendSMS($userphone, $messagesms, $msgid);
+						$DB->Execute('UPDATE messageitems SET status = ?, error = ?
+		if($event['ticketid']>0) $SESSION->redirect('?m=rtticketview&id='.$event['ticketid']);
+			$SESSION->redirect('?m=eventlist');
+$event['date'] = isset($event['date']) ? $event['date'] : $SESSION->get('edate');
+$SESSION->restore('ticketinfo',$ticketinfo);
+	$SESSION->remove('ticketinfo');
+//$SESSION->save('backto', $_SERVER['QUERY_STRING']);
+$userlist = $LMS->GetUserNames();
+	$SMARTY->assign('customerlist', $LMS->GetCustomerNames());
+$SMARTY->assign('scorelist',$scorelist);
+$SMARTY->assign('userlist', $userlist);
+$SMARTY->assign('userlistsize', sizeof($userlist));
+$SMARTY->assign('error', $error);
+$SMARTY->assign('event', $event);
+$SMARTY->assign('hours', 
+$SMARTY->display('eventadd.html');

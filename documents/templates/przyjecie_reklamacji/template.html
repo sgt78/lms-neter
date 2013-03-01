@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Przyjęcie reklamacji</title>
+{literal}
+<STYLE type="text/css">
+p {margin:5px}
+div.strona {STYLE="page-break-after: always"}
+BODY	{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1		{ font-size: 14pt; text-align: center; }
+H2		{ font-size: 11pt; text-align: center; color: red;}
+TD		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TABLE	{ border-collapse: collapse; }
+P		{ font-size: 12pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: justify; }
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+<DIV class="strona">
+<TABLE WIDTH="100%" CELLSPACING="3">
+	<tr>
+		<td width="66%" valign="top"></td>
+		<td width="34%" valign="top">
+		{$_config.invoices.cplace}, dnia: {$smarty.now|date_format:"%Y.%m.%d"}<br></td></tr>
+	<TR>
+		<TD WIDTH="66%" VALIGN="TOP">
+			{$_config.invoices.header|replace:"\\n":"<BR>"}
+		</TD>
+		<TD WIDTH="34%" VALIGN="TOP" CLASS="sdr">
+			<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+			<B>Szanowny Pan/Pani:</B><BR>
+			<B>{$customerinfo.customername}<BR>
+			{if $customerinfo.post_address neq ""}
+				{$customerinfo.post_address}<BR>
+				{$customerinfo.post_zip} {$customerinfo.post_city}
+			{else}
+			{$customerinfo.address}<BR>
+			{$customerinfo.zip} {$customerinfo.city}
+			{/if}</B>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH="100%" COLSPAN="2">
+			&nbsp;<BR>
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+
+<br><br><br><br><br>
+
+<p>
+Numer klienta: {$customerinfo.id}<br>
+Identyfikator zgłoszenia w systemie helpdesk: {$document.description}<br>
+<br><br>
+Szanowni Państwo;<br><br>
+
+Na podstawie art. 106 ustawy z dnia 16 lipca 2004r. - Prawo telekomunikacyjne (Dz. U. Nr 171, poz. 1800 z późń. zm.) oraz paragrafu 5 pkt. 3 Rozporządzenia Ministra Infrastruktury z dnia 1 października 2004r. w sprawie trybu postępowania reklamacyjnego oraz warunków, jakim powinna odpowiadać reklamacja usługi telekomunikacyjnej (Dz. U. nr 226, poz. 2291) potwierdzamy przyjęcie Państwa reklamacji.
+Jednocześnie uprzejmie informujemy, że decyzja w przedmiotowej sprawie zostanie przesłana niezwłocznie po zakończeniu postępowiania reklamacyjnego.
+
+
+<br><br><br>
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER"></TD>
+	<TD WIDTH="50%" ALIGN="CENTER">Z poważaniem<br><br></TD>
+    </TR>
+    <tr>
+    	<td align="center"></td>
+    	<td align="center">{$layout.logname}</td>
+</TABLE>
+</DIV>
+</body>
+</html>

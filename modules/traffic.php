@@ -25,14 +25,14 @@
 
 function Traffic($from = 0, $to = 0, $net = 0, $customerid = 0, $order = '', $limit = 0)
 {
-	global $DB, $LMS;
+	global $DB, $LMS, $CONFIG, $DBRADIUS;
 	
 	// period
 	$fromdate = intval($from);
 	$todate = intval($to);
 	$delta = ($todate-$fromdate) ? ($todate-$fromdate) : 1;
 
-	$dt = "( dt >= $fromdate AND dt < $todate ) ";
+	$dt = ($CONFIG['phpui']['radius'] == YES) ? "(unix_timestamp(AcctStartTime) >= $fromdate AND unix_timestamp(AcctStartTime) < $todate )" : "( dt >= $fromdate AND dt < $todate ) ";
 
 	// nets
 	if($net)
@@ -72,6 +72,22 @@ function Traffic($from = 0, $to = 0, $net = 0, $customerid = 0, $order = '', $li
 	else
 		$limit = '';
 
+	if($CONFIG['phpui']['radius'] == 'YES') {
+		// join query from parts
+		$query = 'SELECT sum(AcctInputOctets) as upload,
+						 sum(acctOutputOctets) as download,
+						 FramedIPAddress as ip,
+						 UserName as name
+				FROM radacct
+				WHERE '
+				.$dt
+				.$net
+				.' GROUP BY UserName, FramedIPAddress'
+				.$order.$limit;
+		$DBRADIUS->debug = TRUE;
+		$traffic = $DBRADIUS->GetAll($query);
+		//print_r($DBRADIUS->errors);
+	} else {		
 	// join query from parts
 	$query = 'SELECT nodeid, name, inet_ntoa(ipaddr) AS ip, 
 			    sum(upload) as upload, sum(download) as download 
@@ -83,9 +99,11 @@ function Traffic($from = 0, $to = 0, $net = 0, $customerid = 0, $order = '', $li
 		    .($customerid ? ' AND ownerid = '.intval($customerid) : '')
 		    .' GROUP BY nodeid, name, ipaddr'
 		    .$order.$limit;
+		$traffic = $DB->GetAll($query);
+	}
 
 	// get results
-	if ($traffic = $DB->GetAll($query))
+	if ($traffic)
 	{
 		$downloadsum = 0;
 		$uploadsum = 0;
@@ -232,8 +250,14 @@ if(isset($traffic))
 
 // fuck this anyway... Maybe i write function in LMS:: for this, but not now
 
-$starttime = $DB->GetOne('SELECT MIN(dt) FROM stats');
-$endtime = $DB->GetOne('SELECT MAX(dt) FROM stats');
+if($CONFIG['phpui']['radius'] == 'YES')
+{
+	$starttime = $DBRADIUS->GetOne('SELECT unix_timestamp(min(AcctStartTime)) FROM radacct');
+	$endtime   = $DBRADIUS->GetOne('SELECT unix_timestamp(max(AcctStartTime)) FROM radacct');
+} else {	
+	$starttime = $DB->GetOne('SELECT MIN(dt) FROM stats');
+	$endtime = $DB->GetOne('SELECT MAX(dt) FROM stats');
+}
 
 // if 'stats' table is empty use fixed values for time ranges
 if (empty($starttime))

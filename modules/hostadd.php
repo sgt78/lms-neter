@@ -46,11 +46,15 @@ if($hostadd)
 		$error['name'] = trans('Host name is required!');
 	elseif(GetHostIdByName($hostadd['name']))
 		$error['name'] = trans('Host with specified name exists!');
+	elseif($hostadd['ipaddr'] == 0)
+		$error['ipaddr'] = 'Podaj adres ip serwera';
+	elseif($hostadd['servicetype'] == '0')
+		$error['servicetype'] = 'Wybierz typ usługi';
 	
 	if(!$error)
 	{
-		$DB->Execute('INSERT INTO hosts (name, description) VALUES (?,?)',
-				    array($hostadd['name'], $hostadd['description']));
+		$DB->Execute('INSERT INTO hosts (name, ipaddr, servicetype, description) VALUES (?,inet_aton(?),?,?)',
+				    array($hostadd['name'], $hostadd['ipaddr'], $hostadd['servicetype'], $hostadd['description']));
 		
 		if(!isset($hostadd['reuse']))
 		{

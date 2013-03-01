@@ -1,0 +1,26 @@
+Ta wiadomość została wygenerowana automatycznie.
+
+Pan/Pani/Firma: %customer
+
+Uprzejmie informujemy iż upłynął termin płatności faktury
+o numerze: %number na kwotę: %value zł.
+
+Pełne saldo zadłużenia w opłatach dla naszej firmy wynosi %saldo zł. 
+
+Jeżeli opłacili już Państwo wyżej wymienione zaległości, prosimy
+o zignorowanie tej wiadomości.
+
+W przypadku, gdy nie zgadzają się Państwo z kwotą zaległości prosimy o
+jak najszybszy kontakt.
+
+Wszelkie informacje na temat Państwa rozliczeń mogą Państwo znaleźć pod
+adresem https://www.neter.pl/ebok/
+
+Numer konta oraz wszelkie dane potrzebne do zalogowania do eBok znajdują się
+na ostatniej fakturze.
+
+-- 
+z poważaniem
+Biuro Obsług Klienta
+telefon: 61 6662300
+email: bok@neter.pl

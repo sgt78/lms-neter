@@ -1,0 +1,87 @@
+{include file="clearheader.html"}
+<!--// $Id: printimportlist.html,v 1.1 2009/06/06 17:40:57 alec Exp $ //-->
+<TABLE WIDTH="100%">
+	<TR>
+		<TD WIDTH="99%" VALIGN="TOP">
+			<P class="hdf"><B>{$layout.pagetitle}</B>
+			{if $source}<BR><font class="sdr"><B>{t}Source:{/t} {$source}</B></font>{/if}
+			</P>
+		</TD>
+		<TD WIDTH="1%" ALIGN="RIGHT" NOWRAP>
+			LMS {$layout.lmsv} @ {$layout.hostname}<BR>
+			{$smarty.now|date_format:"%A, %x"}<BR>
+			{t a=$layout.logname}Created by: $a{/t}
+		</TD>
+	</TR>
+</TABLE>
+<TABLE WIDTH="320" CELLPADDING="3" BORDER="1" ALIGN="CENTER">
+	<TR>
+		<TD WIDTH="1%" CLASS="HEAD" ALIGN="CENTER">
+			{t}No.{/t}
+		</TD>
+		<TD WIDTH="5%" CLASS="HEAD" ALIGN="CENTER">
+			{t}Rok{/t}
+		</TD>
+		<TD WIDTH="5%" CLASS="HEAD" ALIGN="CENTER">
+			{t}Miesiąc{/t}
+		</TD>
+		<TD WIDTH="89%" CLASS="HEAD" ALIGN="CENTER">
+			{t}Value{/t}
+		</TD>
+	</TR>
+	{cycle values="white,grey" print=false}
+	{section name=importlist loop=$importlist}
+	<TR class="{cycle}">
+		<TD ALIGN="CENTER">
+			{counter}
+		</TD>
+		<TD ALIGN="CENTER" NOWRAP>
+			{$importlist[importlist].year}
+		</TD>
+		<TD ALIGN="CENTER" NOWRAP>
+			{$importlist[importlist].month}
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			{$importlist[importlist].value|money_format}
+		</TD>
+	</TR>
+	{assign var=total value=$total+$importlist[importlist].value}
+	{assign var=total1 value=$total2}
+	{assign var=total2 value=$total3}
+	{assign var=total3 value=$importlist[importlist].value}
+	{assign var=totalcount value=$totalcount+1}
+	{sectionelse}
+	<TR>
+		<TD ALIGN="center" WIDTH="100%" COLSPAN="4">
+			<P>&nbsp;</P>
+			<P><B>{t}No such cash operations.{/t}</B></P>
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	{/section}
+	<TR class="grey">
+		<TD ALIGN="RIGHT" COLSPAN="3">
+			<B>{t}Total:{/t}</B>
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			<B>{$total|money_format}</B>
+		</TD>
+	</TR>
+	<TR class="grey">
+		<TD ALIGN="RIGHT" COLSPAN="3">
+			<B>Średnia</B>
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			<B>{$total/$totalcount|money_format}</B>
+		</TD>
+	</TR>
+	<TR class="grey">
+		<TD ALIGN="RIGHT" COLSPAN="3">
+			<B>Średnia (ostatnie 3 miesiące)</B>
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			<B>{$total1/3+$total2/3+$total3/3|money_format}</B>
+		</TD>
+	</TR>
+</TABLE>
+{include file="clearfooter.html"}

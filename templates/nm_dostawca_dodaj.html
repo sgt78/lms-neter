@@ -1,0 +1,99 @@
+{include file="header.html"}
+<!-- $Id: paymentadd.html,v 1.18 2007/03/06 09:29:10 alec Exp $ -->
+<H1>{$layout.pagetitle}</H1>
+<FORM METHOD="POST" NAME="dostawcaadd" ACTION="?m=nm_dostawca_dodaj">
+<INPUT type="submit" class="hiddenbtn">
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD WIDTH="1%" CLASS="fleftu">
+			<IMG SRC="img/customer.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" NOWRAP>
+			<B>Dostawca:</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="frightu">
+			<SELECT size="1" name="dostawca[ndo_customer_id]" {if !$ticket.customerid}{tip trigger="requestor"}{/if} {tip text="Select customer from list or enter his data if is not a customer"} onChange="document.forms['ticket'].elements['ticket[custid]'].value=document.forms['ticket'].elements['ticket[customerid]'].value">
+				<OPTION value="0">- {t}select customer{/t} -</OPTION>
+				{foreach from=$dostawcy item=dostawcy}
+				<OPTION value="{$dostawcy.id}" {if $dostawcy.id == $customerid}SELECTED{/if}>{$dostawcy.customername|truncate:"40":"...":true} ({$dostawcy.id|string_format:"%04d"})</OPTION>
+				{/foreach}
+			</SELECT>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/payment.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%" NOWRAP>
+			<B>Domyślne konto analityczne:</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			<SELECT SIZE="1" NAME="dostawca[ndo_domyslne_kkosztowe]" {tip text="Wybierz konto główne"}>
+				<OPTION VALUE="-1">-- Wybierz --</OPTION>
+				{section loop=$kontaglowne name=konto}
+				{if $kontaglowne[konto].nkk_id>0}
+				<OPTION VALUE="{$kontaglowne[konto].nkk_id}">{$kontaglowne[konto].nkk_nr}|{$kontaglowne[konto].nkk_opis}</OPTION>
+				{/if}
+				{/section}
+			</SELECT>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/pay.gif" ALT=""></IMG>
+		</TD>
+		<TD WIDTH="1%" NOWRAP>
+			<B>Konto syntetyczne dostawcy:</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			<INPUT TYPE="TEXT" SIZE="10" NAME="dostawca[ndo_konto]"></INPUT>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/card.gif" ALT=""></IMG>
+		</TD>
+		<TD WIDTH="1%">
+			<B>Nazwa Banku dostawcy:</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			<INPUT TYPE="TEXT" SIZE="10" NAME="dostawca[ndo_bank]"></INPUT>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/card.gif" ALT=""></IMG>
+		</TD>
+		<TD WIDTH="1%">
+			<B>Numer konta dostawcy:</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			<INPUT TYPE="TEXT" SIZE="30" NAME="dostawca[ndo_nr_konta]"></INPUT>
+		</TD>
+	</TR>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/note.gif" ALT="">
+		</TD>
+			<TD WIDTH="1%">
+			<B>Notatki:</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			<TEXTAREA NAME="dostawca[ndo_notatki]" COLS="50" ROWS="5" {tip text="Enter additional informations (optional)"}>{$kontoksiegowe.nkk_opis}</TEXTAREA>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="100%" COLSPAN="3" CLASS="FBOTTOMU" ALIGN="RIGHT"> 
+			<A HREF="javascript:document.dostawcaadd.submit();" accesskey="s">{t}Submit{/t} <IMG SRC="img/save.gif" alt=""></A>
+			<A HREF="?m=nm_dostawcy_lista">{t}Cancel{/t} <IMG SRC="img/cancel.gif" alt=""></A><BR>
+		</TD>
+	</TR>
+</TABLE></FORM>
+</P>
+<SCRIPT type="text/javascript">
+<!--
+document.forms['dostawcaadd'].elements['dostawca[ndo_customer_id]'].focus();
+//-->
+</SCRIPT>
+{include file="footer.html"}

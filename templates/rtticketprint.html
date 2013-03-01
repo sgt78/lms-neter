@@ -1,6 +1,6 @@
 {include file="clearheader.html"}
 <!--// $Id$ //-->
-<TABLE width="660" align="center">
+<TABLE width="100%" align="center">
 	<TR>
 		<TD width="100%" align="RIGHT">
 			LMS {$layout.lmsv} @ {$layout.hostname}<BR>
@@ -10,10 +10,10 @@
 	</TR>
 </TABLE>
 <P>
-<TABLE width="660" cellpadding="3" border="1" align="CENTER">
+<TABLE width="100%" cellpadding="3" border="1" align="CENTER">
 	<TR>
 		<TD class="HEAD" colspan="2">
-			<H1>{t a=$ticket.ticketid|string_format:"%06d"}Ticket No. $a{/t}</H1>
+			<H1>{t a=$ticket.ticketid|string_format:"%06d"}PROTOKÓŁ SERWISOWY do Zgłoszena Nr $a{/t}</H1>
 		</TD>
 	</TR>
 	<TR>
@@ -92,6 +92,7 @@
 		</TD>
 	</TR>
 </TABLE>
+{*
 {if $stats}
 <P>
 <TABLE width="660" cellpadding="3" align="center">
@@ -109,15 +110,167 @@
 </TABLE>
 </P>
 {/if}
+*}
 <P>
-<TABLE width="660" cellpadding="3" align="CENTER">
+<TABLE width="100%" cellpadding="3" align="CENTER">
+	<TR>
+		<TD width="43%" class="HEAD" nowrap>
+			Czynności wykonane przez serwis:
+		</TD>
+		<TD width="43%" class="HEAD" nowrap>
+			Zużyte materiały i części:
+		</TD>
+		<TD width="10%" class="HEAD" wrap>
+			Własność operatora:
+		</TD>
+		<TD width="7%" class="HEAD" align="right" nowrap>
+			Ilość :
+		</TD>
+		<TD width="7%" class="HEAD" align="right" nowrap> 
+			Wartość:
+		</TD>
+	</TR>
+	<TR>
+{*		<TD width="1%" class="flr"> *}
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P align="center"><input type="checkbox"></P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P align="center"><input type="checkbox"></P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P align="center"><input type="checkbox"></P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P align="center"><input type="checkbox"></P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P align="center"><input type="checkbox"></P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+		<TD width="1%" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" colspan="2" rowspan="4">
+Operator gwarantuje sprawne działanie wyżej wymienionego zestawu. Urządzenia, będące  własnością operatora podlegają naprawie / wymianie w ciągu 7 dni od zgłoszenia, urządzenia sprzedane na własność klientowi ulegają naprawie wymianie w ciągu 14 dni roboczych, w określonym okresie gwarancyjnym (12 miesięcy gdy nie wyszczególniono inaczej). W przypadku awarii dostępu do internetu z powodu awarii urządzeń operatora, użytkownikowi przysługuje rabat zgodnie z regulaminem.<br><br>
+
+Wartość urządzeń (zestawu abonenckiego), będącego własnością operatora wycenia się zgodnie z kolumną "Wartość". Użytkownik zobowiązuje się do zwrotu zestawu abonenckiego w ciągu 7dni od rozwiązania lub wygaśnięcia umowy. W przypadku nie wywiązania się z tego obowiązku operator będzie naliczał 3% wartości sprzętu za każdy dzień opóźnienia.<br><br>
+
+Operator oświadcza iż przekazał wszelkie dane autoryzacyjne, niezbędne do  uzyskanie dostępu do usług. (Klucze WEP/WPA/WPA2, hasła PPPoE).
+Abonent oświadcza, iż dane te mu są znane i wie jak ich używać.<br><br>
+		</TD>
+		<TD width="1%" align="right">
+			<P><b>Dojazd:</b></P>
+		</TD>
+		<TD width="1%" colspan="2" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" align="right">
+			<P><b>Materiały:</b></P>
+		</TD>
+		<TD width="1%" colspan="2" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" align="right">
+			<P><b>Robocizna:</b></P>
+		</TD>
+		<TD width="1%" colspan="2" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD width="1%" align="right">
+			<P><b>Razem brutto:</b></P>
+		</TD>
+		<TD width="1%" colspan="3" class="fall">
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+</TABLE>
+</p>
+<TABLE width="100%" cellpadding="3" align="CENTER">
 	<TR>
 		<TD width="100%" class="HEAD">
 		{trans("Notes:")}	
 		</TD>
 	</TR>
 	<TR>
-		<TD width="100%" class="flr">
+		<TD width="100%" class="fall">
 			<P>&nbsp;
 			<P>&nbsp;
 			<P>&nbsp;
@@ -126,5 +279,33 @@
 			<P>&nbsp;
 		</TD>
 	</TR>
+</TABLE>
+<P>
+<TABLE width="100%" cellpadding="3" align="center">
+        <TR>
+	        <TD width="100%" nowrap colspan="2" class="head">
+		        <B>Potwierdzam zgodność danych zawartych w niniejszym protokole ze stanem faktycznym:</B>
+			</TD>
+		</TR>
+		<TR>
+			<TD WIDTH="50%" class="fall" align="center">
+		 		<b>podpis Zgłaszającego:</b>
+			</TD>
+			<TD WIDTH="50%" class="fall" align="center">
+		 		<b>podpis Serwisanta:</b>
+			</TD>
+		</TR>
+		<TR>
+			<TD WIDTH="50%" class="fall" align="center">
+		 		<p>&nbsp</p>
+		 		<p>&nbsp</p>
+		 		<p>&nbsp</p>
+			</TD>
+			<TD WIDTH="50%" class="fall" align="center">
+		 		<p>&nbsp</p>
+		 		<p>&nbsp</p>
+		 		<p>&nbsp</p>
+			</TD>
+		</TR>
 </TABLE>
 {include file="clearfooter.html"}

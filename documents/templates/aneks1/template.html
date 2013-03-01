@@ -1,0 +1,268 @@
+<html>
+<head>
+<title>Aneks Nr: {$document.nr}</title>
+{literal}
+<STYLE type="text/css"><!--
+BODY	{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1		{ font-size: 12pt; text-align: center; }
+H2		{ font-size: 11pt; text-align: center; color: red;}
+TD		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TABLE	{ border-collapse: collapse; }
+P		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: center; }
+//-->
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+<DIV STYLE="page-break-after: always">
+<h1>Aneks do Umowy o Świadczenie Usług Telekomunikacyjnych Nr: {$document.nr}</h1>
+<p>Zawarta w dniu {$smarty.now|date_format:"%Y-%m-%d"} w Poznaniu pomiędzy 
+Firmą Neter Sp. z o.o. z siedzibą w Poznaniu przy ulicy Sieradzkiej 28; 60-163 wpisaną do rejestru KRS pod 
+numerem 0000202092, NIP 779-22-07-498, Regon 634350031 zwanym dalej Usługodawcą reprezentowanym 
+przez: {$layout.logname} a: </p>
+<TABLE BORDER="0" size="100%">
+	<TR>
+		<TD valign="top">Nazwa/Nazwisko i imię: </TD>
+		<TD><b>{$customerinfo.customername}</b></TD>
+    	</TR>
+    <TR>
+		<TD>Adres: </TD> 
+		<TD><b>{$customerinfo.address}<br>{$customerinfo.zip} {$customerinfo.city}</b></TD>
+    	</TR>
+    {if $customerinfo.ssn}	
+    <TR>
+		<TD>PESEL: </TD>
+		<TD><b>{$customerinfo.ssn}</b></TD>
+    	</TR>
+	{/if}
+	{if $customerinfo.ten}
+    <TR>
+	   	<TD>NIP: </TD>
+    	<TD><b>{$customerinfo.ten}</b></TD>
+    	</TR>
+    {/if}
+    {if $customerinfo.icn}
+    <tr>
+    	<td>Dowód osobisty: </td>
+    	<td><b>{$customerinfo.icn}</b></td>
+    	</tr>
+    {/if}
+    {if $customerinfo.regon}
+    <tr>
+    	<td>REGON: </td>
+    	<td><b>{$customerinfo.regon}</b></td>
+    	</tr>
+    {/if}
+    {if $customerinfo.rbe}
+    <tr>
+    	<td>EDG/KRS: </td>
+    	<td><b>{$customerinfo.rbe}</b></td>
+    	</tr>
+    {/if}
+    {if $customerinfo.post_address}
+    <tr>
+    	<td>Adres korespondencyjny: </td>
+    	<td><b>	{$customerinfo.post_address}<BR>
+				{$customerinfo.post_zip} {$customerinfo.post_city}
+		</b></td>
+    	</tr>
+    {/if}
+    
+</TABLE>
+
+<p>Zwanym dalej Użytkownikiem o następującej treści:</p>
+
+<TABLE BORDER="0">
+	<tr>
+		<td valign="top">1.</td>
+		<td>Przedmiotem aneksu jest zmiana parametrów Usługi dostępu do sieci internet.</td>
+		</tr>
+	<tr>
+		<td valign="top">2.</td>
+		<td>Abonent decyduje się na zmianę parametów Usługi, której szczegółowy zakres, parametry techniczne i koszt określone są w dalszej części aneksu.</td>
+		</tr>
+	<tr>
+		<td valign="top">3.</td>
+		<td>Operator zobowiązuje się do uruchomienia Usługi zgodnie z nowymi parametrami technicznymi, określonymi w niniejszym aneksie.<br>
+		Operator może odstąpić od realizacji niniejszego Aneksu, gdy nie można wykonać przyłącza z przyczyn technicznych, lub gdy pojemność Systemu nie pozwala na świadczenie Usługi.
+Z tytułu odstąpienia od umowy Użytkownikowi nie przysługują roszczenia odszkodowawcze wobec Operatora.</td>
+		</tr>		
+	<tr>
+		<td valign="top">4.</td>
+		<td>Użytkownik może rozwiązać Umowę z miesięcznym okresem wypowiedzenia. Jeśli jednak rozwiąże umowę na czas określony przed upływem jej teminu, to w takim przypadku zobowiązany jest zapłacić na rzecz Operatora opłatę, będącą sumą:<br>
+a) różnicy pomiędzy promocyjną opłatą aktywacyjną określoną w umowie, a opłatą aktywacyjną określoną w Cenniku obowiązującym w dniu zawarcia Umowy dla Umów zawieranych na czas nieokreślony.<br>
+b) sumy upustów w opłatach abonamentowych wynikających z rożnicy między opłatami określonymi w niniejszym aneksie a opłatami określonymi w Cenniku dla danej taryfy na czas nieokreślony obowiązującego Cennika w dniu zawarcia Umowy.</td>
+	<tr>
+		<td valign="top">5.</td>
+		<td>
+		{if $document.todate}
+		Aneks zmienia okres trwania Umowy na czas określony od <b>{$document.fromdate|date_format:"%Y.%m.%d"}</b> do <b>{$document.todate|date_format:"%Y.%m.%d"}</b> z automatycznym przedłużeniem na czas nieokreślony, jeśli żadna ze stron nie postanowi inaczej.
+		{else}
+		Okres trwania Umowy nie ulega zmianie.
+		{/if}</td>
+		</tr>
+	<tr>
+	    <td valign="top">6.</td>
+	    <td>Abonent wyraża zgodę na wyłączenie dostępu do usług wymienionych w pkt 9, gdy opłata za te usługi nie zostanie zaksięgowana na koncie operatora do 15 dnia miesiąca, a także dobrowolnie poddaje się egzekucji z tutułu windykacji i ponownego włączenia usług.</td>
+	    </tr>
+	<tr>
+		<td valign="top">7.</td>
+		<td>Abonent podpisem złożonym pod niniejszym aneksem oświadcza, że akceptuje warunki tego aneksu.</td>
+		</tr>
+	<tr>
+		<td valign="top">8.</td>
+		<td>Abonent oświdcza, że znając treść aneksu wyraża zgodę na włączenie jego postanowień do Umowy.</td>
+		</tr>
+		
+	<tr>
+		<td valign="top">9.</td>
+		<td>Parametry usług:<br><br>
+		Obecna taryfa:<br>
+			<TABLE cellpadding="3" cellspacing="0" border="1">
+				<TR>
+				<TD NOWRAP>{t}Service:{/t}</TD>
+				<TD NOWRAP ALIGN="RIGHT">{t}Value:{/t}</TD>
+				<TD NOWRAP>{t}Payment:{/t}</TD>
+				<TD NOWRAP>Aktywna:</TD>
+				</TR>
+				{foreach from=$assignments item=a}
+				<TR>
+				<TD NOWRAP>{$a.name}</TD>
+				<TD NOWRAP ALIGN="RIGHT">{$a.value|money_format}</TD>
+				<TD NOWRAP>{$a.period}</TD>
+				<TD>
+				od: {if $a.datefrom}{$a.datefrom|date_format:"%Y.%m.%d"}{else}-{/if}
+				do: {if $a.dateto}{$a.dateto|date_format:"%Y.%m.%d"}{else}-{/if}
+				</TD>
+				</TR>
+				{/foreach}
+				<TR>
+				<TD ALIGN="RIGHT">{t}Total:{/t}</TD>
+				<TD NOWRAP ALIGN="RIGHT">{sum array=$assignments column="value" string_format="%01.2f"} zł</TD>
+				<TD>&nbsp;</TD>
+				<TD>&nbsp;</TD>
+				</TR>
+			</TABLE><br></td>
+		</tr>
+	<tr>
+		<td></td>
+		<td>
+			<TABLE cellpadding="3" cellspacing="0" border="1">
+				<TR>
+					<TD><b>Nowa taryfa:</b></TD>
+					<TD NOWRAP ALIGN="RIGHT"><b>Wartość:</b></TD>
+					<TD NOWRAP ALIGN="LEFT"><b>Płatność:</b></TD>
+					<TD NOWRAP ALIGN="LEFT"><b>Aktywna:</b></TD>
+				</TR>
+				<TR>
+					<TD>{$document.new_tar}</TD>
+					<TD NOWRAP ALIGN="RIGHT">{$document.new_tar_value|money_format}</TD>
+					<TD>miesięcznie(1)</TD>
+					<TD>
+					od: {if $document.fromdate}{$document.fromdate|date_format:"%Y.%m.%d"}{else}-{/if}
+					do: {if $document.todate}{$document.todate|date_format:"%Y.%m.%d"}{else}-{/if}
+					</TD>
+				</TR>
+				{if $document.new_tar_upust}
+				<TR>
+					<TD>{$document.new_tar_upust}</TD>
+					<TD NOWRAP ALIGN="RIGHT">{$document.new_tar_upust_value|money_format}</TD>
+					<TD>miesięcznie(1)</TD>
+					<TD>
+					od: {if $document.fromdate}{$document.fromdate|date_format:"%Y.%m.%d"}{else}-{/if}
+					do: {if $document.todate}{$document.todate|date_format:"%Y.%m.%d"}{else}-{/if}
+					</TD>
+				</TR>
+				{/if}
+				<TR>
+					<TD><b>Razem (miesięcznie):</b></TD>
+					<TD NOWRAP ALIGN="RIGHT"><b>{$document.new_tar_sum|money_format}</b></TD>
+					<TD>miesięcznie(1)</TD>
+					<TD>
+					od: {if $document.fromdate}{$document.fromdate|date_format:"%Y.%m.%d"}{else}-{/if}
+					do: {if $document.todate}{$document.todate|date_format:"%Y.%m.%d"}{else}-{/if}
+					</TD>
+				</TR>
+				{if $document.new_akt}
+				<TR>
+					<TD><b>Opłata aktywacyjna, przy zmianie taryfy:</b></TD>
+					<TD NOWRAP ALIGN="RIGHT"><b>Wartość:</b></TD>
+					<TD NOWRAP ALIGN="LEFT"><b>Płatność:</b></TD>
+					<TD NOWRAP ALIGN="LEFT"><b>Naliczenie:</b></TD>
+				</TR>
+				<TR>
+					<TD>{$document.new_akt}</TD>
+					<TD NOWRAP ALIGN="RIGHT">{$document.new_akt_value|money_format}</TD>
+					<TD>jednorazowo</TD>
+					<TD>
+						{if $document.fromdate}{$document.fromdate|date_format:"%Y.%m.%d"}{else}-{/if}
+					</TD>
+				</TR>
+				{if $document.new_akt_upust}
+				<TR>
+					<TD>{$document.new_akt_upust}</TD>
+					<TD NOWRAP ALIGN="RIGHT">{$document.new_akt_upust_value|money_format}</TD>
+					<TD>jednorazowo</TD>
+					<TD>
+						{if $document.fromdate}{$document.fromdate|date_format:"%Y.%m.%d"}{else}-{/if}
+					</TD>
+				</TR>
+				{/if}
+				<TR>
+					<TD><b>Razem (jednorazowo):</b></TD>
+					<TD NOWRAP ALIGN="RIGHT"><b>{$document.new_akt_sum|money_format}</b></TD>
+					<TD>jednorazowo</TD>
+					<TD>
+						{if $document.fromdate}{$document.fromdate|date_format:"%Y.%m.%d"}{else}-{/if}
+					</TD>
+				</TR>
+				{/if}
+			</TABLE>
+			<br>
+			Reasumując, nowa opłata abonamentowa, płatna miesięcznie do 15 każdego miesiąca wynosi <b>{$document.new_tar_sum|money_format}</b>.<br>
+			{if $document.new_akt}
+			Opłata aktywacyjna, za wykonanie przyłącza, które umożliwi świadczenie wyżej wymienionych usług wynosi: <b>{$document.new_akt_sum|money_format}</b>
+			{/if}
+		</td>
+	</tr>
+	<tr>
+		<td valign="top">10.</td>
+		<td>Aneks wchodzi w życie z początkiem następnego okresu rozliczeniowego, po jego podpisaniu.</td>
+		</tr>
+	<tr>
+		<td valign="top">11.</td>
+		<td>Sądem właściwym do rozstrzygania wszelkich sporów jest sąd właściwy dla siedziby Operatora.</td>
+		</tr>
+	<tr>
+		<td valign="top">12.</td>
+		<td>W sprawach nieuregulowanych niniejszym aneksem mają zastosowania z umowy, do której aneks jest sporządzony.
+		</td>
+		</tr>
+	<tr>
+		<td valign="top">13.</td>
+		<td>Aneks sporządzono w dwóch jednobrzmiących egzemplarzach, po jednym dla każdej ze stron.</td>
+		</tr>
+ </TABLE>
+
+<BR><BR><br><br><br><br> <br>
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+    </TR>
+    <TR>
+	<TD ALIGN="CENTER">Użytkownik</TD>
+	<TD ALIGN="CENTER">Operator</TD>
+    </TR>
+    <tr>
+    	<td align="center"></td>
+    	<td align="center">{$layout.logname}</td>
+</TABLE>
+
+<!-- Koniec strony -->
+</div>
+</body>
+</html>
+

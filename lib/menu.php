@@ -284,6 +284,7 @@ $menu = array(
 					'tip' => trans('Add new subscription fee'),
 					'prio' => 20,
 				),
+/* Neter patt
 				array(
 					'name' => trans('Payments List'),
 					'link' => '?m=paymentlist',
@@ -296,6 +297,7 @@ $menu = array(
 					'tip' => trans('Add new standing payment'),
 					'prio' => 40,
 				),
+Neter end */
 				array(
 					'name' => trans('Balance Sheet'),
 					'link' => '?m=balancelist',
@@ -490,7 +492,7 @@ $menu = array(
 			'accesskey' =>'r',
 			'prio' => 40,
 		),
-
+/*
 		'stats' => array(
 			'name' => trans('Stats'),
 			'img' =>'traffic.gif',
@@ -543,7 +545,7 @@ $menu = array(
 				),
 			),
 		),
-
+*/
 		'helpdesk' => array(
 			'name' => trans('Helpdesk'),
 			'img' =>'ticket.gif',
@@ -728,6 +730,12 @@ if (chkconfig($CONFIG['phpui']['ewx_support'])) {
 	);
 }
 
+
+if($CONFIG['phpui']['radius'] == 'YES')
+{
+	require_once('menu-radius.php');
+}
+
 // Adding Userpanel menu items
 if(!empty($CONFIG['directories']['userpanel_dir']))
         // be sure that Userpanel exists
@@ -740,6 +748,7 @@ if(!empty($CONFIG['phpui']['custom_menu']))
 	if(file_exists($CONFIG['phpui']['custom_menu']))
 	        require_once($CONFIG['phpui']['custom_menu']);
 
+require_once('menu-manager.php');
 require_once('menu-voip.php');
 
 /* Example for custom_menu file

@@ -1,0 +1,755 @@
+#!/usr/bin/perl -Tw
+#
+#  LMS version 1.10.4 Pyrus
+#
+#  Copyright (C) 2001-2008 LMS Developers
+#
+#  Please, see the doc/AUTHORS for more information about authors!
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License Version 2 as
+#  published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#  USA.
+#
+#  $Id: lms-payments,v 1.97.2.2 2008/01/04 07:57:21 alec Exp $
+
+use strict;
+use DBI;
+use Config::IniFiles;
+use Getopt::Long;
+use vars qw($configfile $quiet $help $version $from $to);
+use POSIX qw(strftime);
+use POSIX qw(mktime);
+use Time::Local;
+use MIME::Entity;
+use Text::Iconv;
+use MIME::QuotedPrint;
+use DateTime;
+
+
+my $_version = '1.10.4 Pyrus';
+
+my %options = (
+	"--config-file|C=s"	=>	\$configfile,
+	"--quiet|q"		=>	\$quiet,
+	"--help|h"		=>	\$help,
+	"--version|v"		=>	\$version,
+	"--from|f=s"		=>	\$from,
+	"--to|t=s"		=>	\$to,
+);
+
+Getopt::Long::config("no_ignore_case");
+GetOptions(%options);
+
+if($help)
+{
+	print STDERR <<EOF;
+lms-payments, version $_version
+(C) 2001-2008 LMS Developers
+
+-C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
+-h, --help			print this help and exit;
+-v, --version			print version info and exit;
+-q, --quiet			suppress any output, except errors;
+-f, --from=YYYY/MM/DD		from date;
+-t, --to=YYY/MM/DD		to date;
+
+EOF
+	exit 0;
+}
+
+if($version)
+{
+	print STDERR <<EOF;
+lms-payments, version $_version
+(C) 2001-2008 LMS Developers
+
+EOF
+	exit 0;
+}
+
+if(!$configfile)
+{
+	$configfile = "/home/users/sky24.pl/lms-1.10.4/lms.ini";
+}
+
+if(!$quiet)
+{
+	print STDOUT "lms-payments, version $_version\n";
+	print STDOUT "(C) 2001-2008 LMS Developers\n";
+	print STDOUT "Using file $configfile as config.\n";
+}
+
+if(! -r $configfile)
+{
+	print STDERR "Fatal error: Unable to read configuration file $configfile, exiting.\n";
+	exit 1;
+}
+
+my $timestamp_from_date;
+my $timestamp_to_date;
+
+if(!$from && !$to)
+{
+    # Tworzymy obiekt z current date
+    my $to_date = DateTime->now( time_zone => 'Europe/Warsaw', locale => 'pl_PL'  ); #$blk_date->add( days => -1);
+    my $from_date = DateTime->now( time_zone => 'Europe/Warsaw', locale => 'pl_PL' ); #$blk_date->add( months => -1);
+
+    # ustawiamy na 1 biezacego miesiaca
+    $to_date->set( day => 1, hour => 0, minute => 0, second => 0, nanosecond => 0 );
+    $from_date->set( day =>1, hour => 0, minute => 0, second => 0, nanosecond => 0 );
+
+    # obliczamy ostatni dzień poprzedniego misiaca
+    $to_date->add( days => -1 );
+    # obliczamy pierwszy dzień poprzedniego miesiąca
+    $from_date->add( months => -1);
+
+    # pobieramy timestampy
+    $timestamp_from_date = $from_date->epoch();
+    $timestamp_to_date   = $to_date->epoch();
+    
+    #tworzymy from i to do tematu maila
+    $from = (strftime '%Y.%m.%d', localtime($timestamp_from_date));
+    $to   = (strftime '%Y.%m.%d', localtime($timestamp_to_date));
+} 
+else 
+{
+    my @from = split(/\//,$from);
+    $timestamp_from_date = timelocal(0,0,0,$from[2],$from[1]-1,$from[0]);
+
+    my @to = split(/\//,$to);
+    $timestamp_to_date = timelocal(0,0,0,$to[2],$to[1]-1,$to[0]);
+}
+
+print $timestamp_from_date.' '.$timestamp_to_date."\n";
+
+my $ini = new Config::IniFiles -file => $configfile;
+print @Config::IniFiles::errors;
+
+my $dbtype = $ini->val('database', 'type') || 'mysql';
+my $dbhost = $ini->val('database', 'host') || 'localhost';
+my $dbuser = $ini->val('database', 'user') || 'root';
+my $dbpasswd = $ini->val('database', 'password') || '';
+my $dbname = $ini->val('database', 'database') || 'lms';
+
+my $dbase;
+my $utsfmt;
+
+if($dbtype =~ /mysql/)
+{
+	$dbase = DBI->connect("DBI:mysql:database=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$dbase->do("SET NAMES utf8");
+	$utsfmt = "UNIX_TIMESTAMP()";
+}
+elsif($dbtype eq "postgres")
+{
+	$dbase = DBI->connect("DBI:Pg:dbname=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$utsfmt = "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))";
+}
+else
+{
+	print STDERR "Fatal error: unsupported database type: $dbtype, exiting.\n";
+	exit 1;
+}
+
+sub localtime2()
+{
+
+		return localtime();
+
+
+}
+
+
+
+my $currtime = strftime("%s",localtime2());
+my $month = sprintf("%d",strftime("%m",localtime2()));
+my $day = strftime("%e",localtime2());
+my $dom = sprintf("%d",strftime("%d",localtime2()));
+my $year = strftime("%Y",localtime2());
+my $weekday = strftime("%u",localtime2());
+my $yearday = strftime("%j",localtime2());
+
+my $converter1 = Text::Iconv->new("UTF-8","CP1250");
+my $converter2 = Text::Iconv->new("UTF-8","CP1250");
+
+my $dbq;
+my $row;
+
+# wyciągamy faktury sprzedaży
+	$dbq = $dbase->prepare("select 
+							type, number, template, cdate, paytime, documents.id,
+							name, customerid, CONCAT_WS(' ',address,zip,city) AS address, ten,
+							taxes.value as podatek, sum(invoicecontents.value*invoicecontents.count) as wartosc 
+
+							from documents 
+							left join numberplans on numberplans.id = documents.numberplanid
+							left join invoicecontents on invoicecontents.docid = documents.id
+							left join taxes on taxes.id = invoicecontents.taxid
+  
+							where type = 1
+							and cdate >= $timestamp_from_date and cdate <= $timestamp_to_date
+							
+							group by type,number,template,cdate,paytime, documents.id,
+							name,address,ten,customerid,
+							taxes.value
+							order by cdate, type;
+							");
+
+
+	$dbq->execute();
+
+	my $lp = 0;
+	my $bufor_faktury;
+	while($row = $dbq->fetchrow_hashref())
+	{
+		$lp++;
+		my $invoice_number = $row->{'template'};
+		$invoice_number =~ s/%(\d*)N/sprintf"%0${1}d",$row->{'number'}/e;
+		$invoice_number = strftime($invoice_number,localtime($row->{'cdate'}));
+
+		#2 rodzaj dokumentu
+		my $n_rodz = 'SP';
+		#3 typ dokumentu
+		my $n_typ = 'FVB';
+		#8 DDMMRRRR data dokumentu = data wystawienia
+		my $n_data_dok	= strftime '%d%m%Y', localtime($row->{'cdate'});
+		#8 DDMMRRRR data dokumentu 2 = data sprzedaży
+		my $n_data_sprz = strftime '%d%m%Y', localtime($row->{'cdate'});
+		#16 numer dokumentu
+		my $n_nr_dok = $converter1->convert($invoice_number);
+		$n_nr_dok = sprintf("%.16s",$n_nr_dok);
+		$n_nr_dok = sprintf("%-16s",$n_nr_dok);
+		#16 numer dokumentu korygowanego, "dla dok. kasowych i bankowych numer konta księgowego dla elementu szablonu z opcją numer konta na dokumencie"
+		my $n_nr_dok_kor = sprintf("%-16s",'');
+		#3 nr rejestru sprzedaży
+		my $n_rej_sprz = sprintf("%-3s",'1');
+		#3 nr rejestru zakupów
+		my $n_rej_zak = sprintf("%-3s",'');
+		#12 łączna kwota dokumentu
+		my $n_kwota_dok = sprintf("%.2f",$row->{'wartosc'});
+		$n_kwota_dok = sprintf("%12s",$n_kwota_dok);
+		$n_kwota_dok =~ s/\./\,/g;
+		#8 DDMMRRRR termin płatności
+		my $term_platn = DateTime->from_epoch( epoch=> $row->{'cdate'}, time_zone => 'Europe/Warsaw', locale => 'pl_PL'  );
+		$term_platn->add(days => $row->{'paytime'});
+		my $n_term_platn = strftime '%d%m%Y', localtime($term_platn->epoch());
+		#5 symbol dokumentu
+		my $n_symbol = sprintf("%-5s",'');
+		my $naglowek = $n_rodz.' '.$n_typ.' '.$n_data_dok.' '.$n_data_sprz.' '.$n_nr_dok.' '.$n_nr_dok_kor.' '.$n_rej_sprz.' '.$n_rej_zak.' '.$n_kwota_dok.' '.$n_term_platn.' '.$n_symbol;
+		
+
+		#20 unikalny kod klienta
+		my $k_kod = $converter1->convert($row->{'customerid'});
+		$k_kod = sprintf("%05d",$k_kod);
+		$k_kod = sprintf("%-20s",$k_kod);
+		#40 nazwa klienta
+		my $k_nazwa = $converter1->convert($row->{'name'});
+		$k_nazwa = sprintf("%.40s",$k_nazwa);
+		$k_nazwa = sprintf("%-40s",$k_nazwa);
+		#40 adres klienta
+		my $k_adres = $converter1->convert($row->{'address'});
+		$k_adres = sprintf("%.40s",$k_adres);
+		$k_adres = sprintf("%-40s",$k_adres);
+		#15 nip klienta
+		my $k_nip = $converter1->convert($row->{'ten'});
+		$k_nip = sprintf("%-15s",$k_nip);
+		my $klient = $k_kod.' '.$k_nazwa.' '.$k_adres.' '.$k_nip;
+
+		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
+		my $netto_vat = $converter1->convert($row->{'podatek'});
+		$netto_vat = sprintf("%.1f",$netto_vat);
+		$netto_vat = sprintf("%-4s",$netto_vat);
+		#12 kwota netto
+		my $netto_wart = $row->{'wartosc'}/(1+$row->{'podatek'}/100);
+		my $vat_wart = $row->{'wartosc'} - $netto_wart;
+		$netto_wart = sprintf("%.2f",$netto_wart);
+		$netto_wart = sprintf("%12s",$netto_wart);
+		$netto_wart =~ s/\./\,/g;
+		my $netto = $netto_vat.' '.$netto_wart;
+
+		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
+		my $vat_vat = $converter1->convert($row->{'podatek'});
+		$vat_vat = sprintf("%.1f",$vat_vat);
+		$vat_vat = sprintf("%-4s",$vat_vat);
+		#12 kwota podatku
+		$vat_wart = sprintf("%.2f",$vat_wart);
+		$vat_wart = sprintf("%12s",$vat_wart);
+		$vat_wart =~ s/\./\,/g;
+		my $vat = $vat_vat.' '.$vat_wart;
+
+		#40 numer konta bankowego
+		my $bank = '85109013460000000115605796';
+		$bank = sprintf("%-40s",$bank);
+
+		#50 informacje dodatkowe
+		my $info = 'Faktury za: '.$from.' - '.$to;
+		$info = $converter1->convert($info);
+		$info = sprintf("%.50s",$info);
+		$info = sprintf("%-50s",$info);
+		
+		#20 unikalny kod towaru
+		my $t_kod = 'sprzedaż usług';
+		$t_kod = $converter1->convert($t_kod);
+		$t_kod = sprintf("%.20s",$t_kod);
+		$t_kod = sprintf("%-20s",$t_kod);
+		#12 kod dla pozycji dokumentu
+		my $t_poz = '1';
+		$t_poz = sprintf("%.12s",$t_poz);
+		$t_poz = sprintf("%-12s",$t_poz);
+		#12 wartość netto
+		my $t_netto = $netto_wart;
+		#12 wartość vat
+		my $t_vat = $vat_wart;
+		my $towar = $t_kod.' '.$t_poz.' '.$t_netto.' '.$t_vat;
+
+		#10 numer recordu
+		my $record = $row->{'id'};
+		$record = sprintf("%-10s",$record);
+
+		$bufor_faktury .= $naglowek." ";	
+		$bufor_faktury .= "K  ".$klient." ";	
+		$bufor_faktury .= "N  ".$netto." ";	
+		$bufor_faktury .= "V  ".$vat." ";	
+#		$bufor_faktury .= "B  ".$bank." ";	
+		$bufor_faktury .= "I  ".$info." ";	
+		$bufor_faktury .= "T  ".$towar." ";	
+		$bufor_faktury .= "R  ".$record;	
+		$bufor_faktury .= "\r\n";			
+	}
+print $bufor_faktury;
+$dbq->finish();
+
+# wyciągamy korekty faktury sprzedaży
+	$dbq = $dbase->prepare("select 
+							d.type, d.number, d.cdate, d.paytime, d.id,
+							n1.template, 
+							d2.number AS number2, d2.cdate AS cdate2, n2.template AS template2,
+							d.name, d.customerid, CONCAT_WS(' ',d.address,d.zip,d.city) AS address, d.ten,
+							taxes.value as podatek, sum(invoicecontents.value) as wartosc 
+
+							from documents d
+							left join numberplans n1 on n1.id = d.numberplanid
+							left join documents d2 on d.reference = d2.id
+							left join numberplans n2 on n2.id = d2.numberplanid
+							left join invoicecontents on invoicecontents.docid = d.id
+							left join taxes on taxes.id = invoicecontents.taxid
+  
+							where d.type = 3
+							and d.cdate >= $timestamp_from_date and d.cdate <= $timestamp_to_date
+							
+							group by type,number,template,cdate,paytime, d.id,
+							name,address,ten,customerid,
+							taxes.value
+							order by cdate, type;
+							");
+
+
+	$dbq->execute();
+
+	$lp = 0;
+	my $bufor_faktury_kor;
+	while($row = $dbq->fetchrow_hashref())
+	{
+		$lp++;
+		my $invoice_number = $row->{'template'};
+		$invoice_number =~ s/%(\d*)N/sprintf"%0${1}d",$row->{'number'}/e;
+		$invoice_number = strftime($invoice_number,localtime($row->{'cdate'}));
+
+		my $invoice_number2 = $row->{'template2'};
+		$invoice_number2 =~ s/%(\d*)N/sprintf"%0${1}d",$row->{'number2'}/e;
+		$invoice_number2 = strftime($invoice_number2,localtime($row->{'cdate2'}));
+
+		#2 rodzaj dokumentu
+		my $n_rodz = 'SP';
+		#3 typ dokumentu
+		my $n_typ = 'FKV';
+		#8 DDMMRRRR data dokumentu = data wystawienia
+		my $n_data_dok	= strftime '%d%m%Y', localtime($row->{'cdate'});
+		#8 DDMMRRRR data dokumentu 2 = data sprzedaży
+		my $n_data_sprz = strftime '%d%m%Y', localtime($row->{'cdate'});
+		#16 numer dokumentu
+		my $n_nr_dok = $converter1->convert($invoice_number);
+		$n_nr_dok = sprintf("%.16s",$n_nr_dok);
+		$n_nr_dok = sprintf("%-16s",$n_nr_dok);
+		#16 numer dokumentu korygowanego, "dla dok. kasowych i bankowych numer konta księgowego dla elementu szablonu z opcją numer konta na dokumencie"
+		my $n_nr_dok_kor = $converter1->convert($invoice_number2);
+		$n_nr_dok_kor = sprintf("%.16s",$n_nr_dok_kor);
+		$n_nr_dok_kor = sprintf("%-16s",$n_nr_dok_kor);
+		#3 nr rejestru sprzedaży
+		my $n_rej_sprz = sprintf("%-3s",'1');
+		#3 nr rejestru zakupów
+		my $n_rej_zak = sprintf("%-3s",'');
+		#12 łączna kwota dokumentu
+		my $n_kwota_dok = sprintf("%.2f",$row->{'wartosc'});
+		$n_kwota_dok = sprintf("%12s",$n_kwota_dok);
+		$n_kwota_dok =~ s/\./\,/g;
+		#8 DDMMRRRR termin płatności
+		my $term_platn = DateTime->from_epoch( epoch=> $row->{'cdate'}, time_zone => 'Europe/Warsaw', locale => 'pl_PL'  );
+		$term_platn->add(days => $row->{'paytime'});
+		my $n_term_platn = strftime '%d%m%Y', localtime($term_platn->epoch());
+		#5 symbol dokumentu
+		my $n_symbol = sprintf("%-5s",'');
+		my $naglowek = $n_rodz.' '.$n_typ.' '.$n_data_dok.' '.$n_data_sprz.' '.$n_nr_dok.' '.$n_nr_dok_kor.' '.$n_rej_sprz.' '.$n_rej_zak.' '.$n_kwota_dok.' '.$n_term_platn.' '.$n_symbol;
+		
+
+		#20 unikalny kod klienta
+		my $k_kod = $converter1->convert($row->{'customerid'});
+		$k_kod = sprintf("%05d",$k_kod);
+		$k_kod = sprintf("%-20s",$k_kod);
+		#40 nazwa klienta
+		my $k_nazwa = $converter1->convert($row->{'name'});
+		$k_nazwa = sprintf("%.40s",$k_nazwa);
+		$k_nazwa = sprintf("%-40s",$k_nazwa);
+		#40 adres klienta
+		my $k_adres = $converter1->convert($row->{'address'});
+		$k_adres = sprintf("%.40s",$k_adres);
+		$k_adres = sprintf("%-40s",$k_adres);
+		#15 nip klienta
+		my $k_nip = $converter1->convert($row->{'ten'});
+		$k_nip = sprintf("%-15s",$k_nip);
+		my $klient = $k_kod.' '.$k_nazwa.' '.$k_adres.' '.$k_nip;
+
+		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
+		my $netto_vat = $converter1->convert($row->{'podatek'});
+		$netto_vat = sprintf("%.1f",$netto_vat);
+		$netto_vat = sprintf("%-4s",$netto_vat);
+		#12 kwota netto
+		my $netto_wart = $row->{'wartosc'}/(1+$row->{'podatek'}/100);
+		my $vat_wart = $row->{'wartosc'} - $netto_wart;
+		$netto_wart = sprintf("%.2f",$netto_wart);
+		$netto_wart = sprintf("%12s",$netto_wart);
+		$netto_wart =~ s/\./\,/g;
+		my $netto = $netto_vat.' '.$netto_wart;
+
+		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
+		my $vat_vat = $converter1->convert($row->{'podatek'});
+		$vat_vat = sprintf("%.1f",$vat_vat);
+		$vat_vat = sprintf("%-4s",$vat_vat);
+		#12 kwota podatku
+		$vat_wart = sprintf("%.2f",$vat_wart);
+		$vat_wart = sprintf("%12s",$vat_wart);
+		$vat_wart =~ s/\./\,/g;
+		my $vat = $vat_vat.' '.$vat_wart;
+
+		#40 numer konta bankowego
+		my $bank = '85109013460000000115605796';
+		$bank = sprintf("%-40s",$bank);
+
+		#50 informacje dodatkowe
+		my $info = 'Faktury za: '.$from.' - '.$to;
+		$info = $converter1->convert($info);
+		$info = sprintf("%.50s",$info);
+		$info = sprintf("%-50s",$info);
+		
+		#20 unikalny kod towaru
+		my $t_kod = 'korekta sprzedaż usług';
+		$t_kod = $converter1->convert($t_kod);
+		$t_kod = sprintf("%.20s",$t_kod);
+		$t_kod = sprintf("%-20s",$t_kod);
+		#12 kod dla pozycji dokumentu
+		my $t_poz = '1';
+		$t_poz = sprintf("%.12s",$t_poz);
+		$t_poz = sprintf("%-12s",$t_poz);
+		#12 wartość netto
+		my $t_netto = $netto_wart;
+		#12 wartość vat
+		my $t_vat = $vat_wart;
+		my $towar = $t_kod.' '.$t_poz.' '.$t_netto.' '.$t_vat;
+
+		#10 numer recordu
+		my $record = $row->{'id'};
+		$record = sprintf("%-10s",$record);
+
+		$bufor_faktury_kor .= $naglowek." ";	
+		$bufor_faktury_kor .= "K  ".$klient." ";	
+		$bufor_faktury_kor .= "N  ".$netto." ";	
+		$bufor_faktury_kor .= "V  ".$vat." ";	
+#		$bufor_faktury_kor .= "B  ".$bank." ";	
+		$bufor_faktury_kor .= "I  ".$info." ";	
+		$bufor_faktury_kor .= "T  ".$towar." ";	
+		$bufor_faktury_kor .= "R  ".$record;	
+		$bufor_faktury_kor .= "\r\n";			
+	}
+$dbq->finish();
+
+# wyciągamy faktury zakupu
+	$dbq = $dbase->prepare("SELECT 
+							d.type, d.extnumber as number, d.cdate, cdate+84000*paytime as pdate, d.id,  
+							d.name, d.customerid, CONCAT_WS(' ',d.address,d.zip,d.city) AS address, d.ten,
+							taxes.value as podatek, SUM(ic.value*ic.count) AS wartosc, COUNT(ic.docid) AS count
+    		
+							FROM documents d
+							LEFT JOIN invoicecontents ic ON ic.docid = d.id
+							LEFT JOIN taxes t ON t.id = ic.taxid
+			
+							WHERE d.type = 10
+							and cdate >= $timestamp_from_date and cdate <= $timestamp_to_date
+							GROUP BY type, number, cdate, pdate, d.id, name, address, ten, customerid, t.value
+							ORDER BY cdate, type;
+							");
+	$dbq->execute();
+
+	$lp = 0;
+	$bufor_zakupy;
+	while($row = $dbq->fetchrow_hashref())
+	{
+		$lp++;
+
+		#2 rodzaj dokumentu
+		my $n_rodz = 'SP';
+		#3 typ dokumentu
+		my $n_typ = 'FVB';
+		#8 DDMMRRRR data dokumentu = data wystawienia
+		my $n_data_dok	= strftime '%d%m%Y', localtime($row->{'cdate'});
+		#8 DDMMRRRR data dokumentu 2 = data sprzedaży
+		my $n_data_sprz = strftime '%d%m%Y', localtime($row->{'cdate'});
+		#16 numer dokumentu
+		my $n_nr_dok = $converter1->convert($invoice_number);
+		$n_nr_dok = sprintf("%.16s",$n_nr_dok);
+		$n_nr_dok = sprintf("%-16s",$n_nr_dok);
+		#16 numer dokumentu korygowanego, "dla dok. kasowych i bankowych numer konta księgowego dla elementu szablonu z opcją numer konta na dokumencie"
+		my $n_nr_dok_kor = sprintf("%-16s",'');
+		#3 nr rejestru sprzedaży
+		my $n_rej_sprz = sprintf("%-3s",'1');
+		#3 nr rejestru zakupów
+		my $n_rej_zak = sprintf("%-3s",'');
+		#12 łączna kwota dokumentu
+		my $n_kwota_dok = sprintf("%.2f",$row->{'wartosc'});
+		$n_kwota_dok = sprintf("%12s",$n_kwota_dok);
+		$n_kwota_dok =~ s/\./\,/g;
+		#8 DDMMRRRR termin płatności
+		my $term_platn = DateTime->from_epoch( epoch=> $row->{'cdate'}, time_zone => 'Europe/Warsaw', locale => 'pl_PL'  );
+		$term_platn->add(days => $row->{'paytime'});
+		my $n_term_platn = strftime '%d%m%Y', localtime($term_platn->epoch());
+		#5 symbol dokumentu
+		my $n_symbol = sprintf("%-5s",'');
+		my $naglowek = $n_rodz.' '.$n_typ.' '.$n_data_dok.' '.$n_data_sprz.' '.$n_nr_dok.' '.$n_nr_dok_kor.' '.$n_rej_sprz.' '.$n_rej_zak.' '.$n_kwota_dok.' '.$n_term_platn.' '.$n_symbol;
+		
+
+		#20 unikalny kod klienta
+		my $k_kod = $converter1->convert($row->{'customerid'});
+		$k_kod = sprintf("%05d",$k_kod);
+		$k_kod = sprintf("%-20s",$k_kod);
+		#40 nazwa klienta
+		my $k_nazwa = $converter1->convert($row->{'name'});
+		$k_nazwa = sprintf("%.40s",$k_nazwa);
+		$k_nazwa = sprintf("%-40s",$k_nazwa);
+		#40 adres klienta
+		my $k_adres = $converter1->convert($row->{'address'});
+		$k_adres = sprintf("%.40s",$k_adres);
+		$k_adres = sprintf("%-40s",$k_adres);
+		#15 nip klienta
+		my $k_nip = $converter1->convert($row->{'ten'});
+		$k_nip = sprintf("%-15s",$k_nip);
+		my $klient = $k_kod.' '.$k_nazwa.' '.$k_adres.' '.$k_nip;
+
+		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
+		my $netto_vat = $converter1->convert($row->{'podatek'});
+		$netto_vat = sprintf("%.1f",$netto_vat);
+		$netto_vat = sprintf("%-4s",$netto_vat);
+		#12 kwota netto
+		my $netto_wart = $row->{'wartosc'}/(1+$row->{'podatek'}/100);
+		my $vat_wart = $row->{'wartosc'} - $netto_wart;
+		$netto_wart = sprintf("%.2f",$netto_wart);
+		$netto_wart = sprintf("%12s",$netto_wart);
+		$netto_wart =~ s/\./\,/g;
+		my $netto = $netto_vat.' '.$netto_wart;
+
+		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
+		my $vat_vat = $converter1->convert($row->{'podatek'});
+		$vat_vat = sprintf("%.1f",$vat_vat);
+		$vat_vat = sprintf("%-4s",$vat_vat);
+		#12 kwota podatku
+		$vat_wart = sprintf("%.2f",$vat_wart);
+		$vat_wart = sprintf("%12s",$vat_wart);
+		$vat_wart =~ s/\./\,/g;
+		my $vat = $vat_vat.' '.$vat_wart;
+
+		#40 numer konta bankowego
+		my $bank = '85109013460000000115605796';
+		$bank = sprintf("%-40s",$bank);
+
+		#50 informacje dodatkowe
+		my $info = 'Faktury za: '.$from.' - '.$to;
+		$info = $converter1->convert($info);
+		$info = sprintf("%.50s",$info);
+		$info = sprintf("%-50s",$info);
+		
+		#20 unikalny kod towaru
+		my $t_kod = 'sprzedaż usług';
+		$t_kod = $converter1->convert($t_kod);
+		$t_kod = sprintf("%.20s",$t_kod);
+		$t_kod = sprintf("%-20s",$t_kod);
+		#12 kod dla pozycji dokumentu
+		my $t_poz = '1';
+		$t_poz = sprintf("%.12s",$t_poz);
+		$t_poz = sprintf("%-12s",$t_poz);
+		#12 wartość netto
+		my $t_netto = $netto_wart;
+		#12 wartość vat
+		my $t_vat = $vat_wart;
+		my $towar = $t_kod.' '.$t_poz.' '.$t_netto.' '.$t_vat;
+
+		#10 numer recordu
+		my $record = $row->{'id'};
+		$record = sprintf("%-10s",$record);
+
+		$bufor_zakupy .= $naglowek." ";	
+		$bufor_zakupy .= "K  ".$klient." ";	
+		$bufor_zakupy .= "N  ".$netto." ";	
+		$bufor_zakupy .= "V  ".$vat." ";	
+#		$bufor_zakupy .= "B  ".$bank." ";	
+		$bufor_zakupy .= "I  ".$info." ";	
+		$bufor_zakupy .= "T  ".$towar." ";	
+		$bufor_zakupy .= "R  ".$record;	
+		$bufor_zakupy .= "\r\n";			
+	}
+print $bufor_zakupy;
+$dbq->finish();
+
+# wyciągamy wpłaty bankowe z importów
+	$dbq = $dbase->prepare("select 
+							date,value,
+							customerid,CONCAT_WS(' ',lastname,name) AS name, CONCAT_WS(' ',address,zip,city) AS address, ten,
+							description
+							
+							from cashimport c
+							LEFT JOIN customers cs ON c.customerid=cs.id
+							
+							where date >= $timestamp_from_date and date <= $timestamp_to_date;");
+	$dbq->execute();
+
+	$lp = 0;
+	my $bufor_wyciag_bankowy;
+	while($row = $dbq->fetchrow_hashref())
+	{
+		$lp++;
+
+		#2 rodzaj dokumentu
+		my $n_rodz = 'BA';
+		#3 typ dokumentu
+		my $n_typ = 'BP-';
+		#8 DDMMRRRR data dokumentu = data wystawienia
+		my $n_data_dok	= strftime '%d%m%Y', localtime($row->{'date'});
+		#8 DDMMRRRR data dokumentu 2 = data sprzedaży
+		my $n_data_sprz = sprintf("%-8s", '');
+		#16 numer dokumentu
+		my $n_nr_dok = sprintf("%-16s", '');
+		#16 numer dokumentu korygowanego, "dla dok. kasowych i bankowych numer konta księgowego dla elementu szablonu z opcją numer konta na dokumencie"
+		my $n_nr_dok_kor = sprintf("%-16s", '');
+		#3 nr rejestru sprzedaży
+		my $n_rej_sprz = sprintf("%-3s", '');
+		#3 nr rejestru zakupów
+		my $n_rej_zak = sprintf("%-3s", '');
+		#12 łączna kwota dokumentu
+		my $n_kwota_dok = sprintf("%.2f",$row->{'value'});
+		$n_kwota_dok = sprintf("%12s",$n_kwota_dok);
+		$n_kwota_dok =~ s/\./\,/g;
+		#8 DDMMRRRR termin płatności
+		my $n_term_platn = strftime '%d%m%Y', localtime($row->{'date'});
+		#5 symbol dokumentu
+		my $n_symbol = sprintf("%-5s",'');
+		my $naglowek = $n_rodz.' '.$n_typ.' '.$n_data_dok.' '.$n_data_sprz.' '.$n_nr_dok.' '.$n_nr_dok_kor.' '.$n_rej_sprz.' '.$n_rej_zak.' '.$n_kwota_dok.' '.$n_term_platn.' '.$n_symbol;
+		
+
+		#20 unikalny kod klienta
+		my $k_kod = $converter1->convert($row->{'customerid'});
+		$k_kod = sprintf("%05d",$k_kod);
+		$k_kod = sprintf("%-20s",$k_kod);
+		#40 nazwa klienta
+		my $k_nazwa = $converter1->convert($row->{'name'});
+		$k_nazwa = sprintf("%.40s",$k_nazwa);
+		$k_nazwa = sprintf("%-40s",$k_nazwa);
+		#40 adres klienta
+		my $k_adres = $converter1->convert($row->{'address'});
+		$k_adres = sprintf("%.40s",$k_adres);
+		$k_adres = sprintf("%-40s",$k_adres);
+		#15 nip klienta
+		my $k_nip = $converter1->convert($row->{'ten'});
+		$k_nip = sprintf("%-15s",$k_nip);
+		my $klient = $k_kod.' '.$k_nazwa.' '.$k_adres.' '.$k_nip;
+
+		#40 numer konta bankowego
+		my $bank = '85109013460000000115605796';
+		$bank = sprintf("%-40s",$bank);
+
+		#50 informacje dodatkowe
+		my $info = $row->{'description'};
+		$info = $converter1->convert($info);
+		$info = sprintf("%.50s",$info);
+		$info = sprintf("%-50s",$info);
+		
+
+		$bufor_wyciag_bankowy .= $naglowek." ";	
+		$bufor_wyciag_bankowy .= "K  ".$klient." ";	
+		$bufor_wyciag_bankowy .= "B  ".$bank." ";	
+		$bufor_wyciag_bankowy .= "I  ".$info;	
+		$bufor_wyciag_bankowy .= "\r\n";			
+	}
+
+
+$dbq->finish();
+
+$dbase->disconnect();
+
+# wysłanie maila
+my $fencoding = 'quoted-printable';
+my $ftype = 'text/html';
+my $fext = 'html';
+
+my $mail = build MIME::Entity Type=>"multipart/mixed";
+$mail->head->add('To', '"=?UTF-8?Q?'.encode_qp('Księgowość', '').'?="'.' <daniel@neter.pl>');
+$mail->head->add('From', '"Neter Sp. z o.o."'.' <finanse@neter.pl>');
+$mail->head->add('Reply-To', '"Neter Sp. z o.o."'.' <finanse@neter.pl>');
+$mail->head->add('Subject', '=?UTF-8?Q?'.encode_qp('Faktury za: '.$from.' - '.$to, '').'?=');
+$mail->head->add('Message-ID', '<lms.send@lms>');
+$mail->head->add('Return-path', '<finanse@neter.pl>');
+$mail->attach(
+	Type => 'text/plain',
+	Charset => 'UTF-8',
+	Encoding => 'quoted-printable',
+	Data => [ "Przesyłamy faktury i przelewy za $from - $to\n" ],
+);
+$mail->attach(
+	Type => $ftype,
+	Charset => 'UTF-8',
+	Encoding => $fencoding,
+	Filename => 'faktury.txt',
+	Data => [ "#KsH v.006\r\n".$bufor_faktury ],
+);
+$mail->attach(
+	Type => $ftype,
+	Charset => 'UTF-8',
+	Encoding => $fencoding,
+	Filename => 'faktury_kor.txt',
+	Data => [ "#KsH v.006\r\n".$bufor_faktury_kor ],
+);
+$mail->attach(
+	Type => $ftype,
+	Charset => 'UTF-8',
+	Encoding => $fencoding,
+	Filename => 'wyciag_bankowy.txt',
+	Data => [ "#KsH v.006\r\n".$bufor_wyciag_bankowy ],
+);
+$mail->attach(
+	Type => $ftype,
+	Charset => 'UTF-8',
+	Encoding => $fencoding,
+	Filename => 'wszystko.txt',
+	Data => [ "#KsH v.006\r\n".$bufor_faktury.$bufor_faktury_kor.$bufor_wyciag_bankowy ],
+);
+# $mail->smtpsend('MailFrom' => 'finanse@neter.pl', 'To' => 'faktury@neter.pl', 'Return-path' => 'finanse@neter.pl');
+$mail->smtpsend('MailFrom' => 'finanse@neter.pl', 'To' => 'daniel@neter.pl', 'Return-path' => 'finanse@neter.pl');
+
+
+exit;

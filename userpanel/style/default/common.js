@@ -24,3 +24,8 @@ function CheckAll(form, elem, excl)
         e.checked = elem.checked;
     }
 }
+
+function checkElement(id)
+{
+        document.getElementById(id).checked = !document.getElementById(id).checked;
+}

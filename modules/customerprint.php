@@ -68,6 +68,11 @@ switch($type)
 			$search['stateid'] = intval($_POST['stateid']);
 		}
 
+		if(!empty($_POST['deliverer']))
+		{
+			$search['deliverer'] = intval($_POST['deliverer']);
+		}
+
 		switch($_POST['filter'])
 		{
 			case 0:
@@ -91,6 +96,53 @@ switch($type)
 				$SMARTY->assign('customerlist', $LMS->GetCustomerList($_POST['order'].','.$_POST['direction'], $_POST['filter'], $_POST['network'], $_POST['customergroup'], $search, $date, 'AND', $_POST['nodegroup']));
 			break;
 			case 6:
+				if($_POST['lastpayday'])
+				{
+					$layout['pagetitle'] = trans('Lista klientów zadłużonych $a$b bez wpłaty od:'.$_POST['lastpayday'],($_POST['network'] ? trans(' (Net: $a)',$LMS->GetNetworkName($_POST['network'])) : ''),($_POST['customergroup'] ? trans('(Group: $a)',$LMS->CustomergroupGetName($_POST['customergroup'])) : ''));
+					$tmp = $LMS->GetCustomerList($_POST['order'].','.$_POST['direction'], $_POST['filter'], $_POST['network'], $_POST['customergroup'], NULL, $date);
+
+					list($year, $month, $day) = split('/',$_POST['lastpayday']);
+					$lastpayday = mktime(0,0,0,$month,$day,$year);
+
+					// wszyscy którzy coś wpłacili od lastpayday
+					$cus_queue = $DB->GetAll("SELECT customerid 
+												from cash
+											   where (type = 3 or type = 1) 
+												 and time > ?
+											   group by customerid 
+											  having sum(value) > 0",array($lastpayday));
+					foreach($cus_queue as $key => $row)
+						$cus_queue[$key] = $row['customerid'];
+
+					foreach($tmp as $key => $row)
+					{
+						if(!($row['id'] == 0) && !in_array($row['id'],$cus_queue))
+							$customerlist[] = $row;
+							
+					}						
+
+					$SMARTY->assign('customerlist',$customerlist);
+
+				} else {
+
+					$layout['pagetitle'] = trans('Indebted Customers List $a$b',($_POST['network'] ? trans(' (Net: $a)',$LMS->GetNetworkName($_POST['network'])) : ''),($_POST['customergroup'] ? trans('(Group: $a)',$LMS->CustomergroupGetName($_POST['customergroup'])) : ''));
+					$SMARTY->assign('customerlist', $LMS->GetCustomerList($_POST['order'].','.$_POST['direction'], $_POST['filter'], $_POST['network'], $_POST['customergroup'], NULL, $date));
+
+				}
+			break;
+			case 7:
+				$search['deliverer'] = 1;
+				$search['deliverer_nozero'] = 0;
+				$layout['pagetitle'] = trans('Lista dostawców $a$b',($_POST['network'] ? trans(' (Net: $a)',$LMS->GetNetworkName($_POST['network'])) : ''),($_POST['customergroup'] ? trans('(Group: $a)',$LMS->CustomergroupGetName($_POST['customergroup'])) : ''));
+				//$SMARTY->assign('customerlist', $LMS->GetCustomerList($_POST['order'].','.$_POST['direction'], $_POST['filter'], $_POST['network'], $_POST['customergroup'], $search, $date));
+				$SMARTY->assign('customerlist', $LMS->GetCustomerList($_POST['order'].','.$_POST['direction'], NULL, $_POST['network'], $_POST['customergroup'], $search, $date));
+			break;
+			case 8:
+				$search['deliverer'] = 1;
+				$search['deliverer_nozero'] = 1;
+				$layout['pagetitle'] = trans('Lista dostawców $a$b',($_POST['network'] ? trans(' (Net: $a)',$LMS->GetNetworkName($_POST['network'])) : ''),($_POST['customergroup'] ? trans('(Group: $a)',$LMS->CustomergroupGetName($_POST['customergroup'])) : ''));
+				$SMARTY->assign('customerlist', $LMS->GetCustomerList($_POST['order'].','.$_POST['direction'], NULL, $_POST['network'], $_POST['customergroup'], $search, $date));
+			break;
 			case 11:
 			case 12:
 				$layout['pagetitle'] = trans('Indebted Customers List $a$b',($_POST['network'] ? trans(' (Net: $a)',$LMS->GetNetworkName($_POST['network'])) : ''),($_POST['customergroup'] ? trans('(Group: $a)',$LMS->CustomergroupGetName($_POST['customergroup'])) : ''));
@@ -196,6 +248,69 @@ switch($type)
 			$SMARTY->display('printcustomerbalance.html');
 		}
 	break;
+
+	case 'endofconntract':
+		$from = $_POST['from'];
+		$to = $_POST['to'];
+	
+		// date format 'yyyy/mm/dd'	
+		if($from) {
+			list($year, $month, $day) = split('/',$from);
+			$date['from'] = mktime(0,0,0,$month,$day,$year);
+		} else {
+			$from = date('Y/m/d',time());
+			$date['from'] = mktime(0,0,0); // poczatek dnia dzisiejszego
+		}
+
+		if($to) {
+			list($year, $month, $day) = split('/',$to);
+			$date['to'] = mktime(23,59,59,$month,$day,$year);
+		} else { 
+			$to = date('Y/m/d',time()+(31*24*60*60));
+			list($year,$month,$day) = split('/',$from);
+			$date['to'] = mktime(23,59,59,$month+1,$day,$year); //nastepny miesiac
+		}	
+	
+		if($tslist = $DB->GetAll('select  assignments.tariffid as ass_tariffid, 
+								      assignments.customerid as ass_customerid,
+								      assignments.period as ass_perios,
+								      assignments.at as ass_at,
+								      assignments.datefrom as ass_datefrom,
+								      assignments.dateto as ass_dateto,
+								      customers.id as cus_id,
+								      customers.name as cus_name,
+								      customers.lastname as cus_lastname,
+								      customers.address as cus_address,
+								      customers.zip as cus_zip,
+								      customers.city as cus_city,
+								      ifnull(tariffs.name,"NULL") as tar_name,
+								      ifnull(tariffs.value,"NULL") as tar_value,
+								      ifnull(liabilities.value,"NULL") as lia_value,
+								      ifnull(liabilities.name,"NULL") as lia_name
+  							     from assignments left join tariffs on tariffs.id = assignments.tariffid
+											      left join customers on assignments.customerid = customers.id
+											      left join liabilities on assignments.liabilityid = liabilities.id
+ 					                		where assignments.dateto >= ' . $date['from'] .'
+                                              and assignments.dateto <= ' . $date['to'] .'
+                                            order by customers.id', array($id))
+		)
+			foreach($tslist as $row)
+				foreach($row as $column => $value)
+						$endofconntract[$column][] = $value;
+							
+					
+	$layout['pagetitle'] = 'Lista umów kończących się w okresie: '. $from.' - '.$to;
+
+	$SMARTY->assign('endofconntract',$endofconntract);
+		if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+			$output = $SMARTY->fetch('printendofconntract.html');
+			html2pdf($output, trans('Reports'), $layout['pagetitle']);
+		} else {
+			$SMARTY->display('printendofconntract.html');
+		}
+					
+
+		break;
 
 	default: /*******************************************************/
 

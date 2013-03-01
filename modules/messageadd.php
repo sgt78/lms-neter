@@ -267,8 +267,8 @@ if(isset($_POST['message']))
 				$recipients[$key]['destination'] = $row['phone'];
 
 			$DB->Execute('INSERT INTO messageitems (messageid, customerid,
-				destination, status)
-				VALUES (?, ?, ?, ?)', array(
+				destination, lastdate, status)
+				VALUES (?, ?, ?, ?NOW?, ?)', array(
 					$msgid,
 					isset($row['id']) ? $row['id'] : 0,
 					$recipients[$key]['destination'],
@@ -325,7 +325,7 @@ if(isset($_POST['message']))
 			if($message['type'] == MSG_MAIL)
 				$result = $LMS->SendMail($row['destination'], $headers, $body, $files);
 			else
-				$result = $LMS->SendSMS($row['destination'], $body, $msgid);
+				$result = MSG_NEW; //$LMS->SendSMS($row['destination'], $body, $msgid);
 
 			if (is_string($result))
 				echo " <font color=red>$result</font>";
@@ -371,6 +371,16 @@ else if (!empty($_GET['customerid']))
 
 	$SMARTY->assign('message', $message);
 }
+else if (!empty($_GET['userid']))
+{
+	$message = $DB->GetRow('SELECT id AS userid, 
+		name, email, phone
+		FROM users
+		WHERE id = ?', array($_GET['userid']));
+
+	$SMARTY->assign('message', $message);
+}
+
 
 $SMARTY->assign('networks', $LMS->GetNetworks());
 $SMARTY->assign('customergroups', $LMS->CustomergroupGetAll());

@@ -30,7 +30,7 @@ function GetHostIdByName($name)
 	return $DB->GetOne('SELECT id FROM hosts WHERE name = ?', array($name));
 }
 
-$host = $DB->GetRow('SELECT id, name, description FROM hosts WHERE id=?', array($_GET['id']));
+$host = $DB->GetRow('SELECT id, name, description, inet_ntoa(ipaddr) as ipaddr, servicetype FROM hosts WHERE id=?', array($_GET['id']));
 
 $layout['pagetitle'] = trans('Host Edit: $a', $host['name']);
 
@@ -45,11 +45,15 @@ if(isset($_POST['hostedit']))
 	elseif($host['name']!=$hostedit['name'])
 		if(GetHostIdByName($hostedit['name']))
 			$error['name'] = trans('Host with specified name exists!');
+	elseif($hostadd['ipaddr'] == 0)
+		$error['ipaddr'] = 'Podaj adres ip serwera';
+	elseif($hostadd['servicetype'] == 0)
+		$error['servicetype'] = 'Wybierz typ usługi';
 	
 	if(!$error)
 	{
-		$DB->Execute('UPDATE hosts SET name=?, description=? WHERE id=?',
-				    array($hostedit['name'], $hostedit['description'], $_GET['id']));
+		$DB->Execute('UPDATE hosts SET name=?, description=?, ipaddr=inet_aton(?), servicetype=? WHERE id=?',
+				    array($hostedit['name'], $hostedit['description'], $hostedit['ipaddr'], $hostedit['servicetype'], $_GET['id']));
 		
 		$SESSION->redirect('?m=hostlist');
 	}

@@ -1,0 +1,348 @@
+{include file="header.html"}
+<!--// $Id: invoicenew.html,v 1.56 2007/08/01 06:30:03 alec Exp $ //-->
+<H1>{$layout.pagetitle}</H1>
+{include file="calendar_js.html"}
+<script language="javascript">
+	<!--
+	function setItem(index)
+	{literal}{{/literal}
+		{foreach from=$tariffs item=tariff}
+		if(index=={$tariff.id})
+		{literal}{{/literal}
+			document.additem.name.value = '{$tariff.name|escape}';
+			document.additem.taxid.value = '{$tariff.taxid}';
+			document.additem.valuebrutto.value = '{$tariff.value}';
+			document.additem.prodid.value = '{$tariff.prodid}';
+			document.additem.tariffid.value = '{$tariff.id}';
+		{literal}}{/literal}
+		{/foreach}
+{literal}}
+	
+	function saveheader()
+	{
+	        if(document.setcustomer.customer)
+	                if(document.setcustomer.customer.value != 0)
+	                        document.setcustomer.customerid.value = document.setcustomer.customer.value;
+	
+	        document.setcustomer.submit();
+	}															
+
+	function CheckAll()
+	{
+		for (var i=0; i<document.additemlist.elements.length; i++)
+		{
+			var e = document.additemlist.elements[i];
+		        if (e.name != 'allbox')
+				e.checked = document.additemlist.allbox.checked;
+		}
+	}
+
+	function CheckAll2()
+	{
+		document.additemlist.allbox.checked = !document.additemlist.allbox.checked;
+		CheckAll();
+	}
+	//-->
+{/literal}
+</script>		
+<FORM NAME="setcustomer" METHOD="POST" ACTION="?m=nm_fv_kosztowa_dodaj&action=setcustomer">
+<INPUT type="submit" class="hiddenbtn">
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="dark">
+		<TD CLASS="fall" WIDTH="100%" COLSPAN="2">
+			<B>{t}Main Informations:{/t}</B>
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Invoice number:{/t}</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="99%" NOWRAP>
+			<INPUT TYPE="TEXT" NAME="invoice[number]" VALUE="{$invoice.number}" SIZE="20" {tip text="Wprowadź numer faktury obcej" trigger="number"}>&nbsp;
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Settlement date:{/t}</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="99%" NOWRAP>
+			<INPUT TYPE="TEXT" NAME="invoice[cdate]" VALUE="{$invoice.cdate|date_format:"%Y/%m/%d"}" SIZE="10" {tip text="Enter date of settlement in YYYY/MM/DD format (empty field means current date) or click to select it from calendar" trigger="cdate"} OnClick="javascript:cal1.popup();" >
+			{if $invoice.cdatewarning}
+			<INPUT TYPE="HIDDEN" NAME="invoice[cdatewarning]" VALUE="1">
+			{/if}
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Deadline:{/t}</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="99%" NOWRAP>
+			<INPUT TYPE="TEXT" NAME="invoice[paytime]" VALUE="{$invoice.paytime}" SIZE="10" {tip text="Enter deadline in days (optional)"}>
+			{if $invoice.cdate}
+				({$invoice.cdate+$invoice.paytime*86400|date_format:"%Y/%m/%d"})
+			{/if}
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Payment type:{/t}</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="99%" NOWRAP>
+			<SELECT name="invoice[paytype]" {tip text="Select payment type" trigger="paytype"}>
+				<OPTION value=""{if !$invoice.paytype} selected{/if}>- {t}default{/t} -</OPTION>
+				{foreach from=$_PAYTYPES item=item key=key}
+				<OPTION value="{$key}"{if $invoice.paytype==$key} selected{/if}>{$item}</OPTION>
+				{/foreach}
+			</SELECT>
+		</TD>
+	</TR>			
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Dostawca:{/t}</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="99%" NOWRAP>
+			{if $customers}
+			<SELECT SIZE="1" NAME="customer" onChange="document.setcustomer.customerid.value=document.setcustomer.customer.value">
+				<OPTION VALUE="0">{t}... wybierz dostawcę ...{/t}</OPTION>
+				{foreach from=$customers item=c}
+				<OPTION VALUE="{$c.id}"{if $c.id eq $customer.id || $invoice.customerid eq $c.id} SELECTED{/if}>{$c.customername|truncate:"40":"...":true} ({$c.id|string_format:"%04d"})</OPTION>
+				{/foreach}
+			</SELECT>
+			{t}lub ID:{/t}
+			{/if}
+			<INPUT TYPE="TEXT" NAME="customerid" VALUE="{if $customer.id}{$customer.id}{else}{$invoice.customerid}{/if}" SIZE="5"{if $customers} onChange="document.setcustomer.customer.value=document.setcustomer.customerid.value"{/if} {tip text="Enter customer ID"}>
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fbottomu" WIDTH="100%" ALIGN="right" COLSPAN="2">
+			<A HREF="javascript: saveheader();">{t}Submit{/t} <IMG SRC="img/save.gif" ALT=""></A>
+		</TD>
+	</TR>
+</TABLE>
+</FORM>
+{if $customer}
+<P>
+<TABLE WIDTH="100%" CELLPADDING="3">
+        <TR CLASS="dark">
+                <TD CLASS="fleftu" WIDTH="1%" nowrap>
+                        <IMG SRC="img/customer.gif" ALT=""> <B>{t}Dostawca:{/t}</B>
+                </TD>
+                <TD CLASS="frightu" WIDTH="99%">
+                        <B>{$customer.customername}</B>
+                        &nbsp;&raquo;&nbsp; {$customer.address} &nbsp; {$customer.zip} {$customer.city}
+                        &nbsp;&raquo;&nbsp; {if $customer.balance > 0}<FONT class="red">{/if}{$customer.balance|money_format}{if $customer.balance > 0}</FONT>{/if}
+                </TD>
+        </TR>
+</TABLE>
+</P>
+{/if}
+<P>	
+<TABLE WIDTH="100%" CELLPADDING="3">
+{if $covenantlist}
+	<FORM name="additemlist" method="POST" action="?m=nm_fv_kosztowa_dodaj&action=additemlist">
+	<TR>
+		<TD colspan="9" class="ftopu">
+			<TABLE WIDTH="100%" CELLPADDING="3">
+				<TR CLASS="DARK">
+					<TD class="fall">
+						<IMG src="img/money.gif" ALT="">
+						<B>{t}Invoiceless liabilities:{/t}</B>
+					</TD>
+				</TR>
+				<TR>
+					<TD width="100%" class="fall">
+						<TABLE cellpadding="5" cellspacing="0" width="100%">
+							<TR class="dark">
+								<TD width="1%" class="fleftu">{t}Date:{/t}</TD>
+								<TD width="92%" class="fbt">{t}Name of product, commodity or service:{/t}</TD>
+								<TD width="1%" class="fbt" align="right" nowrap>{t}Product ID:{/t}</TD>
+								<TD width="1%" class="fbt" align="right">{t}Amount:{/t}</TD>
+								<TD width="1%" class="fbt" align="right">{t}Unit:{/t}</TD>
+								<TD width="1%" class="fbt" align="right" nowrap>{t}Net Value:{/t}</TD>
+								<TD width="1%" class="fbt" align="right" nowrap>{t}Tax:{/t}</TD>
+								<TD width="1%" class="fbt" align="right" nowrap>{t}Gross Value:{/t}</TD>
+								<TD width="1%" class="frightu">&nbsp;</TD>
+							</TR>
+							{cycle values="light,lucid" print=false}
+							{section name=covenantlist loop=$covenantlist}
+							<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+							        <TD><nobr>{$covenantlist[covenantlist].time|date_format:"%Y/%m/%d"}</nobr></TD>
+									<TD>{$covenantlist[covenantlist].comment}</TD>
+							        <TD align="right"><INPUT type="text" name="l_prodid[{$covenantlist[covenantlist].cashid}]" value="" size="6"></TD>
+							        <TD align="right"><INPUT type="text" name="l_count[{$covenantlist[covenantlist].cashid}]" value="1" size="3"></TD>
+							        <TD align="right"><INPUT type="text" name="l_jm[{$covenantlist[covenantlist].cashid}]" value="{t}pcs.{/t}" size="3"></TD>
+							        <TD align="right" nowrap>{$covenantlist[covenantlist].net|money_format}</TD>
+							        <TD align="right" nowrap>{$covenantlist[covenantlist].tax}</TD>
+							        <TD align="right" nowrap>{$covenantlist[covenantlist].value|money_format}</TD>
+								<TD align="right">
+									{cycle print=false}
+									<INPUT class="box {cycle}" TYPE="checkbox" NAME="marks[]" VALUE="{$covenantlist[covenantlist].cashid}">
+								</TD>
+							</TR>
+							{/section}
+							<TR class="light">
+								<TD CLASS="ftop" colspan="2" nowrap>
+									<INPUT CLASS="box light" TYPE="checkbox" NAME="allbox" onClick="CheckAll();" VALUE="Check All Boxes">
+									<A HREF="javascript:CheckAll2();">{t}Check All{/t}</A>
+								</TD>
+							        <TD CLASS="ftop" ALIGN="right" colspan="7" nowrap>
+									<A href="javascript:document.additemlist.submit();">{t}Add items{/t} <IMG src="img/save.gif" ALT=""></A>
+								</TD>
+							</TR>
+						</TABLE>
+					</TD>
+				</TR>
+			</TABLE>
+		</TD>
+        </TR>
+	</FORM>
+{/if}
+	<TR CLASS="DARK">
+		<TD CLASS="fleftu" WIDTH="1%">
+			<B>{t}No.{/t}</B>
+		</TD>
+		<TD CLASS="fbt" WIDTH="93%">
+			{t}Name of product, commodity or service:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="RIGHT">
+			{t}Amount:{/t}<BR>
+			{t}Unit:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{t}Net Price:{/t}<BR>
+			{t}Net Value:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="RIGHT">
+			{t}Tax:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{t}Gross Price:{/t}<BR>
+			{t}Gross Value:{/t}
+		</TD>
+		<TD CLASS="frightu" WIDTH="1%">
+			&nbsp;
+		</TD>
+	</TR>
+	{cycle values="light,lucid" print=false}
+	{foreach from=$contents item=item}
+	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD CLASS="fleft" WIDTH="1%">
+			<B>{counter}.</B>
+		</TD>
+		<TD WIDTH="92%">
+			{$item.name}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.count|string_format:"%.2f"}<BR>
+			{$item.jm}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.valuenetto|money_format}<BR>
+			{$item.s_valuenetto|money_format}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.tax}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.valuebrutto|money_format}<BR>
+			{$item.s_valuebrutto|money_format}
+		</TD>
+		<TD WIDTH="1%" NOWRAP CLASS="fright">
+			<A HREF="?m=nm_fv_kosztowa_dodaj&action=deletepos&posuid={$item.posuid}"><IMG SRC="img/delete.gif" {tip text="Remove this item from list"}></A>
+		</TD>			
+	</TR>
+	{foreachelse}
+	<TR>
+		<TD COLSPAN="9" ALIGN="CENTER" CLASS="flr">
+			<P>&nbsp;</P>
+			<P><B>{t}Invoice have no items. Use form below for items addition.{/t}</B></P>
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	{/foreach}
+	{if $contents}
+	<TR CLASS="light">
+		<TD COLSPAN="3" WIDTH="96%" ALIGN="RIGHT" CLASS="fleftu">
+			<B>{t}Total:{/t}</B>
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" CLASS="fbt">
+			<B>{sum array=$contents column=s_valuenetto string_format="%01.2f"}</B>
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt">
+			&nbsp;
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" CLASS="fbt">
+			<B>{sum array=$contents column=s_valuebrutto string_format="%01.2f"}</B>
+		</TD>
+		<TD WIDTH="1%" CLASS="frightu">
+			&nbsp;
+		</TD>
+	</TR>
+	{/if}
+	<FORM METHOD="POST" ACTION="?m=nm_fv_kosztowa_dodaj&action=additem" NAME="additem">
+	<INPUT type="submit" class="hiddenbtn">
+	<INPUT TYPE="HIDDEN" NAME="tariffid" VALUE="0">
+	<TR CLASS="light">
+		<TD CLASS="ftl" WIDTH="1%" NOWRAP>
+			<B>{counter}.</B>
+		</TD>
+		<TD CLASS="ftop" WIDTH="92%">
+			<INPUT TYPE="text" NAME="name" SIZE="48"><BR>
+		</TD>
+		<TD CLASS="ftop">
+			<INPUT TYPE="text" NAME="count" SIZE="3" VALUE="1">
+			<INPUT TYPE="text" NAME="jm" SIZE="3" VALUE="{t}pcs.{/t}">
+		</TD>
+		<TD CLASS="ftop" ALIGN="RIGHT" NOWRAP>
+			<INPUT TYPE="text" NAME="valuenetto" SIZE="6" {tip text="Enter unitary value without discount"}>
+		</TD>
+		<TD CLASS="ftop" ALIGN="RIGHT" NOWRAP>
+			<SELECT size="1" name="taxid" {tip text="Select Tax rate"}>
+			{foreach item=tax from=$taxeslist}
+				<OPTION value="{$tax.id}"{if $tax.value == $_config.phpui.default_taxrate} selected{/if}>{$tax.label}</OPTION>
+			{/foreach}
+			</SELECT>
+		</TD>
+		<TD CLASS="ftop" ALIGN="RIGHT" NOWRAP>
+			<INPUT TYPE="text" NAME="valuebrutto" SIZE="6" {tip text="Enter unitary value without discount"}>
+		</TD>
+		<TD CLASS="ftr">
+			<A HREF="javascript:document.additem.submit(); "><IMG SRC="img/save.gif" ALT="" {tip text="Add item"}></A>
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fbl" WIDTH="1%" NOWRAP>
+			&nbsp;
+		</TD>
+		<TD CLASS="fbr" WIDTH="92%" COLSPAN="8">
+			<SELECT SIZE="1" NAME="ttariffid">
+				{foreach from=$tariffs item=tariff}
+				<OPTION VALUE="{$tariff.id}">{$tariff.name} ({$tariff.value|money_format})</OPTION>
+				{/foreach}
+			</SELECT><BR><A HREF="javascript:setItem(document.additem.ttariffid.value)">{t}Select{/t}</A>
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD COLSPAN="9" CLASS="fbottomu" ALIGN="RIGHT">
+			<A HREF="?m=nm_fv_kosztowe_lista">{t}Cancel{/t} <IMG SRC="img/cancel.gif" alt=""></A>
+			<A HREF="?m=nm_fv_kosztowa_dodaj&action=init">{t}Clear Contents{/t} <IMG SRC="img/delete.gif" alt=""></A> 
+			{if !$customer}
+			<A HREF="javascript:alert('{t}Customer not selected!{/t}');">
+			{elseif !$contents}
+			<A HREF="javascript:alert('{t}Invoice have no items!{/t}');">
+			{else}
+			<A HREF="?m=nm_fv_kosztowa_dodaj&action=save">
+			{/if}
+			{t}Save & Print{/t} <IMG src="img/save.gif" alt=""></A>
+		</TD>
+	</TR>
+	</FORM>
+</TABLE>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+var cal1 = new calendar(document.forms['setcustomer'].elements['invoice[cdate]']);
+cal1.time_comp = false;
+document.forms['setcustomer'].elements['invoice[number]'].focus();
+//-->
+</SCRIPT>
+{include file="footer.html"}

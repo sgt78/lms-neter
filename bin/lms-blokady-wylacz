@@ -1,0 +1,227 @@
+#!/usr/bin/perl -Tw
+#
+#  LMS version 1.10.4 Pyrus
+#
+#  Copyright (C) 2001-2008 LMS Developers
+#
+#  Please, see the doc/AUTHORS for more information about authors!
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License Version 2 as
+#  published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#  USA.
+#
+#  $Id: lms-makeon,v 1.19.2.2 2008/01/04 07:57:19 alec Exp $
+
+use strict;
+use DBI;
+use Config::IniFiles;
+use Getopt::Long;
+use vars qw($configfile $quiet $help $version);
+use POSIX qw(strftime);
+use Math::Round;
+
+my $_version = '1.10.4 Pyrus';
+
+my %options = (
+	"--config-file|C=s"	=>	\$configfile,	"--quiet|q"		=>	\$quiet,
+	"--help|h"		=>	\$help,
+	"--version|v"		=>	\$version,
+);
+
+Getopt::Long::config("no_ignore_case");
+GetOptions(%options);
+
+if($help)
+{
+	print STDERR <<EOF;
+lms-makeon, version $_version
+(C) 2001-2008 LMS Developers
+
+-C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
+-h, --help			print this help and exit;
+-v, --version			print version info and exit;
+-q, --quiet			suppress any output, except errors;
+
+EOF
+	exit 0;
+}
+
+if($version)
+{
+	print STDERR <<EOF;
+lms-makeon, version $_version
+(C) 2001-2008 LMS Developers
+
+EOF
+	exit 0;
+}
+
+if(!$configfile)
+{
+	$configfile = "/etc/lms/lms.ini";
+}
+
+if(!$quiet)
+{
+	print STDERR "lms-makeon, version $_version\n";
+	print STDERR "(C) 2001-2008 LMS Developers\n";
+	print STDERR "Using file $configfile as config.\n";
+}
+
+if(! -r $configfile)
+{
+	print STDERR "Fatal error: Unable to read configuration file $configfile, exiting.\n";
+	exit 1;
+}
+
+my $ini = new Config::IniFiles -file => $configfile;
+print @Config::IniFiles::errors;
+
+my $dbtype = $ini->val('database', 'type') || 'mysql';
+my $dbhost = $ini->val('database', 'host') || 'localhost';
+my $dbuser = $ini->val('database', 'user') || 'root';
+my $dbpasswd = $ini->val('database', 'password') || '';
+my $dbname = $ini->val('database', 'database') || 'lms';
+
+
+my $dbase;
+my $utsfmt;
+
+my $current_unix_time = time;
+
+if($dbtype =~ /mysql/)
+{
+	$dbase = DBI->connect("DBI:mysql:database=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$dbase->do("SET NAMES utf8");
+	$utsfmt = "UNIX_TIMESTAMP()";
+}
+elsif($dbtype eq "postgres")
+{
+	$dbase = DBI->connect("DBI:Pg:dbname=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$utsfmt = "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))";
+}
+else
+{
+	print STDERR "Fatal error: unsupported database type: $dbtype, exiting.\n";
+	exit 1;
+}
+
+my $dbq = $dbase->prepare("
+	SELECT customers.id AS id, UPPER(lastname) AS lastname, name, SUM(cash.value) AS balance 
+	  FROM customers LEFT JOIN cash ON customers.id = cash.customerid 
+	 WHERE deleted = 0 
+	 GROUP BY customers.id, lastname, name 
+	 ORDER BY lastname, name
+");
+
+#	HAVING SUM(cash.value) >= 0 
+
+
+my $licznik=0;
+my $lastinvoice=0;
+
+$dbq->execute();
+while (my $row = $dbq->fetchrow_hashref())
+{
+
+	my $dbqs = $dbase->prepare("
+	select sum(invoicecontents.value*invoicecontents.count)*-1 as lastinvoice, 
+		   id,
+		   cdate,
+		   cdate+(paytime+1)*24*60*60 as pdate
+	  from invoicecontents left join documents on documents.id = invoicecontents.docid
+	 where documents.customerid = $row->{'id'}
+	   and documents.type = 1
+         group by id 
+         order by id desc 
+         limit 1;
+	");
+	$dbqs->execute();
+	my $rowi = $dbqs->fetchrow_hashref();
+
+
+	# skip jeśli brak faktury
+	if (!$rowi->{'lastinvoice'}) { 
+		print STDOUT "CID: $row->{'id'} Brak faktury pomijam\n";
+		next;
+	} else {
+		print STDOUT "CID: $row->{'id'} ostatnia faktura: $rows->{'lastinvoice'}\n";
+	}
+
+	if (!defined($row->{'balance'})) 
+	{
+	    $row->{'balance'} = 0;
+	}
+
+	print STDERR "$row->{'lastname'}\n";
+
+	my $tester = round($row->{'balance'}/$rowi->{'lastinvoice'});
+
+	if(!$quiet && $tester > 1)
+	{
+		print STDERR "$row->{'lastname'} $row->{'name'} ($row->{'id'})\t$row->{'balance'}\tfv:$rowi->{'lastinvoice'}";
+	}
+	
+################### obsługa #####################	
+	if ($tester > 2) {
+		print STDERR "CID: $row->{'id'} Nie zdejmuję blokady bo tester = $tester";
+	}
+	elsif ($tester == 2) {
+		if ($current_unix_time < $rowi->{'pdate'}) {
+			print STDERR "CID: $row->{'id'} Zdjęta blokada bo tester = $tester i nie upłynął termin płatności\n";
+		} else {
+			print STDERR "CID: $row->{'id'} Nie zdejmuję blokady bo tester = $tester i upłynął termin płatności\n";
+		}
+	}
+	elsif ($tester == 1) {
+		#jeśli upłynął termin płatności to info
+		#nic
+	}
+	else {
+		print STDERR "CID: $row->{'id'} Zdjęta blokada bo tester = $tester";
+	}
+################### obsługa end #####################	
+	
+	
+	if ($tester > 1 ) {
+		print STDERR "NIE ZDJETA BLOKADA bo $tester\n";
+	} else {
+		my $rows = $dbase->do("
+			UPDATE nodes SET access=1, warning=0 
+			 WHERE ownerid=$row->{'id'} 
+			   AND access=0
+		");
+
+		if(!$quiet && $rows > 0)
+		{
+			print STDERR "ODBLOKOWANY bo $tester\n";
+			$licznik++;
+		}
+		if($rows > 0)
+		{
+			my $dbqu = $dbase->prepare("UPDATE customers SET message='' WHERE id=?");
+			$dbqu->execute($row->{'id'});
+		}
+	}
+
+}
+
+if ($licznik)
+{
+    open(LICZNIK, '>/var/lock/lms-blokady');
+    print LICZNIK $licznik;
+    close(LICZNIK);
+}
+
+$dbq->finish();
+$dbase->disconnect();

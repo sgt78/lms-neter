@@ -26,7 +26,7 @@
 
 // REPLACE THIS WITH PATH TO YOUR CONFIG FILE
 
-//$CONFIG_FILE = '/etc/lms/lms.ini';
+$CONFIG_FILE = '/etc/lms/lms.ini';
 $CONFIG_FILE = '';
 
 // PLEASE DO NOT MODIFY ANYTHING BELOW THIS LINE UNLESS YOU KNOW
@@ -152,6 +152,22 @@ $LMS->ui_lang = $_ui_language;
 $LMS->lang = $_language;
 $voip=new LMSVOIP(&$DB,$CONFIG['phpui']);
 
+
+// Radius support
+if($CONFIG['phpui']['radius'] == 'YES')
+{
+	require_once(LIB_DIR.'/RADIUS.class.php');
+
+	$_RADIUS_DBTYPE = $CONFIG['database']['radius_type'];
+	$_RADIUS_DBHOST = $CONFIG['database']['radius_host'];
+	$_RADIUS_DBUSER = $CONFIG['database']['radius_user'];
+	$_RADIUS_DBPASS = $CONFIG['database']['radius_password'];
+	$_RADIUS_DBNAME = $CONFIG['database']['radius_database'];
+
+	$DBRADIUS = DBInit($_RADIUS_DBTYPE, $_RADIUS_DBHOST, $_RADIUS_DBUSER, $_RADIUS_DBPASS, $_RADIUS_DBNAME);
+	$RADIUS    = new RADIUS(&$DB,&$DBRADIUS,&$DB,$CONFIG['phpui']);
+
+}	
 // Set some template and layout variables
 
 $SMARTY->template_dir = SMARTY_TEMPLATES_DIR;
@@ -171,9 +187,11 @@ $layout['dbdebug'] = $_DBDEBUG;
 $layout['popup'] = isset($_GET['popup']) ? true : false;
 
 $SMARTY->assignByRef('layout', $layout);
+$SMARTY->assignByRef('_LANG', $_LANG);
 $SMARTY->assignByRef('LANGDEFS', $LANGDEFS);
 $SMARTY->assignByRef('_ui_language', $LMS->ui_lang);
 $SMARTY->assignByRef('_language', $LMS->lang);
+$SMARTY->assignByRef('_config',$CONFIG);
 
 $error = NULL; // initialize error variable needed for (almost) all modules
 

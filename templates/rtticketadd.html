@@ -73,11 +73,27 @@
 	</TR>
 	<TR CLASS="light">
 		<TD WIDTH="1%" NOWRAP>
+		<IMG src="img/users.gif" alt="">
+		<B>{trans("Owner:")} (Osoba odpowiedzialna)</B>
+	    </TD>
+		<TD WIDTH="99%">
+		<SELECT size="1" name="ticket[owner]" {tip text="Select user" trigger="owner"}>
+		{foreach from=$userlist item=item}
+			<OPTION value="{$item.id}" {if $item.id == $currentuser}SELECTED{/if}>{$item.name}</OPTION>
+		{/foreach}
+		</SELECT>
+	    </TD>
+	</TR>
+	<TR CLASS="light">
+		<TD WIDTH="1%" NOWRAP>
 			<IMG src="img/queue.gif" alt="">
 			<B>{trans("Queue:")}</B>
 		</TD>
 		<TD WIDTH="99%">
 			<SELECT size="1" name="ticket[queue]" {tip text="Select queue" trigger="queue"}>
+			{if $ticket.queue==0}
+				<OPTION value="0" SELECTED>- {trans("select queue")} -</OPTION>
+			{/if}
 			{foreach from=$queuelist item=item}
 				<OPTION value="{$item.id}" {if $item.id == $queue}SELECTED{/if}>{$item.name}</OPTION>
 			{/foreach}
@@ -137,7 +153,10 @@
 	<TR CLASS="light">
 		<TD WIDTH="100%" CLASS="fbottomu" colspan="2" align="right">
 			<A href="javascript: document.ticket.submit();" accesskey="s">{trans("Submit")} <IMG src="img/save.gif" alt=""></A>
+<!--
 			<A href="?m={if $queue}rtqueueview&id={$queue}{else}rtqueuelist{/if}">{trans("Cancel")} <IMG src="img/cancel.gif" alt=""></A>
+-->
+			<A href="{$backto}">{t}Cancel{/t} <IMG src="img/cancel.gif" alt=""></A>
 		</TD>
 	</TR>
 </TABLE>

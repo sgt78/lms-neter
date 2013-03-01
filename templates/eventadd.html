@@ -51,6 +51,7 @@
 			<B>{trans("Time:")}</B>
 		</TD>
 		<TD width="98%" class="fright">
+			<INPUT type="hidden" name="event[ticketid]" value="{$event.ticketid}">
 {*			<INPUT type="hidden" name="event[date]" value="{$event.date}">
 *}			<INPUT type="text" name="event[date]" value="{$event.date}" size="10" OnCLick="javascript:cal1.popup();" {tip text="Enter date in YYYY/MM/DD format (empty field means today) or click to choose it from calendar" trigger="date"}>
 			{trans("Begin:")} <SELECT name="event[begintime]" size="1" {tip text="Select time of"} OnChange="javascript:SetEndtime();">
@@ -62,6 +63,22 @@
 				{section name=time loop=$hours}
 				<OPTION value="{$hours[time]}" {if $hours[time] == $event.endtime}SELECTED{/if}>{math equation="floor(x/100)" x=$hours[time] format="%02d"}:{math equation="x % 100" x=$hours[time] format="%02d"}</OPTION>
 				{/section}
+			</SELECT>
+		</TD>
+	</TR>
+	<TR class="light">
+		<TD width="1%" class="fleft">
+			<IMG src="img/queue.gif" alt="">
+		</TD>
+		<TD width="1%">
+			<B>Kategoria:</B>
+		</TD>
+		<TD width="98%" class="fright">
+			<SELECT name="event[category]" value="{$event.category}" {tip text="Wybierz kategorię zadania" trigger="category"}>
+				<OPTION value="0"{if !$event.category} SELECTED{/if}>- Brak kategorii -</OPTION>
+				{foreach from=$scorelist item=scorelistitem}	
+				<OPTION value="{$scorelistitem.evs_id}"{if $scorelistitem.evs_id == $event.category} SELECTED{/if}>{$scorelistitem.evs_name}</OPTION>
+				{/foreach}
 			</SELECT>
 		</TD>
 	</TR>
@@ -85,7 +102,28 @@
 		</TD>
 		<TD width="98%" class="fright" nowrap>
 			<INPUT type="checkbox" name="event[status]" id="event_status" value="1" {tip text="Select event's status"}{if $event.status}CHECKED{/if}> <label for="event_status">{trans("private")}</label>
+		</TD>	
+	</TR>
+	<TR class="light">
+		<TD width="1%" class="fleft">
+			<IMG src="img/sms.gif" alt="">
 		</TD>
+		<TD width="1%" NOWRAP>
+			<B>Wyślij SMS:</B>
+		</TD>
+		<TD width="98%" class="fright" nowrap>
+			<INPUT type="checkbox" name="event[notifysms]" id="event_notifysms" value="1" class="box light" {tip text="Select event's notification by sms"}><label for="event_notifysms">Powiadom</label>&nbsp;&nbsp;&nbsp;
+				<SELECT size="1" name="event[whennotify]" ONCHANGE="">
+					<OPTION value="0" SELECTED>Teraz</OPTION>
+					<OPTION value="1">1h wcześniej</OPTION>
+					<OPTION value="2">2h wcześniej</OPTION>
+					<OPTION value="6">6h wcześniej</OPTION>
+					<OPTION value="8">8h wcześniej</OPTION>
+					<OPTION value="12">12h wcześniej</OPTION>
+				</SELECT>&nbsp;
+
+		</TD>
+		
 	</TR>
 	<TR class="light">
 		<TD width="1%" class="fleft">
@@ -126,7 +164,10 @@
 	<TR class="light">
 		<TD class="fbottomu" align="right" colspan="3">
 			<A href="javascript:document.event.submit();" accesskey="s">{trans("Submit")} <IMG src="img/save.gif" alt=""></A>
+<!--
 			<A href="?m=eventlist">{trans("Cancel")} <IMG src="img/cancel.gif" alt=""></A><BR>
+-->
+			<A href="{$backto}">{trans("Cancel")} <IMG src="img/cancel.gif" alt=""></A><BR>
 			<INPUT type="checkbox" name="event[reuse]" id="reuse" value="ON" {if $event.reuse}checked{/if}> <label for="reuse">{trans("Display this form again, when this event is saved")}</label>
 		</TD>
 	</TR>

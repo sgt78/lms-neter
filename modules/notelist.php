@@ -162,6 +162,14 @@ if(isset($_POST['search']))
 	$s = $_POST['search'];
 else
 	$SESSION->restore('dnls', $s);
+//Neter sgt
+if(!isset($s))
+	{
+	$year=date("Y", time());
+	$month=date("m", time());
+	$s = $year.'/'.$month;
+	}
+//Neter end
 $SESSION->save('dnls', $s);
 
 if(isset($_GET['o']))
@@ -174,6 +182,10 @@ if(isset($_POST['cat']))
 	$c = $_POST['cat'];
 else
 	$SESSION->restore('dnlc', $c);
+//Neter sgt
+if(!isset($c))
+	$c = 'month';
+//Neter end
 $SESSION->save('dnlc', $c);
 
 if(isset($_POST['search']))

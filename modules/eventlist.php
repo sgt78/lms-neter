@@ -36,7 +36,7 @@ function GetEventList($year=NULL, $month=NULL, $day=NULL, $forward=0, $customeri
 	$enddate = mktime(0,0,0, $month, $day+$forward, $year);
 
 	$list = $DB->GetAll(
-	        'SELECT events.id AS id, title, description, date, begintime, endtime, customerid, closed, '
+	        'SELECT events.id AS id, title, description, date, begintime, endtime, customerid, closed, rtticketid, '
 		.$DB->Concat('UPPER(customers.lastname)',"' '",'customers.name').' AS customername,
 		userid, users.name AS username 
 		FROM events 
@@ -120,6 +120,16 @@ for($i=1; $i<$daysnum+1; $i++)
 	$days['dow'][] = date('w',$date);
 	$days['sel'][] = ($i == $day);
 }
+
+
+$SESSION->restore('ticketinfo',$ticketinfo);
+
+if(isset($ticketinfo))
+{
+	$layout['pagetitle'] = 'Wybierz termin dla zgłoszenia: ('.sprintf("%04d",$ticketinfo['tic_id']).') - '.$ticketinfo['subject'];
+} else {
+	$layout['pagetitle'] = trans('Timetable');
+}	
 
 $SESSION->save('backto', $_SERVER['QUERY_STRING']);
 $SESSION->save('edate', sprintf('%04d/%02d/%02d', $year, $month, $day));

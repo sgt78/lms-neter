@@ -18,7 +18,7 @@
 				{foreach from=$userchanges item=change}
 				<TR class="{cycle advance=false}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
 					<TD CLASS="fleft" WIDTH="30%" NOWRAP onClick="return self.location.href='?m=customerinfo&id={$change.customerid}';"><B>{$change.customername|truncate:50:" ..."} ({$change.customerid|string_format:"%04d"})</B></TD>
-					<TD WIDTH="15%" NOWRAP>{t}{$change.fieldname|regex_replace:"/[^a-z]/":""}{/t}</TD>
+					<TD WIDTH="15%" NOWRAP>{trans("{$change.fieldname|regex_replace:"/[^a-z]/":""}")}</TD>
 					<TD WIDTH="25%" NOWRAP>{$change.oldvalue}</TD>
 					<TD WIDTH="25%" NOWRAP>{$change.newvalue}</TD>
 					<TD CLASS="fright" WIDTH="5%"><INPUT CLASS="box {cycle}" TYPE="checkbox" NAME="userchanges[]" VALUE="{$change.changeid}"></TD>

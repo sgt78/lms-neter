@@ -26,7 +26,8 @@
 
 if(!$_GET['id'])
 {
-	$SESSION->redirect('?m=eventlist');
+	$SESSION->redirect('?'.$SESSION->get('backto'));
+	//$SESSION->redirect('?m=eventlist');
 }
 
 $event = $DB->GetRow('SELECT events.id AS id, title, description, note, userid, customerid, begintime, endtime, date, private, closed, '
@@ -43,10 +44,10 @@ $event['userlist'] = $DB->GetAll('SELECT userid AS id, users.name
 					AND eventid = ?', array($event['id']));
 
 $layout['pagetitle'] = trans('Event Info');
-
-$SESSION->save('backto', $_SERVER['QUERY_STRING']);
+//$SESSION->save('backto', $_SERVER['QUERY_STRING']);
 
 $SMARTY->assign('event', $event);
+$SMARTY->assign('backto', '?'.$SESSION->get('backto'));
 $SMARTY->display('eventinfo.html');
 
 ?>

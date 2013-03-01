@@ -1,0 +1,237 @@
+{include file="header.html"}
+<!--// $Id: invoicelist.html,v 1.70.2.1 2007/08/22 14:05:06 alec Exp $ //-->
+<H1>{$layout.pagetitle}</H1>
+{literal}
+<SCRIPT type="text/javascript">
+	<!--
+	function CheckAll()
+	{
+		for (var i=0; i<document.page.elements.length; i++)
+		{
+			var e = document.page.elements[i];
+			if (e.name != 'allbox' &&
+			    e.name != 'groupexclude' &&
+			    e.name != 'original' &&
+			    e.name != 'duplicate' &&
+			    e.name != 'copy'
+			)
+				e.checked = document.page.allbox.checked;
+		}
+	}
+
+	function CheckAll2()
+	{
+		document.page.allbox.checked = !document.page.allbox.checked;
+		CheckAll();
+	}
+	
+	function pays()
+	{
+		if(! confirm('{/literal}{t}Are you sure, you want to check/uncheck selected invoices as accounted?{/t}{literal}'))
+			return;
+		document.page.action="?m=invoicepaid";
+		document.page.target="";
+		document.page.submit();
+	}
+
+	function prints()
+	{
+		var add = "";
+    		if(document.page.original.checked)
+	        	add = "&original=1";
+		if(document.page.copy.checked)
+			add += "&copy=1";
+		if(document.page.duplicate.checked)
+			add += "&duplicate=1";
+														       
+		document.page.action="?m=invoice&print=cached" + add;
+		document.page.target="_blank";
+		document.page.submit();
+	}
+
+	function setCheckbox(id)
+	{
+		//document.page.elements[id].checked = !document.page.elements[id].checked;
+		document.getElementById(id).checked = !document.getElementById(id).checked;
+	}
+
+	function filter()
+	{
+		document.page.action="?m=nm_fv_kosztowe_lista";
+		document.page.target="";
+		document.page.submit();
+	}
+{/literal}{if $_config.phpui.short_pagescroller|chkconfig}{literal}
+	function pagechange1()
+	{
+		document.page.action="?m=nm_fv_kosztowe_lista&page=" + document.forms['page'].elements['page1'].value;
+		document.page.target="";
+		document.page.submit();
+	}
+	function pagechange2()
+	{
+		document.page.action="?m=nm_fv_kosztowe_lista&page=" + document.forms['page'].elements['page2'].value;
+		document.page.target="";
+		document.page.submit();
+	}
+{/literal}{/if}{literal}
+	//-->
+</SCRIPT>
+{/literal}
+<FORM METHOD="POST" NAME="page">
+<INPUT type="submit" class="hiddenbtn">
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD CLASS="fleftu" WIDTH="1%" nowrap>
+			<A href="?m=nm_fv_kosztowe_lista&o=id{if $listdata.direction eq "asc" && $listdata.order eq "id"},desc{/if}">{t}ID:{/t}</A> {if $listdata.order eq "id"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" nowrap>
+			<A href="?m=nm_fv_kosztowe_lista&o=cdate{if $listdata.direction eq "asc" && $listdata.order eq "cdate"},desc{/if}">{t}Date:{/t}</A> {if $listdata.order eq "cdate"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" nowrap>
+			<a href="?m=nm_fv_kosztowe_lista&o=pdate{if $listdata.direction eq "asc" && $listdata.order eq "pdate"},desc{/if}">Data płatności:</a> {if $listdata.order eq "pdate"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" nowrap>
+			<A href="?m=nm_fv_kosztowe_lista&o=number{if $listdata.direction eq "asc" && $listdata.order eq "number"},desc{/if}">{t}Number:{/t}</A> {if $listdata.order eq "number"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" nowrap>
+			<A href="?m=nm_fv_kosztowe_lista&o=value{if $listdata.direction eq "asc" && $listdata.order eq "value"},desc{/if}">{t}Value:{/t}</A> {if $listdata.order eq "value"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" nowrap>
+            Pozostało:
+   		</TD>
+		<TD WIDTH="1%" CLASS="fbt" nowrap>
+			<A href="?m=nm_fv_kosztowe_lista&o=count{if $listdata.direction eq "asc" && $listdata.order eq "count"},desc{/if}">Lp:</A> {if $listdata.order eq "count"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
+		</TD>
+		<TD WIDTH="94%" CLASS="fbt" nowrap>
+			<A href="?m=nm_fv_kosztowe_lista&o=name{if $listdata.direction eq "asc" && $listdata.order eq "name"},desc{/if}">{t}For:{/t}</A> {if $listdata.order eq "name"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
+		</TD>
+		<TD WIDTH="1%" CLASS="frightu" NOWRAP>
+			&nbsp;
+		</TD>
+	</TR>
+	<TR class="DARK">
+		<TD class="fall" colspan="9">
+				<B>{t}Filter:{/t} </B> 
+				<INPUT type="text" name="search" value="{$listdata.search}" size="15" {tip text="Enter value of searching data and select category"}>&nbsp;
+				<SELECT size="1" name="cat">
+					<OPTION value="all"{if $listdata.cat eq "all"} SELECTED{/if}>{t}- select filter category -{/t}</OPTION>
+					<OPTION value="cdate"{if $listdata.cat eq "cdate"} SELECTED{/if}>{t}date (YYYY/MM/DD){/t}</OPTION>
+//Neter sgt			<OPTION value="month"{if $listdata.cat eq "month"} SELECTED{/if}>{t}month (YYYY/MM){/t}</OPTION>
+//Neter sgt			<OPTION value="year"{if $listdata.cat eq "year"} SELECTED{/if}>{t}rok (YYYY){/t}</OPTION>
+					<OPTION value="extnumber"{if $listdata.cat eq "extnumber"} SELECTED{/if}>{t}number{/t}</OPTION>
+					<OPTION value="value"{if $listdata.cat eq "value"} SELECTED{/if}>{t}value{/t}</OPTION>
+					<OPTION value="name"{if $listdata.cat eq "name"} SELECTED{/if}>Dostawca - nazwisko/nazwa</OPTION>
+					<OPTION value="customerid"{if $listdata.cat eq "customerid"} SELECTED{/if}>Dostawca - ID</OPTION>
+					<OPTION value="ten"{if $listdata.cat eq "ten"} SELECTED{/if}>{t}TEN{/t}</OPTION>
+					<OPTION value="address"{if $listdata.cat eq "address"} SELECTED{/if}>{t}address{/t}</OPTION>
+					<OPTION value="cnotes"{if $listdata.cat eq "cnotes"} SELECTED{/if}>{t}show only credit notes{/t}</OPTION>
+				</SELECT>&nbsp;
+				<NOBR>
+				<INPUT type="hidden" name="excludeclosed" value="off">
+				<INPUT type="checkbox" name="excludeclosed" id="excludeclosed" class="box dark"{if $listdata.excludeclosed=='on'} CHECKED{/if}> <A HREF="javascript:setCheckbox('excludeclosed')">Ukryj rozliczone</a>
+				</NOBR>
+				<NOBR>
+				&nbsp;<A href="javascript: filter();">&raquo;&raquo;&raquo;</A>
+				</NOBR>
+		</TD>
+	</TR>		
+	{if $listdata.total != 0}
+	<TR CLASS="dark">
+		<TD WIDTH="100%" class="fall" COLSPAN="9">
+			{include file="scroller.html" loop=$invoicelist scrollerno=1}
+		</TD>
+	</TR>
+	{/if}
+	{cycle values="light,lucid" print=false}
+	{section name=invoicelist loop=$invoicelist start=$start max=$pagelimit}
+	{assign var=invoice value=$invoicelist[invoicelist]}
+	{assign var=invoiceid value=$invoice.id}
+	<TR class="{cycle}{if $invoice.closed} blend{/if}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD WIDTH="1%" CLASS="fleft" onClick="return self.location.href='?m=nm_fv_kosztowa_info&id={$invoice.id}';">
+			{$invoice.id|string_format:"%06d"}
+		</TD>
+		<TD WIDTH="1%" NOWRAP onClick="return self.location.href='?m=nm_fv_kosztowa_info&id={$invoice.id}';">
+			{$invoice.cdate|date_format:"%Y/%m/%d"}
+		</TD>
+		<TD WIDTH="1%" NOWRAP onClick="return self.location.href='?m=nm_fv_kosztowa_info&id={$invoice.id}';">
+			{if $nowtime > $invoice.pdate && !$invoice.closed}<font color="blue">{$invoice.pdate|date_format:"%Y/%m/%d"}</font>
+            {else}{$invoice.pdate|date_format:"%Y/%m/%d"}{/if}
+		</TD>		
+		<TD WIDTH="1%" NOWRAP align="right" onClick="return self.location.href='?m=nm_fv_kosztowa_info&id={$invoice.id}';">
+			{$invoice.number}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" onClick="return self.location.href='?m=nm_fv_kosztowa_info&id={$invoice.id}';">
+			{$invoice.value|money_format} 
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" onClick="return self.location.href='?m=nm_fv_kosztowa_info&id={$invoice.id}';">
+			{if $invoice.saldo > 0}<font color="red">{/if}{$invoice.saldo|money_format}{if $invoice.saldo > 0}</font>{/if}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" onClick="return self.location.href='?m=nm_fv_kosztowa_info&id={$invoice.id}';">
+			{$invoice.count}
+		</TD>
+		<TD WIDTH="94%" onClick="return self.location.href='?m=nm_fv_kosztowa_info&id={$invoice.id}';"
+            {tip a=$invoice.customerid dynpopup='?m=customerinfoshort&id=$a'}>
+			<A HREF="?m=customerinfo&id={$invoice.customerid}"{if $invoice.closed} class="blend"{/if}>{$invoice.name} {* $invoice.address *} {* $invoice.zip *} {* $invoice.city *}</A>
+		</TD>
+		<TD WIDTH="1%" ALIGN="RIGHT" CLASS="fright">
+			<NOBR>
+			{if ! $invoice.closed}
+			    {if $invoice.type == $smarty.const.DOC_DELIV_INVOICE}
+			    <A HREF="?m=nm_fv_kosztowa_edytuj&id={$invoice.id}&action=edit"><IMG src="img/edit.gif" alt="[ {t}Edit{/t} ]" title="[ {t}Edit{/t} ]"></A>
+			    <A onClick="return confirmLink(this, '{t a=$invoice.number}Are you sure, you want to remove invoice \'$a\' from database?{/t}')" HREF="?m=nm_fv_kosztowa_edytuj&id={$invoice.id}&action=invoicedel"><IMG src="img/delete.gif" alt="[ {t}Delete{/t} ]" title="[ {t}Delete{/t} ]"></A>
+			    {/if}
+			    {if $invoice.type == $smarty.const.DOC_DELIV_CNOTE}
+			    <A onClick="return confirmLink(this, '{t a=$number}Are you sure, you want to remove credit note \'$a\' from database?{/t}')" HREF="?m=invoicenote&id={$invoice.id}&action=invoicedel"><IMG src="img/delete.gif" alt="[ {t}Delete{/t} ]" title="[ {t}Delete{/t} ]"></A>
+			    {/if}
+    			{if $invoice.type == $smarty.const.DOC_DELIV_INVOICE}
+    			<A HREF="?m=nm_fv_kosztowa_rozlicz&id={$invoice.id}"><IMG src="img/pay.gif" alt="[ {t}Rozlicz fakturę{/t} ]" title="[ {t}Rozlicz fakturę{/t} ]"></A>
+			{/if}
+			{/if}
+			{cycle print=false}
+			<INPUT class="box {cycle}" TYPE="checkbox" NAME="marks[{$invoice.id}]" VALUE="{$invoice.id}"{if $marks.$invoiceid}CHECKED{/if}>
+			</NOBR>
+		</TD>
+	</TR>
+	{sectionelse}
+	<TR>
+		<TD WIDTH="100%" class="fall" ALIGN="center"  COLSPAN="9">
+			<P>&nbsp;</P>
+			<P><B>{t}No such invoices in database.{/t}</B></P>
+			<P>&nbsp;</P>
+		</TD>
+	</TR>	
+	{/section}
+	{if $listdata.total != 0}
+	<TR CLASS="dark">
+		<TD WIDTH="100%" class="fleftu" COLSPAN="4" ALIGN="right">
+			Razem:
+		</TD>
+		<TD CLASS="fbt" NOWRAP>{$listdata.sumvalue|money_format}</TD>
+		<TD CLASS="fbt" NOWRAP>{$listdata.sumsaldo|money_format}</TD>
+		<TD COLSPAN="3" CLASS="frightu"></TD>
+	</TR>
+	<TR CLASS="dark">
+		<TD WIDTH="100%" class="fall" COLSPAN="9">
+			{include file="scroller.html" loop=$invoicelist scrollerno=2}
+		</TD>
+	</TR>
+	{/if}
+	<TR CLASS="dark">
+		<TD CLASS="fall" COLSPAN="9">
+			<TABLE WIDTH="100%">
+				<TR>
+					<TD ALIGN="left">
+<!--						<NOBR><A HREF="javascript:pays();">{t}Check/Uncheck as accounted{/t} <IMG SRC="img/pay.gif" ALT=""></A></NOBR>&nbsp;
+-->
+					</TD>
+					<TD ALIGN="right">	
+						<NOBR><A HREF="javascript:CheckAll2();">{t}Check All{/t}</A><INPUT class="box dark" TYPE="checkbox" NAME="allbox" onClick="CheckAll();" VALUE="Check All Boxes"></NOBR>
+					</TD>
+				</TR>
+			</TABLE>
+		</TD>
+	</TR>
+</TABLE>
+</FORM>
+{include file="footer.html"}

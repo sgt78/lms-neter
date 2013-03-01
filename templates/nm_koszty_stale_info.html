@@ -1,0 +1,118 @@
+{include file="header.html"}
+<!-- $Id: paymentinfo.html,v 1.14 2005/12/08 11:51:56 alec Exp $ -->
+<H1>{$layout.pagetitle}</H1>
+<P>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD WIDTH="1%" CLASS="fleftu">
+			<IMG SRC="img/creditor.gif" ALT="">
+		</TD>
+		<TD WIDTH="98%" COLSPAN="2" CLASS="frightu">
+			<a href="?m=customerinfo&id={$listdata.customer.cus_id}"><B>({$listdata.customer.cus_id|string_format:"%04d"}) {$listdata.customer.cus_name} {$listdata.customer.cus_lastname}</B></a>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			&nbsp;
+		</TD>
+		<TD WIDTH="1%">
+			<B>NIP:</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			{$listdata.customer.cus_nip}
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/value.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%" NOWRAP>
+			<B>{t}Saldo:{/t}</B> 
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			{if $listdata.saldo > 0}<font color="red">{/if}{$listdata.saldo|money_format} {if $listdata.saldo > 0}</font>{/if}
+		</TD>
+	</TR>
+	<FORM NAME="paymentadd" METHOD="POST" ACTION="?m=nm_koszty_stale_info">
+	<INPUT type="submit" class="hiddenbtn">
+	<TR CLASS="LIGHT">
+		<TD WIDTH="100%" COLSPAN="3" CLASS="FBOTTOMU" ALIGN="RIGHT">
+			<INPUT TYPE="HIDDEN" NAME="action" VALUE="paymentadd">
+			<INPUT TYPE="HIDDEN" NAME="paymentadd[customerid]" VALUE="{$payments_id.customer}">
+			<INPUT TYPE="HIDDEN" NAME="paymentadd[period]" VALUE="{$payments_id.period}">
+            <INPUT TYPE="HIDDEN" NAME="paymentadd[at]" VALUE="{$payments_id.at}">
+			<A HREF="javascript:document.paymentadd.submit();">Nalicz <IMG SRC="img/pay.gif" alt=""></A>
+			<A HREF="?m=nm_koszty_stale">Wróć <IMG SRC="img/cancel.gif" alt=""></A>
+		</TD>
+	</TR>
+	</FORM>
+</TABLE>
+</P>
+<P>
+
+
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD WIDTH="1%" CLASS="fleftu">
+			ID:
+		</TD>
+		<TD WIDTH="50%" CLASS="fbt">
+			Nazwa:<br>Opis:
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt">
+			Netto:
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt">
+			PTU:
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt">
+			Brutto:
+		</TD>
+		<TD WIDTH="40%" CLASS="fbt">
+			Konto<br>analityczne:
+		</TD>
+		<TD WIDTH="1%" CLASS="frightu"></TD>
+	</TR>
+	{cycle values="light,lucid" print=false}
+	{foreach from=$listdata.payments item=payment}
+	<TR CLASS="{cycle}">
+		<TD WIDTH="1%" class="fleft">
+			{$payment.pay_id|string_format:"%04d"}
+		</TD>
+		<TD WIDTH="50%">
+			{$payment.pay_name}<BR>{$payment.pay_description}
+		</TD>
+		<TD WIDTH="1%" nowrap align="right">
+			{$payment.pay_value|money_format}
+		</TD>
+		<TD WIDTH="1%" nowrap align="right">
+			{math assign="taxval" equation="val * tax / 100" val=$payment.pay_value tax=$payment.tax_value}
+			{$taxval|money_format}
+		</TD>
+		<TD WIDTH="1%" nowrap align="right">
+			{math assign="bruttoval" equation="netto + vat" netto=$payment.pay_value vat=$taxval}
+			{$bruttoval|money_format}
+		</TD>
+		<TD WIDTH="40%">
+			{$payment.nkk_nr}<br>{$payment.nkk_opis}
+		</TD>
+		<TD WIDTH="1%" class="fright" nowrap>
+			<A HREF="?m=nm_koszty_stale_edytuj&action=edit&id={$payment.pay_id}"><IMG SRC="img/edit.gif" alt=""></A>
+			<A HREF="?m=nm_koszty_stale_edytuj&action=delete&id={$payment.pay_id}"><IMG SRC="img/delete.gif" alt=""></A>
+		</TD>
+	</TR>
+	{/foreach}
+	<TR CLASS="DARK">
+		<TD COLSPAN="2" align="right" class="fleftu">
+			<B>Razem:</B>
+		</TD>
+		<TD nowrap class="fbt"><b>{$listdata.totalnetto|money_format}</b></TD>
+		<TD nowrap class="fbt"><b>{$listdata.totalvat|money_format}</b></TD>
+		<TD nowrap class="fbt"><b>{$listdata.totalbrutto|money_format}</b></TD>
+		<TD class="frightu" colspan="2"></TD>
+	</TR>
+
+</TABLE>
+
+</P>
+{include file="footer.html"}

@@ -60,6 +60,9 @@ if(!empty($_POST['inv']))
 			continue;
 		}
 
+		//Neter sgt
+		$invoice['serviceaddr'] = $LMS->GetCustomerServiceAddress($invoice['customerid']);
+		
 		if($i == $count)
 			$invoice['last'] = TRUE;
 		$invoice['type'] = $type;

@@ -1,0 +1,107 @@
+{include file="header.html"}
+<!-- $Id: paymentedit.html,v 1.14 2007/03/06 09:29:10 alec Exp $ -->
+<H1>{$layout.pagetitle}</H1>
+<P><FORM METHOD="POST" NAME="paymentedit" ACTION="?m=nm_koszty_stale_edytuj&id={$payment.pay_id}">
+<INPUT type="submit" class="hiddenbtn">
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD WIDTH="1%" CLASS="fleftu">
+			<IMG SRC="img/payment.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt"><B>{t}Name:{/t}</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="frightu" COLSPAN="2" NOWRAP>
+			<INPUT TYPE="text" NAME="payment[name]" VALUE="{$payment.pay_name|escape}" {tip text="Enter standing payment name" trigger="name" bold=1}>
+			<B>&nbsp;({$payment.pay_id|string_format:"%04d"})</B>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/creditor.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>{t}Creditor:{/t}</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			{if $customers}
+			<SELECT SIZE="1" NAME="customer" onChange="document.paymentedit.customerid.value=document.paymentedit.customer.value">
+				<OPTION VALUE="0">{t}... wybierz dostawcę ...{/t}</OPTION>
+				{foreach from=$customers item=c}
+				<OPTION VALUE="{$c.id}"{if $c.id eq $payment.pay_cus_id} SELECTED{/if}>{$c.customername|truncate:"40":"...":true} ({$c.id|string_format:"%04d"})</OPTION>
+				{/foreach}
+			</SELECT>
+			{t}lub ID:{/t}
+			{/if}
+			<INPUT TYPE="TEXT" NAME="customerid" VALUE="{if $payment.pay_cus_id}{$payment.pay_cus_id}{/if}" SIZE="5"{if $customers} onChange="document.paymentedit.customer.value=document.paymentedit.customerid.value"{/if} {tip text="Enter customer ID"}>
+		</TD>
+	<TR CLASS="LIGHT">
+		<TD CLASS="fleft"><IMG src='img/pay.gif'></IMG></TD>
+		<TD NOWRAP><B>Konto analityczne:</B></TD>
+		<TD CLASS="fright">
+			<SELECT SIZE="1" NAME="payment[pay_nkk_id]" {tip text="Wybierz konto"}>
+				{section loop=$kontaglowne name=konto}
+				{if $kontaglowne[konto].nkk_id>0}
+				<OPTION VALUE="{$kontaglowne[konto].nkk_id}" {if $kontaglowne[konto].nkk_id eq $payment.pay_nkk_id} SELECTED{/if}>{$kontaglowne[konto].nkk_nr}|{$kontaglowne[konto].nkk_opis}</OPTION>
+				{/if}
+				{/section}
+			</SELECT>
+		</TD>
+	</TR>
+	<TR class="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft" NOWRAP>
+			<IMG SRC="img/value.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%"><B>{t}Value:{/t}</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			<INPUT TYPE="TEXT" SIZE="8" NAME="payment[value]" VALUE="{$payment.pay_value}" {tip text="Podaj kwotę netto" trigger="value"}>
+			&nbsp;PTU:&nbsp;
+			<SELECT size="1" name="payment[taxid]" {tip text="Select Tax rate"}>
+			{foreach item=tax from=$taxeslist}
+				<OPTION value="{$tax.id}"{if $tax.id eq $payment.pay_tax_id} selected{/if}>{$tax.label}</OPTION>
+			{/foreach}
+			</SELECT>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/calendar.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%" NOWRAP>
+			<B>{t}Accounting day:{/t}</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">								
+			<SELECT SIZE="1" NAME="payment[period]" {tip text="Select accounting frequency"}>
+				{foreach from=$_PERIODS item=item key=key}{if $key>0}
+				<OPTION VALUE="{$key}"{if $payment.pay_period eq $key} SELECTED{/if}>{$item}</OPTION>
+				{/if}{/foreach}
+			</SELECT>&nbsp;
+    			<INPUT TYPE="TEXT" NAME="payment[at]" VALUE="{$payment.pay_at}"{tip text="Enter when to account payment. For weekly payment enter day of week (Monday = 1), for monthly payment enter day of month (from 1 to 28), for yearly payment enter day and month in format DD/MM (15/09 means 15 September), and quarterly DD/MM (MM <= 3)" trigger="at"} SIZE="5">
+		</TD>
+	</TR>	
+	<TR CLASS="light">	
+		<TD WIDTH="1%" CLASS="fleft">
+			<IMG SRC="img/info1.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>{t}Description:{/t}</B>
+		</TD>
+		<TD WIDTH="98%" CLASS="fright">
+			<TEXTAREA NAME="payment[description]" COLS="50" ROWS="5" {tip text="Enter additional informations (optional)"}>{$payment.pay_description}</TEXTAREA>
+		</TD>
+	</TR>
+	<TR CLASS="light">
+	        <TD ALIGN="RIGHT" CLASS="fbottomu" COLSPAN="3">
+			<A HREF="javascript:document.paymentedit.submit();" ACCESSKEY="S">{t}Submit{/t} <IMG SRC="img/save.gif" ALT=""></A>
+			<A HREF="?m=nm_koszty_stale_info&cus_id={$payment.pay_cus_id}&pay_at={$payment.pay_at}&pay_period={$payment.pay_period}">Wróć <IMG SRC="img/cancel.gif" ALT=""></A> 
+		</TD>
+	</TR>
+</TABLE>
+</FORM>
+</P>
+<SCRIPT type="text/javascript">
+<!--
+document.forms['paymentedit'].elements['payment[name]'].focus();
+//-->
+</SCRIPT>
+{include file="footer.html"}

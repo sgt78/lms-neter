@@ -1,0 +1,20 @@
+Ta wiadomość została wygenerowana automatycznie.
+
+Pan/Pani/Firma: %customer
+
+Uprzejmie informujemy o wystawieniu nowego dokumentu sprzedaży:
+
+numer: %number na kwotę: %value zł
+
+
+Wszelkie informacje na temat Państwa rozliczeń mogą Państwo znaleźć pod
+adresem https://www.neter.pl/ebok.
+Dane do logowania znajdują się na każdej poprzedniej fakturze, którą
+otrzymali Państwo pocztą tradycyjną.
+
+-- 
+z poważaniem
+Biuro Obsługi Klienta
+telefon: 61 6662300
+email: bok@neter.pl
+

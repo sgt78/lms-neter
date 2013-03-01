@@ -160,6 +160,52 @@ switch($type)
 		$SMARTY->display($extended ? 'rtprinttickets-ext.html' : 'rtprinttickets.html');
 	break;
 
+	case 'userstats': /******************************************/
+		if($_POST['datefrom'])
+		{
+			list($year, $month, $day) = explode('/', $_POST['datefrom']);
+        	$datefrom = mktime(0,0,0, $month, $day, $year);
+		    $where[] = 'rttickets.createtime > '.$datefrom;
+		    $pagetitle[] = ' od :'.$_POST['datefrom'];
+		}        
+		if($_POST['dateto'])
+		{
+			list($year, $month, $day) = explode('/', $_POST['dateto']);
+        	$dateto = mktime(0,0,0, $month, $day+1, $year);
+		    $where[] = 'rttickets.createtime < '.$dateto;
+		    $pagetitle[] = ' od :'.$_POST['dateto'];
+		}        
+		if($_POST['days'])
+		{
+			$days    = $_POST['days']*24*60*60;
+			$nowtime = mktime(date("H"),date("i"),date("s"),date("n"),date("j"),date("Y"));
+			$where[] = "(if( rttickets.resolvetime=0, $nowtime , rttickets.resolvetime ) - rttickets.createtime > ".$days.")";
+			//$where[] = 'rttickets.createtime < '.mktime(0, 0, 0, date('n'), date('j')-$_POST['days']);
+		    $pagetitle[] = ' uptime dni :'.$_POST['days'];		
+		}
+
+		$layout['pagetitle'] = 'Zestawienie zgłoszeń serwisowych'.(isset($pagetitle) ? implode('', $pagetitle) : '');
+
+
+		$query = "SELECT COUNT(CASE state WHEN 0 THEN 1 END) AS new,
+       					 COUNT(CASE state WHEN 1 THEN 1 END) AS opened,
+						 COUNT(CASE state WHEN 2 THEN 1 END) AS resolved,
+						 COUNT(CASE state WHEN 3 THEN 1 END) AS dead,
+						 owner, 
+						 name
+					FROM rttickets join users on users.id = rttickets.owner 
+				    WHERE 1=1"
+				    .(isset($where) ? ' AND '.implode(' AND ', $where) : '')."
+				   GROUP BY owner
+				  HAVING (opened > 0 OR new > 0 OR resolved > 0)";
+		$list = $DB->GetAll($query);
+
+		//print_r($where);
+
+		$SMARTY->assign('list', $list);
+		$SMARTY->display('rtprintuserstats.html');
+	break;
+
 	default:
 		$categories = $LMS->GetCategoryListByUser($AUTH->id);
 
@@ -169,6 +215,8 @@ switch($type)
 		{
 			$SMARTY->assign('customers', $LMS->GetCustomerNames());
 		}
+
+        $SMARTY->assign('userlist', $LMS->GetUserNames());		
 		$SMARTY->assign('queues', $LMS->GetQueueList());
 		$SMARTY->assign('categories', $categories);
 		$SMARTY->display('rtprintindex.html');

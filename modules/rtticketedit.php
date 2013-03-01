@@ -67,6 +67,8 @@ if(isset($_POST['ticket']))
 
 	if(!$error)
 	{
+		$LMS->LogTicketChange($ticketedit['ticketid'], $ticketedit);
+		
 		if($ticketedit['state'] == 2)
 		{
 			$DB->Execute('UPDATE rttickets SET queueid=?, subject=?, state=?, owner=?, customerid=?, cause=?, resolvetime=?NOW? 
@@ -106,6 +108,8 @@ if(isset($_POST['ticket']))
 						$ticketedit['ticketid']
 						));
 			}
+			// przypięcie terminow do klienta
+			$DB->Execute('UPDATE events set customerid=? WHERE rtticketid=?',array($ticketedit['customerid'],$ticketedit['ticketid']));
 		}
 
 		$DB->Execute('DELETE FROM rtticketcategories WHERE ticketid = ?', array($id));
@@ -138,6 +142,7 @@ if(isset($_POST['ticket']))
 
 			$mailfrom = $user['email'] ? $user['email'] : $queue['email'];
 
+			$headers['Date'] = date('r');
 	        $headers['From'] = $mailfname.' <'.$mailfrom.'>';
 			$headers['Subject'] = sprintf("[RT#%06d] %s", $ticket['ticketid'], $ticket['subject']);
 			$headers['Reply-To'] = $headers['From'];
@@ -234,6 +239,26 @@ foreach ($categories as $category)
 }
 $categories = $ncategories;
 
+$ticketowner = $DB->GetAll(
+	        'SELECT th.`id`, th.`ticketid`, 
+			th.`subject_old`, th.`subject`, 
+			th.`owner_old`, uo.name AS ownername_old, 
+			th.`owner`, un.name AS ownername, 
+			th.`queueid_old`, qo.name AS queuename_old,
+			th.`queueid`, qn.name AS queuename,
+			th.`body`,
+--			FROM_UNIXTIME(th.`createtime`) AS createtime, 
+			th.`createtime`, 
+			th.`creatorid`, up.name AS creatoridname  
+			FROM `rtticketshistory` th
+			LEFT JOIN users uo ON th.`owner_old`= uo.id
+			LEFT JOIN users un ON th.`owner`= un.id
+			LEFT JOIN users up ON th.`creatorid`= up.id
+			LEFT JOIN rtqueues qo ON th.`queueid_old` = qo.id
+			LEFT JOIN rtqueues qn ON th.`queueid` = qn.id
+			WHERE th.`ticketid` = ?', array($_GET['id']));
+$ticket['ticketowner'] = $ticketowner;
+
 $layout['pagetitle'] = trans('Ticket Edit: $a',sprintf("%06d",$ticket['ticketid']));
 
 $SESSION->save('backto', $_SERVER['QUERY_STRING']);
@@ -248,6 +273,7 @@ $SMARTY->assign('queuelist', $LMS->GetQueueNames());
 $SMARTY->assign('categories', $categories);
 $SMARTY->assign('userlist', $LMS->GetUserNames());
 $SMARTY->assign('error', $error);
+$SMARTY->assign('backto', '?'.$SESSION->get('backto'));
 $SMARTY->display('rtticketedit.html');
 
 ?>

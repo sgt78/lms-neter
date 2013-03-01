@@ -27,7 +27,7 @@
 function GetHostList()
 {
 	global $DB;
-	$list = $DB->GetAll("SELECT id, name, description, lastreload FROM hosts ORDER BY name");
+	$list = $DB->GetAll("SELECT id, inet_ntoa(ipaddr) as ipaddr, servicetype, name, description, lastreload FROM hosts ORDER BY name");
 	return $list;
 }
 

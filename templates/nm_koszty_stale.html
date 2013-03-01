@@ -1,0 +1,100 @@
+{include file="header.html"}
+<!-- $Id: paymentlist.html,v 1.14 2007/03/06 09:29:10 alec Exp $ -->
+<H1>{$layout.pagetitle} - {t a=$listdata.total}Total: $a{/t}</H1>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR class="dark">
+		<TD WIDTH="1%" CLASS="fleftu">
+			<IMG SRC="img/payment.gif" ALT=""><BR>
+			<IMG SRC="img/creditor.gif" ALT="">
+		</TD>
+		<TD WIDTH="95%" CLASS="fbt" ALIGN="left">
+			<B>{t}Name:{/t}</B><BR>
+			{t}Creditor:{/t}
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" ALIGN="right">
+			{t}Ilość:{/t}
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt" ALIGN="right">
+			Netto:<BR>Brutto:
+		</TD>	
+		<TD NOWRAP WIDTH="1%" CLASS="fbt" ALIGN="right">
+			{t}Payment day:{/t}
+		</TD>
+		<TD NOWRAP WIDTH="1%" CLASS="fbt" ALIGN="right">
+			Ostatnio naliczone:<BR>Następne naliczenie:
+		</TD>
+		<TD NOWRAP WIDTH="1%" CLASS="frightu" ALIGN="RIGHT">
+			<B><a href="?m=nm_koszty_stale_dodaj">Dodaj</a></B>
+		</TD>
+	</TR>
+	{cycle values="light,lucid" print=false}
+	{section name=payments loop=$paymentlist}
+	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD WIDTH="1%" CLASS="fleft" onClick="return self.location.href='?m=nm_koszty_stale_info&cus_id={$paymentlist[payments].cus_id}&pay_at={$paymentlist[payments].pay_at}&pay_period={$paymentlist[payments].pay_period}';" class="fleft">
+			<IMG SRC="img/payment.gif" ALT=""><BR>
+			<IMG SRC="img/creditor.gif" ALT="">
+		</TD>
+		<TD WIDTH="95%" onClick="return self.location.href='?m=nm_koszty_stale_info&cus_id={$paymentlist[payments].cus_id}&pay_at={$paymentlist[payments].pay_at}&pay_period={$paymentlist[payments].pay_period}';">
+			<a href="?m=customerinfo&id={$paymentlist[payments].cus_id}">({$paymentlist[payments].cus_id|string_format:"%04d"}) - {$paymentlist[payments].cus_lastname} {$paymentlist[payments].cus_name}<BR>
+			NIP: {$paymentlist[payments].cus_nip}</a>
+		</TD>
+		<TD WIDTH="1%" ALIGN="right" onClick="return self.location.href='?m=nm_koszty_stale_info&cus_id={$paymentlist[payments].cus_id}&pay_at={$paymentlist[payments].pay_at}&pay_period={$paymentlist[payments].pay_period}';">
+			{$paymentlist[payments].pay_count|string_format:"%02d"}
+		</TD>
+		<TD WIDTH="1%" ALIGN="right" onClick="return self.location.href='?m=nm_koszty_stale_info&cus_id={$paymentlist[payments].cus_id}&pay_at={$paymentlist[payments].pay_at}&pay_period={$paymentlist[payments].pay_period}';">
+			<NOBR>
+			{$paymentlist[payments].pay_value|money_format}<br>
+			{$paymentlist[payments].pay_bvalue|money_format}
+			</NOBR>
+		</TD>
+		<TD WIDTH="1%" ALIGN="right" onClick="return self.location.href='?m=nm_koszty_stale_info&cus_id={$paymentlist[payments].cus_id}&pay_at={$paymentlist[payments].pay_at}&pay_period={$paymentlist[payments].pay_period}';">
+			<NOBR>
+			{$paymentlist[payments].pay_payday} 
+			</NOBR>
+		</TD>
+		<TD WIDTH="1%" ALIGN="right" onClick="return self.location.href='?m=nm_koszty_stale_info&cus_id={$paymentlist[payments].cus_id}&pay_at={$paymentlist[payments].pay_at}&pay_period={$paymentlist[payments].pay_period}';">
+			<NOBR>
+			{$paymentlist[payments].dok_cdate|date_format:"%d.%m.%Y"} <br>
+			{if $paymentlist[payments].pay_add eq 1}<font color="blue">{/if}
+			{$paymentlist[payments].pay_next_payday|date_format:"%d.%m.%Y"} 
+			{if $paymentlist[payments].pay_add eq 1}</font>{/if}
+			</NOBR>
+		</TD>
+		<TD WIDTH="1%" CLASS="fright" ALIGN="right" >
+			{math assign="value" equation="x*-1" x=$paymentlist[payments].pay_value}
+		<FORM NAME="addbalance{$smarty.section.payments.index}" METHOD="POST" ACTION="?m=nm_koszty_stale_info">
+			<INPUT TYPE="HIDDEN" NAME="action" VALUE="paymentadd">
+			<INPUT TYPE="HIDDEN" NAME="paymentadd[customerid]" VALUE="{$paymentlist[payments].cus_id}">
+			<INPUT TYPE="HIDDEN" NAME="paymentadd[period]" VALUE="{$paymentlist[payments].pay_period}">
+			<INPUT TYPE="HIDDEN" NAME="paymentadd[at]" VALUE="{$paymentlist[payments].pay_at}">
+			<NOBR>
+			<A HREF="?m=nm_koszty_stale_info&cus_id={$paymentlist[payments].cus_id}&pay_at={$paymentlist[payments].pay_at}&pay_period={$paymentlist[payments].pay_period}"><IMG SRC="img/info.gif" alt="[ {t}Info{/t} ]" title="[ {t}Info{/t} ]"></A>&nbsp;
+			<A HREF="javascript:document.addbalance{$smarty.section.payments.index}.submit();"><IMG src="img/pay.gif" alt="[ {t}Account payment{/t} ]" title="[ {t}Account payment{/t} ]"></A>
+			</NOBR>
+  		</FORM>
+		</TD>
+	</TR>
+	{sectionelse}
+	<TR>
+		<TD COLSPAN="6" ALIGN="center" CLASS="fall">
+			<p>&nbsp;</p>
+			<p><B>{t}No such standing payments in database.{/t}</B></p>
+			<p>&nbsp;</p>
+		</TD>
+	</TR>
+	{/section}
+	<TR CLASS="light">
+		<TD CLASS="fleftu" WIDTH="1%">
+			<IMG SRC="img/info2.gif" ALT="">
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="left">
+			&nbsp;<B>{t}Total:{/t} {$listdata.total}</B>
+		</TD>
+		<TD CLASS="fbt" align="right"><B>{$listdata.sum_count}</B></TD>
+		<TD CLASS="fbt" align="right" nowrap><B>{$listdata.sum_value|money_format}</B></TD>
+		<TD CLASS="fbt"></TD>
+		<TD CLASS="fbt"></TD>
+		<TD CLASS="frightu" WIDTH="1%" ALIGN="left"></TD>
+	</TR>
+</TABLE>
+{include file="footer.html"}

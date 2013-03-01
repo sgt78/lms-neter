@@ -95,6 +95,7 @@
 	</TD>
 	<TD width="50%" style="vertical-align:top">	
 	    <TABLE>
+<!-- Neter sgt
 		<TR>
 		    <TD WIDTH="1%" NOWRAP>
 			<IMG src="img/users.gif" alt="">
@@ -111,17 +112,32 @@
 			</SELECT>
 		    </TD>
 		</TR>
+Neter end -->
+		<TR>
+		    <TD WIDTH="1%" NOWRAP>
+			<IMG src="img/users.gif" alt="">
+			<B>{trans("Owner:")} (Osoba odpowiedzialna)</B>
+		    </TD>
+		    <TD WIDTH="99%">
+			<INPUT type="hidden" name="ticket[owner]" value ="{$ticket.owner}">
+			<A href="?m=userinfo&id={$ticket.owner}">{$ticket.ownername}</A>&nbsp;(<A href="?m=rtticketowneradd&ticketid={$ticket.ticketid}">Przekaż zadanie <IMG src="img/open.gif" alt=""></A>)
+		    </TD>
+		</TR>
 		<TR>
 		    <TD WIDTH="1%" NOWRAP>
 		    	<IMG src="img/queue.gif" alt="">
 			<B>{trans("Queue:")}</B>
 		    </TD>
 		    <TD WIDTH="99%">
+<!-- Neter sgt
 			<SELECT size="1" name="ticket[queueid]" {tip text="Select queue" trigger="queue"}>
 			{foreach from=$queuelist item=item}
 				<OPTION value="{$item.id}" {if $item.id == $ticket.queueid}SELECTED{/if}>{$item.name}</OPTION>
 			{/foreach}
 			</SELECT>
+Neter end -->
+			<INPUT type="hidden" name="ticket[queueid]" value ="{$ticket.queueid}">
+			<A HREF="?m=rtqueueview&id={$ticket.queueid}">{$ticket.queuename}</A>&nbsp;(<A href="?m=rtticketowneradd&ticketid={$ticket.ticketid}">Przekaż zadanie <IMG src="img/open.gif" alt=""></A>)
 		    </TD>
 		</TR>
 		<TR>
@@ -135,6 +151,7 @@
 				<OPTION value="1" {if $ticket.state == 1}SELECTED{/if}>{trans("opened")}</OPTION>
 				<OPTION value="2" {if $ticket.state == 2}SELECTED{/if}>{trans("resolved")}</OPTION>
 				<OPTION value="3" {if $ticket.state == 3}SELECTED{/if}>{trans("dead")}</OPTION>
+				<OPTION value="11" {if $ticket.state == 11}SELECTED{/if}>{trans("external")}</OPTION>
 			</SELECT>
 		    </TD>
 		</TR>
@@ -160,7 +177,10 @@
 	<TR CLASS="light">
 		<TD CLASS="fbottomu" ALIGN="RIGHT">
 			<A href="javascript:document.ticket.submit()">{trans("Submit")} <IMG src="img/save.gif" alt=""></A>
+<!--
 			<A href="?m=rtqueueview&id={$ticket.queueid}">{trans("Cancel")} <IMG src="img/cancel.gif" alt=""></A>
+-->
+			<A href="{$backto}">{trans("Cancel")} <IMG src="img/cancel.gif" alt=""></A>
 		</TD>
 	</TR>
 </TABLE>

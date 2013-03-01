@@ -26,13 +26,13 @@
 
 unset($access);
 // modules with access for everyone
-$access['allow'] = '^(welcome|copyrights|logout|chpasswd|quicksearch|calendar)$';
+$access['allow'] = '^(welcome|copyrights|logout|chpasswd|quicksearch|calendar|rad_.*)$';
 
 $access['table'][0]['name']		= trans('full access');
 $access['table'][0]['allow_reg']	= '^.*$';
 
 $access['table'][1]['name']		= trans('read only (excluding helpdesk)');
-$access['table'][1]['allow_reg']	= '^(([a-z]+(list|info|view|search|balance|infoshort))|netdevmap|eventprint|nodelistshort|number)$';
+$access['table'][1]['allow_reg']	= '^(([a-z]+(list|info|view|search|balance|infoshort))|netdevmap|netdevmapgoogle|eventprint|nodelistshort|number)$';
 
 $access['table'][2]['name']		= trans('nodes connection/disconnection');
 $access['table'][2]['allow_reg']	= '^nodeset$';
@@ -48,7 +48,7 @@ $access['table'][5]['name']		= trans('customers management');
 $access['table'][5]['allow_reg']	= '^((customer|document)(add|edit|info|infoshort|list|del|print|search|warn|cutoffstop|group)|documentgen|documentview|nodewarn|choosenode)$';
 
 $access['table'][6]['name'] 		= trans('nodes management');
-$access['table'][6]['allow_reg']  	= '^(node(add|info|infoshort|list|listshort|scan|search|del|edit|print|warn)|choose(mac|ip|location))$';
+$access['table'][6]['allow_reg']  	= '^(node(add|info|infoshort|list|listshort|scan|search|del|edit|print|warn)|choose(mac|ip))$';
 
 $access['table'][7]['name']    	     	= trans('traffic stats');
 $access['table'][7]['allow_reg']	= '^(traffic|traffic(print|graph))$';
@@ -57,10 +57,10 @@ $access['table'][8]['name']         	= trans('messaging (email, sms)');
 $access['table'][8]['allow_reg']    	= '^message(add|list|info)$';
 
 $access['table'][9]['name']         	= trans('Helpdesk (RT) administration');
-$access['table'][9]['allow_reg']    	= '^(rtsearch|rtprint|(rtqueue|rtticket|rtmessage|rtnote|rtcategory)(add|del|edit|info|view|list|print))$';
+$access['table'][9]['allow_reg']    	= '^(rtsearch|rtprint|(rtqueue|rtticket|rtmessage|rtnote|rtcategory)(add|del|edit|info|view|list|print|sstatus|owneradd))$';
 
 $access['table'][10]['name']        	= trans('Helpdesk (RT) operation');
-$access['table'][10]['allow_reg']   	= '^(rtsearch|rtqueue(list|info|view)|(rtticket|rtmessage|rtnote)(add|edit|info|view|del|print))$';
+$access['table'][10]['allow_reg']   	= '^(rtsearch|rtqueue(list|info|view)|(rtticket|rtmessage|rtnote)(add|edit|info|view|del|print|sstatus|owneradd))$';
 
 $access['table'][11]['name']        	= trans('hosting management');
 $access['table'][11]['allow_reg']   	= '^(accountpasswd|(account|domain|alias|record)(list|edit|add|del|info|search))$';
@@ -122,6 +122,14 @@ $access['table'][253]['deny_reg']	= '^(user(add|del|edit|passwd))$';
 
 $access['table'][255]['name']		= trans('no access');
 $access['table'][255]['deny_reg']	= '^.*$';
+
+// moje regółki przenieść do UI
+$access['table'][100]['name']       = 'Neter Manager - brak dostępu';
+$access['table'][100]['deny_reg']   = '^nm_.*$';
+
+$access['table'][200]['name']		= trans('SMS Outgoing List');
+$access['table'][200]['allow_reg']	= '^(smsincoming,smsoutgoing,smssend)';
+
 
 // read user-defined access rights table
 if(isset($CONFIG['phpui']['custom_accesstable']))

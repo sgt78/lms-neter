@@ -17,6 +17,37 @@
 	</TR>
 	<TR class="light">
 		<TD width="1%" class="fleft">
+			<img src="img/ip.gif" alt="">
+		</TD>
+		<TD width="1%" NOWRAP>
+			<B>{trans("IP Address:")}</B>
+		</TD>
+		<TD width="98%" class="fright">
+			<INPUT size="53" name="hostedit[ipaddr]" value="{$hostedit.ipaddr}" {tip text="Enter ip address" trigger="ipaddr"}>
+		</TD>
+	</TR>
+	<TR class="light">
+		<TD width="1%" class="fleft">
+			<img src="img/settings.gif" alt="">
+		</TD>
+		<TD width="1%" NOWRAP>
+			<B>{trans("Type:")}</B>
+		</TD>
+		<TD width="98%" class="fright">
+			<SELECT size="1" name="hostedit[servicetype]">
+				<OPTION VALUE="0">Wybierz typ usługi</OPTION>
+				<OPTION VALUE="B" {if $hostedit.servicetype=="B"}SELECTED{/if}>Blokady i ostrzeżenia</OPTION>
+				<OPTION VALUE="F" {if $hostedit.servicetype=="F"}SELECTED{/if}>Firewall</OPTION>
+				<OPTION VALUE="D" {if $hostedit.servicetype=="D"}SELECTED{/if}>DNS Server</OPTION>
+				<OPTION VALUE="W" {if $hostedit.servicetype=="W"}SELECTED{/if}>WWW Server</OPTION>
+				<OPTION VALUE="S" {if $hostedit.servicetype=="S"}SELECTED{/if}>SQL Server</OPTION>
+				<OPTION VALUE="M" {if $hostedit.servicetype=="M"}SELECTED{/if}>MX Server</OPTION>
+				<OPTION VALUE="R" {if $hostedit.servicetype=="R"}SELECTED{/if}>RADIUS Server</OPTION>
+			</SELECT>
+		</TD>
+	</TR>
+	<TR class="light">
+		<TD width="1%" class="fleft">
 			<img src="img/info.gif" alt="">
 		</TD>
 		<TD width="1%">

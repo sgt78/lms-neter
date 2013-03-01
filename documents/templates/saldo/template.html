@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Informacja o Saldzie Abonenta</title>
+{literal}
+<STYLE type="text/css">
+p {margin:5px}
+div.strona {STYLE="page-break-after: always"}
+BODY	{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1		{ font-size: 14pt; text-align: center; }
+H2		{ font-size: 11pt; text-align: center; color: red;}
+TD		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TABLE	{ border-collapse: collapse; }
+P		{ font-size: 12pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: justify; }
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+<DIV class="strona">
+<TABLE WIDTH="100%" CELLSPACING="3">
+	<tr>
+		<td width="66%" valign="top"></td>
+		<td width="34%" valign="top">
+		{$_config.invoices.cplace}, dnia: {$smarty.now|date_format:"%Y.%m.%d"}</td></tr>
+	<TR>
+		<TD WIDTH="66%" VALIGN="TOP">
+			{$_config.invoices.header|replace:"\\n":"<BR>"}
+		</TD>
+		<TD WIDTH="34%" VALIGN="TOP" CLASS="sdr">
+			<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+			<B>Szanowny Pan/Pani:</B><BR>
+			<B>{$customerinfo.customername}<BR>
+			{if $customerinfo.post_address neq ""}
+				{$customerinfo.post_address}<BR>
+				{$customerinfo.post_zip} {$customerinfo.post_city}
+			{else}
+			{$customerinfo.address}<BR>
+			{$customerinfo.zip} {$customerinfo.city}
+			{/if}</B>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH="100%" COLSPAN="2">
+			&nbsp;<BR>
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+
+<br><br><br><br><br>
+
+<p>
+Pragnę poinformować Państwa, iż saldo na Waszym Koncie Abonenckim na dzień {$smarty.now|date_format:"%Y.%m.%d"} wynosi: <strong>{$customerinfo.balance}.</strong></p>
+<p>Wszelkie wątpliwości dotyczące opłat prosimy wyjaśnić w telefonicznym Biurze Obsługi Klienta pod numerem 061 6425700 lub przez e-mail finanse@neter.pl. Stan swojego konta możecie Państwo sprawdzić w internecie logując się do Elektronicznego
+Biura Obsługi Klienta http://www.neter.pl/ebok podając jako dane autoryzacyjne nr klienta: <b>{$customerinfo.id}</b> i pin: <b>{$customerinfo.pin}</b></p>
+
+Podajemy także nasze konto bankowe:</p>
+<p style="text-align:center;text-decoration:underline">BZWBK SA Nr: {$customerinfo.bankaccount}</p>
+
+<br><br><br>
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER"></TD>
+	<TD WIDTH="50%" ALIGN="CENTER">Z poważaniem<br><br></TD>
+    </TR>
+    <tr>
+    	<td align="center"></td>
+    	<td align="center">{$layout.logname}</td>
+</TABLE>
+</DIV>
+</body>
+</html>

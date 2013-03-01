@@ -24,13 +24,16 @@
  *  $Id$
  */
 
-function GetCustomerCovenants($id)
+function GetCustomerCovenants($id,$type)
 {
 	global $CONFIG, $DB;
 
 	if(!$id) return NULL;
 
-	if($invoicelist = $DB->GetAllByKey('SELECT docid AS id, cdate, SUM(value)*-1 AS value, number, template, reference AS ref,
+	switch($type)
+	{
+	case DOC_INVOICE:
+		$invoicelist = $DB->GetAllByKey('SELECT docid AS id, cdate, SUM(value)*-1 AS value, number, template, reference AS ref,
 				(SELECT dd.id FROM documents dd WHERE dd.reference = docid AND dd.closed = 0 LIMIT 1) AS reference
 			FROM cash
 			LEFT JOIN documents d ON (docid = d.id)
@@ -38,8 +41,24 @@ function GetCustomerCovenants($id)
 			WHERE cash.customerid = ? AND d.type IN (?,?) AND d.closed = 0
 			GROUP BY docid, cdate, number, template, reference
 			HAVING SUM(value) < 0
-			ORDER BY cdate DESC', 'id', array($id, DOC_INVOICE, DOC_CNOTE)))
-	{
+			ORDER BY cdate DESC', 'id', array($id, DOC_INVOICE, DOC_CNOTE));
+		break;
+		case DOC_DELIV_INVOICE:
+			$invoicelist = $DB->GetAllByKey('SELECT docid AS id, 
+											   cdate, 
+											   SUM(value)*-1 AS value, 
+											   extnumber as number, 
+											   reference AS ref,
+				(SELECT dd.id FROM documents dd WHERE dd.reference = docid AND dd.closed = 0 LIMIT 1) AS reference
+				FROM cash
+				LEFT JOIN documents d ON (docid = d.id)
+				WHERE cash.customerid = ? AND d.type IN (?,?) AND d.closed = 0
+				GROUP BY docid
+				HAVING SUM(value) > 0
+				ORDER BY cdate DESC LIMIT 10', 'id', array($id, DOC_DELIV_INVOICE, DOC_DELIV_CNOTE));
+		break;
+	}
+	if($invoicelist) {
 		foreach($invoicelist as $idx => $row)
 		{
 			if($row['ref'] && isset($invoicelist[$row['ref']]))
@@ -48,7 +67,10 @@ function GetCustomerCovenants($id)
 				continue;
 			}
 
+			if($type == DOC_INVOICE || $type == DOC_CNOTE)
+			{
 			$invoicelist[$idx]['number'] = docnumber($row['number'], $row['template'], $row['cdate']);
+			}
 
 			// invoice has cnote reference
 			if($row['reference'])
@@ -74,7 +96,6 @@ function GetCustomerCovenants($id)
 				}
 			}
 		}
-
 		return $invoicelist;
 	}
 }
@@ -305,10 +326,18 @@ switch($action)
 				$itemdata['docid'] = $id;
 				$itemdata['posuid'] = (string) (getmicrotime()+$id);
 
-				if($row['type']==DOC_INVOICE)
-					$itemdata['description'] = trans('Invoice No. $a', docnumber($row['number'], $row['template'], $row['cdate']));
-				else
-					$itemdata['description'] = trans('Credit Note No. $a', docnumber($row['number'], $row['template'], $row['cdate']));
+				switch($row['type'])
+				{
+					case DOC_INVOICE:
+						$itemdata['description'] = trans('Invoice No. $a', docnumber($row['number'], $row['template'], $row['cdate']));
+					break;
+					case DOC_DELIV_INVOICE:
+						$itemdata['description'] = 'Dokument obcy:'.$row['extnumber'];
+					break;
+					default:
+						$itemdata['description'] = trans('Credit Note No. $a', docnumber($row['number'], $row['template'], $row['cdate']));
+					break;
+				}
 
 				if($row['reference'] && $receipt['type']=='in')
 				{
@@ -498,7 +527,8 @@ switch($action)
 							else
 								$customer['docwarning'] = trans('Customer has got unconfirmed documents!');
 						}
-
+					
+					// todo może od razu odblokować?
 					// jesli klient posiada zablokowane komputery poinformujmy
 	    				// o tym kasjera, moze po wplacie trzeba bedzie zmienic ich status
 					if(isset($CONFIG['receipts']['show_nodes_warning']) && chkconfig($CONFIG['receipts']['show_nodes_warning']))
@@ -588,9 +618,10 @@ switch($action)
 				else 
 					$value = str_replace(',','.',$item['value']*-1);
 
-				$DB->Execute('INSERT INTO receiptcontents (docid, itemid, value, description, regid)
-					        VALUES(?,?,?,?,?)', 
+				$DB->Execute('INSERT INTO receiptcontents (docid, reference, itemid, value, description, regid)
+					        VALUES(?,?,?,?,?,?)', 
 						array($rid, 
+							isset($item['docid']) ? $item['docid'] : 0,
 							$iid, 
 							$value, 
 							$item['description'],
@@ -816,11 +847,12 @@ switch($receipt['type'])
 {
 	case 'in':
 		$layout['pagetitle'] = trans('New Cash-in Receipt');
-		$list = GetCustomerCovenants($customer['id']);
+		$list = GetCustomerCovenants($customer['id'],DOC_INVOICE);
 	break;
 	case 'out':
 		$layout['pagetitle'] = trans('New Cash-out Receipt');
-		$list = GetCustomerNotes($customer['id']);
+		$list = GetCustomerCovenants($customer['id'],DOC_DELIV_INVOICE);
+//		$list = GetCustomerNotes($customer['id'],DOC_DELIV_INVOICE);
 	break;
 	default:
 		$layout['pagetitle'] = trans('New Cash Receipt');

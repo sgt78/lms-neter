@@ -31,6 +31,7 @@ function invoice_simple_form_fill($x,$y,$scale)
     global $pdf,$invoice;
     $pdf->setlinestyle(1);
 
+	/* Neter: patt
     $pdf->line(7*$scale+$x,724*$scale+$y,7*$scale+$x,694*$scale+$y);
     $pdf->line(7*$scale+$x,724*$scale+$y,37*$scale+$x,724*$scale+$y);
     $pdf->line(370*$scale+$x,724*$scale+$y,370*$scale+$x,694*$scale+$y);
@@ -40,6 +41,8 @@ function invoice_simple_form_fill($x,$y,$scale)
     $pdf->line(370*$scale+$x,197*$scale+$y,370*$scale+$x,227*$scale+$y);
     $pdf->line(370*$scale+$x,197*$scale+$y,340*$scale+$x,197*$scale+$y);
     
+	Neter end */
+	
     $shortname = $invoice['division_shortname'];
     $address = $invoice['division_address'];
     $zip = $invoice['division_zip'];
@@ -53,8 +56,12 @@ function invoice_simple_form_fill($x,$y,$scale)
     //text_autosize(15*$scale+$x,683*$scale+$y,30*$scale, substr($tmp,0,17),350*$scale);
     //text_autosize(15*$scale+$x,626*$scale+$y,30*$scale, substr($tmp,18,200),350*$scale);
     text_autosize(15*$scale+$x,683*$scale+$y,30*$scale, format_bankaccount($account), 350*$scale);
-    text_autosize(15*$scale+$x,445*$scale+$y,30*$scale,"*".number_format($invoice['total'],2,',','')."*",350*$scale);
-
+   	//Neter sgt
+    $toPay = $invoice['customerbalance']*-1;
+    if ($toPay < 0) $toPay=0;
+//    text_autosize(15*$scale+$x,445*$scale+$y,30*$scale,"*".number_format($invoice['total'],2,',','')."*",350*$scale);
+    text_autosize(15*$scale+$x,445*$scale+$y,30*$scale,"*".number_format($toPay,2,',','')."*",350*$scale);
+    //Neter end
     text_autosize(15*$scale+$x,390*$scale+$y,30*$scale, iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['name']),350*$scale);
     text_autosize(15*$scale+$x,356*$scale+$y,30*$scale, iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['address']),350*$scale);
     text_autosize(15*$scale+$x,322*$scale+$y,30*$scale, iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['zip'].' '.$invoice['city']),350*$scale);
@@ -68,13 +75,15 @@ function invoice_main_form_fill($x,$y,$scale)
     global $pdf,$invoice;
     $pdf->setlinestyle(1);
 
+	/* Neter: patt
     $pdf->line(7*$scale+$x,724*$scale+$y,7*$scale+$x,694*$scale+$y);
     $pdf->line(7*$scale+$x,724*$scale+$y,37*$scale+$x,724*$scale+$y);
     $pdf->line(970*$scale+$x,724*$scale+$y,970*$scale+$x,694*$scale+$y);
     $pdf->line(970*$scale+$x,724*$scale+$y,940*$scale+$x,724*$scale+$y);
     $pdf->line(7*$scale+$x,172*$scale+$y,7*$scale+$x,202*$scale+$y);
     $pdf->line(7*$scale+$x,172*$scale+$y,37*$scale+$x,172*$scale+$y);
-
+	Neter end */
+	 
     $name = $invoice['division_name'];
     $address = $invoice['division_address'];
     $zip = $invoice['division_zip'];
@@ -85,8 +94,14 @@ function invoice_main_form_fill($x,$y,$scale)
     text_autosize(15*$scale+$x,617*$scale+$y,30*$scale,iconv("UTF-8","ISO-8859-2//TRANSLIT",$address." ".$zip." ".$city),950*$scale);
     text_autosize(15*$scale+$x,555*$scale+$y,30*$scale, format_bankaccount($account), 950*$scale);
     $pdf->addtext(330*$scale+$x,495*$scale+$y,30*$scale,'X');
-    text_autosize(550*$scale+$x,495*$scale+$y,30*$scale,"*".number_format($invoice['total'],2,',','')."*",400*$scale);
-    text_autosize(15*$scale+$x,434*$scale+$y,30*$scale,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('$a dollars $b cents',to_words(floor($invoice['total'])),to_words(round(($invoice['total']-floor($invoice['total']))*100)))),950*$scale);
+	//Neter sgt
+//    text_autosize(550*$scale+$x,495*$scale+$y,30*$scale,"*".number_format($invoice['total'],2,',','')."*",400*$scale);
+//    text_autosize(15*$scale+$x,434*$scale+$y,30*$scale,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('$a dollars $b cents',to_words(floor($invoice['total'])),to_words(round(($invoice['total']-floor($invoice['total']))*100)))),950*$scale);
+    $toPay = $invoice['customerbalance']*-1;
+    if ($toPay < 0) $toPay=0;
+    text_autosize(550*$scale+$x,495*$scale+$y,30*$scale,"*".number_format($toPay,2,',','')."*",400*$scale);
+    text_autosize(15*$scale+$x,434*$scale+$y,30*$scale,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('$a dollars $b cents',to_words(floor($toPay)),to_words(round(($toPay-floor($toPay))*100)))),950*$scale);
+    //Neter end
     text_autosize(15*$scale+$x,372*$scale+$y,30*$scale, iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['name']),950*$scale);
     text_autosize(15*$scale+$x,312*$scale+$y,30*$scale, iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['address']." ".$invoice['zip']." ".$invoice['city']),950*$scale);
     $tmp = docnumber($invoice['number'], $invoice['template'], $invoice['cdate']);
@@ -122,7 +137,7 @@ function invoice_buyer($x,$y)
 	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('TEN')).' '.$invoice['ten']);
     else if ($invoice['ssn']) 
 	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('SSN')).' '.$invoice['ssn']);
-    $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Customer No.: $a',sprintf('%04d',$invoice['customerid']))).'</b>');
+//    $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Customer No.: $a',sprintf('%04d',$invoice['customerid']))).'</b>');
     return $y;
 }
 
@@ -290,7 +305,7 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 				if ($tmp_width > $tt_width[$v])
 					$tt_width[$v] = $tmp_width;
 			}
-			$v++;
+			$v++; //Neter sgt: update z LMS-git nie wiadomo czy potrzebne
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['basevalue']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totalbase']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", $item['taxlabel'])) + 6;
@@ -300,7 +315,7 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 				if(($tt_width[$i] + 2 * $margin + 2) > $t_width[$i])
 					$t_width[$i] = $tt_width[$i] + 2 * $margin + 2;
 		}
-
+    
 	if (isset($invoice['invoice']['content']))
 		foreach ($invoice['invoice']['content'] as $item)
 		{
@@ -317,7 +332,7 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 				if ($tmp_width > $tt_width[$v])
 					$tt_width[$v] = $tmp_width;
 			}
-			$v++;
+			$v++; //Neter sgt: update z LMS-git nie wiadomo czy potrzebne
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['basevalue']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totalbase']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", $item['taxlabel'])) + 6;
@@ -811,6 +826,18 @@ function invoice_to_pay($x,$y)
     else
 	    $y = $y - text_align_left($x,$y,14,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('To pay:')).' '.iconv("UTF-8","ISO-8859-2//TRANSLIT",moneyf($invoice['value'])));
     $y = $y - text_align_left($x,$y,10,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('In words:')).' '.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('$a dollars $b cents',to_words(floor($invoice['value'])),to_words(round(($invoice['value']-floor($invoice['value']))*100)))));
+	//Neter: patt
+    if ($invoice['customerbalance'] <= 0)
+    {
+//    	    $balance_text = 'Na dzień: '.date("Y/m/d",$invoice['cdate']).' pozostało do zapłaty: '.moneyf($invoice['customerbalance']*-1);
+    	    $balance_text = 'Na dzień: '.date("Y/m/d").' suma wszystkich należności wynosi: '.moneyf($invoice['customerbalance']*-1);
+    } else {
+	    $balance_text = 'Na dzień: '.date("Y/m/d",$invoice['cdate']).' nadpłata na koncie abonenckim wynosi: '.moneyf($invoice['customerbalance']);
+    }
+    $y = $y - 7;
+    $y = $y - text_align_left($x,$y,14,iconv("UTF-8","ISO-8859-2//TRANSLIT",$balance_text));
+    $y = $y - text_align_left($x,$y,7,iconv("UTF-8","ISO-8859-2//TRANSLIT","Zgodnie z rozporządzeniem ministra finansów z 27 kwietnia 2004 r. (DzU nr 97, poz. 971). Faktura VAT nie wymaga pieczątki ani podpisu. "));
+	
     return $y;
 }
 
@@ -840,8 +867,36 @@ function invoice_footnote($x, $y, $width, $font_size)
 
 		$tmp = preg_split('/\r?\n/', $tmp);
 		foreach ($tmp as $line) $y = text_wrap($x, $y, $width, $font_size, $line, "full");
-	}
+    }
+	//Neter: patt
+	$y = $y-$pdf->getFontHeight($font_size);
+    $y = $y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Customer No.: $a',sprintf('%04d',$invoice['customerid']))).'</b>');
+	$y = $y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Pin: $a',sprintf('%06d',$invoice['customerpin']))).'</b>');
+	//Neter end
 }
+
+function invoice_logo($x,$y)
+{
+    GLOBAL $pdf;
+
+//Neter sgt
+//    $image='img/logo.png';
+    $image='/var/www/lms/img/logo.png';
+    $i = ImageCreateFromPNG($image);
+    $pdf->addImage($i,$x,$y,180,60);
+}
+
+function invoice_podklad($x,$y)
+{
+    GLOBAL $pdf;
+
+//Neter sgt
+//    $image='img/przelew3.png';
+    $image='/var/www/lms/img/przelew3.png';
+    $i = ImageCreateFromPNG($image);
+    $pdf->addImage($i,0,0,600,305);
+}
+
 
 function invoice_body_standard()
 {
@@ -888,6 +943,70 @@ function invoice_body_ft0100()
 	invoice_main_form_fill(187,3,0.4);
 	invoice_simple_form_fill(14,3,0.4);
 	$page = $pdf->ezStopPageNumbers(1,1,$page);
+}
+
+function invoice_body_neter()
+{
+//NETER sgt		$page = $pdf->ezStartPageNumbers($pdf->ez['pageWidth']/2+10,$pdf->ez['pageHeight']-30,8,'',trans('Page $a of $b', '{PAGENUM}','{TOTALPAGENUM}'),1);
+	$top=$pdf->ez['pageHeight']-50;
+	    invoice_logo(30,770);
+	    invoice_dates(500,800);    
+        invoice_address_box(350,650);
+	    $top=750;
+	    $top=invoice_title(30,$top);
+	    $top=$top-10;
+        $top=invoice_seller(30,$top);
+	    $top=$top-10;
+        $top=invoice_buyer(30,$top);
+	    $top=$top-10;
+        $return=invoice_data(30,$top,430,6,1);
+	    invoice_footnote(470,$top,90,8);
+	    invoice_expositor(30,$return[1]-20);
+        $top=$return[2]-10;
+	    invoice_to_pay(30,$top);
+	    invoice_main_form_fill(180,-9,0.4);
+	    invoice_simple_form_fill(14,-9,0.4);
+#	    invoice_main_form_fill(181,0,0.4);
+#	    invoice_simple_form_fill(9,0,0.4);
+//NETER sgt		$page = $pdf->ezStopPageNumbers(1,1,$page);
+
+}
+
+function invoice_body_neterbw()
+{
+	global $pdf, $invoice; //Neter sgt
+
+		$page = $pdf->ezStartPageNumbers($pdf->ez['pageWidth']/2+10,$pdf->ez['pageHeight']-30,8,'',trans('Page $a of $b', '{PAGENUM}','{TOTALPAGENUM}'),1);
+		$top=$pdf->ez['pageHeight']-50;
+	    invoice_logo(30,770);
+	    invoice_dates(500,800);    
+        invoice_address_box(350,650);
+	    $top=750;
+	    $top=invoice_title(30,$top);
+	    $top=$top-10;
+        $top=invoice_seller(30,$top);
+	    $top=$top-10;
+        $top=invoice_buyer(30,$top);
+	    $top=$top-10;
+        $return=invoice_data(30,$top,430,6,1);
+	    invoice_footnote(470,$top,90,8);
+	    invoice_expositor(30,$return[1]-20);
+        $top=$return[2]-10;
+	    invoice_to_pay(30,$top);
+
+		//Neter patt && sgt
+		$toPay = $invoice['customerbalance']*-1;
+		if ($toPay > 0) {
+			if ($top-305 < 0) {
+				$pdf->ezNewPage();
+				$top = 750;
+			}
+			invoice_podklad(0,$top);
+			invoice_main_form_fill(180,10,0.4);
+			invoice_simple_form_fill(8,10,0.4);
+		} //Neter end
+		$page = $pdf->ezStopPageNumbers(1,1,$page);
+
 }
 
 ?>

@@ -69,7 +69,7 @@ else
 	$currenttime = true;
 }
 
-$SESSION->save('addbc', $addbalance['comment']);
+/*$SESSION->save('addbc', $addbalance['comment']);
 if ($currenttime)
 	$SESSION->remove('addbt');
 else
@@ -77,7 +77,7 @@ else
 
 $SESSION->save('addbv', $addbalance['value']);
 $SESSION->save('addbtax', isset($addbalance['taxid']) ? $addbalance['taxid'] : 0);
-
+*/
 if(!isset($addbalance['type']))
         $addbalance['type'] = 1;
 
@@ -85,7 +85,7 @@ if (!empty($addbalance['sourceid']))
 {
 	if (!$addbalance['type'])
 		$addbalance['sourceid'] = NULL;
-	$SESSION->save('addsource', $addbalance['sourceid']);
+	//$SESSION->save('addsource', $addbalance['sourceid']);
 }
 
 if($addbalance['type'] == 0)

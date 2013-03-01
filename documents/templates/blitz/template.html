@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Zlecenie inkaso BLITZ {$customerinfo.customername} (Nr {$customerinfo.id}</title>
+{literal}
+<STYLE type="text/css">
+p {margin:5px}
+div {position:absolute;}
+div.dane_firmy {left:10%;width:30%}
+div.data {left:370px; width:100%}
+div.dane_abonenta {left:60%; top:10%; width:40%}
+div.tresc {left:1%;width:98%;top:30px}
+BODY	{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1		{ font-size: 14pt; text-align: center; }
+H2		{ font-size: 11pt; text-align: center; color: red;}
+TD		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TABLE	{ border-collapse: collapse; }
+P		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: justify; }
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+
+
+<div class="data">{$_config.invoices.cplace}, dnia: {$smarty.now|date_format:"%d.%m.%Y"} Nr {$document.nr}</div> 
+
+<div class="tresc">
+<h1>Grupa Kapitałowa BLITZ PROFIT Sp. z o.o.</h1>
+<center>
+biuro@windykacja.org 60-476 Poznań, ul. Jasielska 8A tel. (061) 657 04 57; fax (061) 8425802<br>
+warszawa@windykacja.org 00-151 Warszawa, ul. Nowolipki 15/14 tel. (022) 887 17 94; fax (022) 887 17 92<br>
+Nr konta: 971440 1130 0000 0000 0318 8949 NIP: 782-22-41-466<br>
+REGON: 6343533963 http://www.windykacja.org
+</center>
+
+<h1>ZLECENIE INKASO - W RAMACH UMOWY</h1>
+
+<P><B>WIERZYCIEL - ZLECENIODAWCA:</B><br>
+{$_config.invoices.header|replace:"\\n":"<BR>"}</P>
+
+<P><b>DŁUŻNIK - NAZWA FIRMY:</b><br>
+{$customerinfo.customername} (Nr {$customerinfo.id})<br>
+adres: {$customerinfo.address};	{$customerinfo.zip} {$customerinfo.city}<br>
+tel/fax:
+{section name=kontakty loop=$customerinfo.contacts}
+ {$customerinfo.contacts[kontakty].phone}&nbsp;
+{/section}
+<br>
+nr dowodu os: {$customerinfo.icn}<br>
+NIP: {$customerinfo.ten}<br>
+PESEL: {$customerinfo.ssn}<br>
+e-mail: {$customerinfo.email}<br>
+nr indywidualnego rachunku bankowego: {$customerinfo.bankaccount}</P>
+
+<P><b>DOCHODZONA WIERZYTELNOŚĆ:</b>
+
+<TABLE border="1" cellpadding="5" cellspacing="0" width="100%">
+	<TR>
+		<TD width="20%" align="right">Numer faktury</td>
+    	<TD width="25%" align="right">Data wystawienia</TD>
+    	<TD width="25%" align="right">Termin płatności</TD>
+	    <TD width="10%" align="right">Wartość</TD>
+	    <TD width="10%" align="right">Pozostało</TD>
+	    <TD width="10%" align="right">Dni po terminie</TD>
+	    <TD width="10%" align="right">Odsetki:</TD>
+	</TR>
+	{section name=balancelist loop=$balancelist}
+	<TR>
+		<TD width="20%" align="right">{$balancelist[balancelist].numerfv}</TD>
+		<TD width="25%" align="right"><nobr>{$balancelist[balancelist].time|date_format:'%Y.%m.%d'}</nobr></TD>
+		<TD width="25%" align="right">{$balancelist[balancelist].dataplatnosci|date_format:'%Y.%m.%d'}</TD>
+		<TD width="10%" align="right"><nobr>{$balancelist[balancelist].value|money_format}</nobr></TD>
+		<TD width="10%" align="right"><nobr>{$balancelist[balancelist].pozostalo|money_format}</nobr></TD>
+		<TD width="10%" align="right">{$balancelist[balancelist].daysafter}</TD>
+		<TD width="10%" align="right">{$balancelist[balancelist].odsetki}</TD>
+	</TR>
+	{sectionelse}
+	<TR>
+	    <TD align="center" width="100%" colspan="6">
+			<p>&nbsp;</p>
+			<p><B>{t}That customer hasn't got any transactions.{/t}</B></p>
+			<p>&nbsp;</p>
+	    </TD>
+	</TR>
+	{/section}
+	<TR>
+		<TD colspan="4" align="right"><b>Razem:</b></TD>
+		<TD align="right"><b>{$grandtotal.value|money_format}</b></TD>
+		<TD align="right" colspan="2"><b>{$grandtotal.odsetki|money_format}</b></TD>
+	</TR>
+</TABLE>
+
+</P>
+<P>
+<b>Razem dochodzona wierzytelność wraz z odsetkami: {$grandtotal.all|money_format}
+</b></P>
+<P><b>Załączniki do sprawy (dokumentacja):</b></P>
+{if $document.zalaczniki} {$document.zalaczniki|replace:"\n":"<BR>"} {else} brak {/if}
+
+<P><b>Dodatkowe informacje:</b></P>
+{if $document.informacje} {$document.informacje|replace:"\n":"<BR>"} {else} brak {/if}
+
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER"></TD>
+	<TD WIDTH="50%" ALIGN="CENTER">Z poważaniem<br><br></TD>
+    <tr>
+    	<td align="center"></td>
+    	<td align="center">{$layout.logname}</td>
+</TABLE>
+
+</div>
+</body>
+</html>
+

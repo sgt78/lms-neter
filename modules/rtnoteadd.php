@@ -152,7 +152,7 @@ else
 
 $layout['pagetitle'] = trans('New Note');
 
-$SESSION->save('backto', $_SERVER['QUERY_STRING']);
+//$SESSION->save('backto', $_SERVER['QUERY_STRING']);
 
 $SMARTY->assign('note', $note);
 $SMARTY->assign('error', $error);

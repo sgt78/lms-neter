@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?
-$CONFIG_FILE = '/etc/lms/lms.ini';
+$CONFIG_FILE = '/var/www/lms/lms.ini';
 if(is_readable('../lms.ini'))
 	$CONFIG_FILE = '../lms.ini';
 function lms_parse_ini_file($filename, $process_sections = false) 

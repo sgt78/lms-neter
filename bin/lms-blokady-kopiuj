@@ -1,0 +1,165 @@
+#!/usr/bin/perl -w
+#
+#  LMS version 1.10.4 Pyrus
+#
+#  Copyright (C) 2001-2008 LMS Developers
+#
+#  Please, see the doc/AUTHORS for more information about authors!
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License Version 2 as
+#  published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#  USA.
+#
+#  $Id: lms-makemessages,v 1.22.2.2 2008/01/04 07:57:19 alec Exp $
+
+use strict;
+use DBI;
+use Config::IniFiles;
+use Getopt::Long;
+use vars qw($configfile $quiet $help $version);
+
+$ENV{PATH} = $ENV{PATH}.'/var/www/lms3/bin';
+
+
+my $_version = '1.11.13 neter';
+
+my %options = (
+	"--config-file|C=s"	=>	\$configfile,
+	"--quiet|q"		=>	\$quiet,
+	"--help|h"		=>	\$help,
+	"--version|v"		=>	\$version
+);
+
+Getopt::Long::config("no_ignore_case");
+GetOptions(%options);
+
+if($help)
+{
+	print STDERR <<EOF;
+lms-blokady-kopiuj, version $_version
+(C) 2001-2008 LMS Developers
+
+-C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
+-h, --help			print this help and exit;
+-v, --version			print version info and exit;
+-q, --quiet			suppress any output, except errors;
+
+EOF
+	exit 0;
+}
+
+if($version)
+{
+	print STDERR <<EOF;
+lms-blokady-kopiuj, version $_version
+(C) 2001-2008 LMS Developers
+EOF
+	exit 0;
+}
+
+if(!$configfile)
+{
+	$configfile = "/etc/lms/lms.ini";
+}
+
+if(!$quiet)
+{
+	print STDOUT "lms-blokady-kopiuj, version $_version\n";
+	print STDOUT "(C) 2001-2008 LMS Developers\n";
+	print STDOUT "Using file $configfile as config.\n";
+}
+
+if(! -r $configfile)
+{
+	print STDERR "Fatal error: Unable to read configuration file $configfile, exiting.\n";
+	exit 1;
+}
+
+my $ini = new Config::IniFiles -file => $configfile;
+print @Config::IniFiles::errors;
+
+my $networks_list = $ini->val('messages', 'networks') || '';
+my $customergroups_list = $ini->val('messages', 'customergroups') || '';
+my $cfile = $ini->val('messages', 'config_file') || '/etc/rc.d/rc.messages';
+my $cuid = $ini->val('messages', 'config_owneruid') || '0';
+my $cgid = $ini->val('messages', 'config_ownergid') || '0';
+my $cperm = $ini->val('messages', 'config_permission') || '700';
+my $redir = $ini->val('messages', 'redirect_address') || '127.0.0.1:80';
+my $ipbin = $ini->val('messages', 'iptables_binary') || '/sbin/iptables';
+my $chain = $ini->val('messages', 'chain') || 'MESSAGES';
+
+my $dbtype = $ini->val('database', 'type') || 'mysql';
+my $dbhost = $ini->val('database', 'host') || 'localhost';
+my $dbuser = $ini->val('database', 'user') || 'root';
+my $dbpasswd = $ini->val('database', 'password') || '';
+my $dbname = $ini->val('database', 'database') || 'lms';
+
+my $service_id;
+my $service_ip;
+my $lastreload;
+
+my $dbase;
+
+if($dbtype =~ /mysql/)
+{
+	$dbase = DBI->connect("DBI:mysql:database=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$dbase->do("SET NAMES utf8");
+}
+elsif($dbtype eq "postgres")
+{
+	$dbase = DBI->connect("DBI:Pg:dbname=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+}
+else
+{
+	print STDERR "Fatal error: unsupported database type: $dbtype, exiting.\n";
+	exit 1;
+}
+
+open(MESGFILE, ">$cfile") or die("Fatal error: Unable to write $cfile, exiting.\n");
+
+print MESGFILE $ipbin." -t nat -F ".$chain."\n\n";
+
+my $dbq = $dbase->prepare("
+	SELECT inet_ntoa(ipaddr) as ipaddr, nodes.name as name, ownerid, access, warning 
+	  FROM nodes join customers on nodes.ownerid = customers.id
+	 WHERE customers.cutoffstop < unix_timestamp() and (access=0 or warning=1)");
+
+$dbq->execute();
+
+while (my $row = $dbq->fetchrow_hashref())
+{
+	my $tmpname = lc($row->{'name'});
+	my $ipaddr = $row->{'ipaddr'};
+
+
+	if ($row->{'access'} == 1 && $row->{'warning'} == 1) 
+	{
+	  print MESGFILE "# $tmpname\n".$ipbin." -t nat -A ".$chain." -p tcp -s ".$ipaddr." -j INFOFORUSERS\n\n";
+	}
+	if ($row->{'access'} == 0 && $row->{'warning'} == 1)
+	{
+	  print MESGFILE "# $tmpname\n".$ipbin." -t nat -A ".$chain." -p tcp -s ".$ipaddr." -j INFOFORUSERS\n\n";
+	}
+	if ($row->{'access'} == 0 && $row->{'warning'} == 0)
+	{
+	  print MESGFILE "# $tmpname\n".$ipbin." -t nat -A ".$chain." -p tcp -s ".$ipaddr." -j BLOKADAUSERS\n\n";
+	}
+}
+
+close(MESGFILE);
+
+system("/usr/bin/scp $cfile root\@dns.sky24.pl:/etc/init.d/lms/rc.messages");
+system("/usr/bin/ssh root\@dns.sky24.pl /etc/init.d/lms/rc.messages");
+
+$dbq->finish();
+$dbase->disconnect();

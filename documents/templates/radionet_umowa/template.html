@@ -1,0 +1,110 @@
+﻿<html>
+<head>
+<title>{t}UMOWA{/t}</title>
+{literal}
+<STYLE type="text/css"><!--
+BODY		{ font-size: 12pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1		{ font-size: 14pt; text-align: center; }
+H2		{ font-size: 12pt; text-align: center; color: red;}
+TD		{ font-size: 12pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TABLE		{ border-collapse: collapse; }
+P		{ font-size: 12pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: center; }
+//-->
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+<h1>Umowa nr {$document.nr} o śwadczeniu usługi dostępu do Internetu:</h1>
+Umowa zawarta została w Trzeciewcu, dnia <b>{$smarty.now|date_format:"%Y-%m-%d"}</b> pomiędzy:<br>
+Radio-Net z siedziba w Trzeciewcu 100/5, NIP:554-228-19-08 reprezentowaną przez Elżbietę Pacek-Michałek, zwana dalej Radio-Net, a Abonamentem Pan/Pania:<br><br>
+<b>Imie i Nazwisko/Nazwa firmy:</b> {$customerinfo.customername}<br>
+<b>NIP:</b> {$customerinfo.ten}<br>
+<b>Adres:</b> {$customerinfo.address}, {$customerinfo.zip} {$customerinfo.city} <br>
+<b>Adres e-mail:</b> {$customerinfo.email}<br>
+
+<b>Telefony kontaktowe:</b><br>
+{section name=contact loop=$customerinfo.contacts}
+	{counter}. {$customerinfo.contacts[contact].typestr} {$customerinfo.contacts[contact].phone} {if $customerinfo.contacts[contact].name <> ""}({$customerinfo.contacts[contact].name}){/if}<br>
+{/section}
+<br><br><br>
+<p><b>&sect;1.</b></p><br>
+1. Przedmiotem niniejszej Umowy jest świadczenie przez Radio-Net usługi dostępu do Internetu ( zwaną dalej Usługą) oraz usług dodatkowych zgodnie z
+ „Regulaminem korzystania z usługi dostępu do Internetu świadczonej przez Radio-Net" ( zwanym dalej Regulaminem ) 
+ oraz „Cennikiem usługi dostępu do Internetu" ( zwanym dalej Cennikiem ).
+
+<br><p><b>&sect;2.</b></p><br>
+1. Umowa zostaje zawarta na czas określony do <b>{$document.todate|date_format:"%Y-%m-%d"}</b>. <br>
+2. Po okresie obowiązywania Umowy na czas określony Umowa ulega automatycznemu przedłużeniu  na czas nieokreślony.<br>
+3. Umowa może zostać rozwiązana na miesiąc przed końcem Umowy oraz bez wypowiedzenia na zasadach i w trybie określonych w Regulaminie.<br>
+4. Wypowiedzenie umowy przez Abonenta przed końcem okresu Umowy jest równoznaczne z uregulowaniem kwoty proporcjonalnej do pozostałej części okresu Umowy.<br>
+
+<br><p><b>&sect;3.</b></p><br>
+1. Abonent zamawia Usługę dostępu do Internetu - DOWNLOAD = {sum array=$assignments column="downceil" string_format="%01.0f"} kbit UPLOAD = {sum array=$assignments column="upceil" string_format="%01.0f"} kbit. Radio-Net gwarantuje jakość Usługi zgodną z wymaganiami przepisów prawa.<br>
+2. Wysokość abonamentu wynosi <b>{sum array=$assignments column="value" string_format="%01.2f"} złotych brutto miesięcznie </b>. Radio-Net zobowiązuje się przez czas trwania Umowy na czas określony nie podwyższyć ceny abonamentu. Po upływie okresu obowiązywania Umowy na czas określony, Abonent regulować będzie abonament w wysokości określonej dla danej Usługi w Cenniku.<br>
+3. Opłaty abonamentowe są płatne z góry za każdy miesiąc kalendarzowy do 15 każdego miesiąca na konto w banku BZWBK 1 ODDZIAŁ W OSIELSKU, nr konta: 88 1090 1896 0000 0001 0683 8441, z opisem: numer umowy, nazwisko Abonenta, miesiąc, za który następuje wpłata należności lub gotówką do rąk właściciela Radio-Net.<br> 
+4. Podstawą zapłaty należności na rzecz Radio-Net jest niniejsza Umowa, a nieotrzymanie lub nieodebranie wystawianej co miesiąc faktury nie zwalnia od jej zapłaty.<br> 
+5. W przypadku niezapłacenia w terminie abonamentu komputer Abonenta zostanie odłączony od sieci internetowej automatycznie przez system bez konieczności uprzedniego wzywania Abonenta do zapłaty zaległego abonamentu. Zawieszenie usługi powstałe na skutek przekroczenia terminu płatności nie zwalnia Abonenta z opłaty abonamentowej za okres zawieszenia.<br>
+6. Ponowne podłączenie do sieci internetowej może nastąpić po zapłacie zaległego abonamentu oraz dodatkowej opłaty aktywacyjnej w kwocie 10 zł.<br>
+7. Radio-Net zastrzega sobie prawo natychmiastowego rozwiązania Umowy w przypadku niezapłacenia przez Abonenta w terminie 2 ( dwóch ) abonamentów. Abonent zobowiązany jest do uregulowania kwoty należności w ciągu 7 dni od otrzymania wypowiedzenia.<br>
+8. W przypadku nieuregulowania należnej kwoty Radio-Net zastrzega sobie prawo podjęcia wobec Abonenta działań zmierzających do windykacji zaległych należności.<br>
+9. Pakiet sprzętowy zainstalowany w lokalu Abonenta jest własnością Abonenta.<br>
+10. Wszelkich zmian, konserwacji oraz naprawy urządzeń składających się na Pakiet sprzętowy dokonuje wyłącznie Radio-Net.<br>
+11. Abonent zobowiązany jest powiadomić Radio-Net o uszkodzeniach, usterkach i innych nieprawidłowościach w pracy Pakietu sprzętowego.<br> 
+12. Radio-Net zobowiązuje się do wykonania serwisowej naprawy Pakietu sprzętowego w terminie 7 dni roboczych od uzyskania informacji, o której mowa w pkt. 7.<br>
+13. Radio-Net, poza przypadkami określonymi w pkt. 10, zobowiązuje się do dokonania usługi serwisowej na własny koszt.<br>
+14. Radio-Net ma prawo obciążyć Abonenta kosztami naprawy udostępnionych mu urządzeń w przypadku stwierdzenia, że uszkodzenie powstało na skutek:<br>
+a) samowolnej naprawy lub modernizacji dokonanej przez Abonenta lub osobę, której udostępnił urządzenia.<br>
+b) samowolnej zmiany konfiguracji urządzeń dokonanej przez Abonenta lub osobę, której udostępnił urządzenia,<br>
+c) uszkodzeń mechanicznych, które nie mogły powstać w trakcie prawidłowej eksploatacji urządzeń,<br>
+d) uszkodzeń spowodowanych działaniami urządzeń będących własnością Abonenta,<br>
+e) uszkodzenia po upływie okresu gwarancji producenta na udostępniony sprzęt.<br>
+15. W przypadku, gdy przerwa w świadczeniu Usługi nie nastąpiła z winy Abonenta lub osób, którym udostępnił urządzenia umożliwiające dostęp do Internetu, za każdą dobę przerwy w świadczeniu Usługi Abonentowi przysługuje kara umowna w wysokości 1/30 miesięcznej opłaty abonamentowej. Warunkiem skorzystania przez Abonenta z tego prawa jest skuteczne zgłoszenie reklamacji do Radio-Net.<br>
+ 
+<br><p><b>&sect;4.</b></p><br> 
+1. Abonent oświadcza, że zapoznał się z Regulaminem oraz Cennikiem zamieszczonymi na stronie internetowej: www.radio-net.info.pl  i zgadza się z ich treścią. <br>
+2. Radio-Net zobowiązuje się do umieszczania aktualnego Cennika oraz Regulaminu na stronie internetowej www.radio-net.info.pl oraz do dostarczenia tych dokumentów na każde żądanie Abonenta. <br>
+
+<br><p><b>&sect;5.</b></p><br>
+1. Mając na uwadze treść art. 58 ustawy z 16 lipca 2004 r. Prawo Telekomunikacyjne, Abonent oświadcza, że posiada prawo do lokalu, w którym zleca wykonanie instalacji teletechnicznych firmy Radio-Net lub też uzyskał stosowną zgodę od osoby upoważnionej. <br>
+
+<br><p><b>&sect;6.</b></p><br>
+1. Abonent oświadcza, że jest podatnikiem VAT. Dla Abonentów będących podatnikiem VAT podpisanie niniejszej Umowy jest równoznaczne z wyrażeniem zgody na wystawianie faktury VAT bez podpisu Abonenta.<br>
+2. Oświadczam, że wyrażam zgodę na wystawianie i przesyłanie droga elektorniczą faktur za usługi świadczone przez Radio-Net. Faktury bedą wysyłane każdorazowo na adres e-mail podany przez Abonenta oraz dostępne bedą formie pdf na stronie http://ibok.radio-net.info.pl.<br>
+4. Oświadczam, że zapoznałem/-am sie z instrukcją obsługi portalu elektronicznego http://ibok.radio-net.info.pl/<br>
+4. Dane dostępowe do IBOK Login: <b>{$customerinfo.id|string_format:"%04d"} </b> hasło: <b>{$customerinfo.pin} </b><br>
+
+<br><p><b>&sect;7.</b></p><br>
+1. Wszelkie spory przy wykonaniu niniejszej umowy Strony poddają pod rozstrzygnięcie właściwemu dla miejsca wykonania Umowy sądowi powszechnemu <br>
+2. W trybie i na zasadach określonych w ustawie z 16 lipca 2004 r. Prawo Telekomunikacyjne, w sprawach, w których Abonentem jest konsument, spory wynikające z niniejszej Umowy powstałe pomiędzy Stronami mogą zostać rozwiązane w drodze mediacji prowadzonej przez Prezesa Urzędu Regulacji Telekomunikacji poczty lub oddane pod rozstrzygnięcie sądu polubownego działającego przy Prezesie Urzędu regulacji telekomunikacji i Poczty.<br>
+
+<br><p><b>&sect;8.</b></p><br>
+1. Niniejsza Umowa wchodzi w życie z dniem jej podpisania.<br>
+2. Wszelkie zmiany niniejszej Umowy następować będą w formie pisemnej.<br>
+3. Niniejsza umowa została sporządzona w dwóch jednobrzmiących egzemplarzach po jednym dla Abonenta i Radio-Net.<br>
+
+{if $document.notes}
+    <TR>
+	<TD VALIGN="top">&sect;9.</TD>
+	<TD VALIGN="top">{$document.notes}</TD>
+    </TR>
+{/if}
+    
+</TABLE>
+
+<BR><BR>
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+    </TR>
+    <TR>
+	<TD ALIGN="CENTER">Abonent</TD>
+	<TD ALIGN="CENTER">RADIO-NET</TD>
+    </TR>
+</TABLE>
+
+</body>
+</html>
+

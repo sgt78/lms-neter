@@ -11,6 +11,12 @@
 			for (var i = 0; i < document.setrights.elements[0].length; i++)
 				document.setrights.elements[0].options[i].selected = false;
 	}
+
+	function SelectAllCustomers2()
+	{
+		document.setrights.customers.checked = !document.setrights.customers.checked;
+		SelectAllCustomers();
+	}
 //-->
 </SCRIPT>
 <H1>{$layout.pagetitle}</H1>

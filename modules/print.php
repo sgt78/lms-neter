@@ -41,21 +41,23 @@ switch($type)
 
 		// date format 'yyyy/mm/dd'	
 		if($from && preg_match('/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/', $from))
-		{
+			{
 			list($year, $month, $day) = explode('/',$from);
 			$date['from'] = mktime(0, 0, 0, (int)$month, (int)$day, (int)$year);
-		}
+			}
 		else
 			$date['from'] = 0;
 
 		if($to && preg_match('/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/', $to))
-		{
+			{
 			list($year, $month, $day) = explode('/',$to);
 			$date['to'] = mktime(23,59,59,$month,$day,$year);
-		} else { 
+			} 
+		else 
+			{ 
 			$to = date('Y/m/d',time());
 			$date['to'] = mktime(23,59,59); //koniec dnia dzisiejszego
-		}
+			}
 
 		$id = intval($_POST['customer']);
 
@@ -69,7 +71,7 @@ switch($type)
 		$list['customerid'] = $id;
 
 		if($tslist = $DB->GetAll('SELECT c.id AS id, time, type, c.value AS value, 
-				    taxes.label AS taxlabel, customerid, comment, name AS username 
+				    taxes.label AS taxlabel, customerid, comment, docid, name AS username, importid 
 				    FROM cash c
 				    LEFT JOIN taxes ON (c.taxid = taxes.id)
 				    LEFT JOIN users ON (users.id = userid)
@@ -80,7 +82,7 @@ switch($type)
 					            WHERE e.userid = lms_current_user() AND a.customerid = ?)
 				    ORDER BY time', array($id, $id))
 		)
-		{
+			{
 			foreach($tslist as $row)
 				foreach($row as $column => $value)
 					$saldolist[$column][] = $value;
@@ -88,13 +90,13 @@ switch($type)
 			$saldolist['balance'] = 0;
 
 			foreach($saldolist['id'] as $i => $v)
-			{
+				{
 				$saldolist['after'][$i] = $saldolist['balance'] + $saldolist['value'][$i];
 				$saldolist['balance'] += $saldolist['value'][$i];
-			        $saldolist['date'][$i] = date('Y/m/d H:i', $saldolist['time'][$i]);
+			    $saldolist['date'][$i] = date('Y/m/d H:i', $saldolist['time'][$i]);
 
 				if($saldolist['time'][$i]>=$date['from'] && $saldolist['time'][$i]<=$date['to'])
-				{
+					{
 					$list['id'][] = $saldolist['id'][$i];
 					$list['type'][] = $saldolist['type'][$i];
 					$list['after'][] = $saldolist['after'][$i];
@@ -103,25 +105,76 @@ switch($type)
 					$list['taxlabel'][] = $saldolist['taxlabel'][$i];
 					$list['date'][] = date('Y/m/d H:i',$saldolist['time'][$i]);
 					$list['username'][] = $saldolist['username'][$i];
-					$list['comment'][] = $saldolist['comment'][$i];
+					//$list['comment'][] = $saldolist['comment'][$i];
 					$list['summary'] += $saldolist['value'][$i];
 					
 					if($saldolist['type'][$i])
-					{
+						{
 						if($saldolist['value'][$i] > 0)
 					    		//income
 						        $list['income'] += $saldolist['value'][$i];
 						else
 						        //expense
 						        $list['expense'] -= $saldolist['value'][$i];
-					}
+						}
 					else
-					        $list['liability'] -= $saldolist['value'][$i];
+						{
+					    $list['liability'] -= $saldolist['value'][$i];
+						}						
+
+					$invoice = $LMS->GetInvoiceContent($saldolist['docid'][$i]);
+					switch ($invoice['type'])
+						{
+						case DOC_INVOICE:
+							$number = docnumber($invoice['number'], $invoice['template'], $invoice['cdate']);
+							$list['comment'][] = '<b>Faktura: '.$number.'</b> '.$saldolist['comment'][$i];
+							break;
+						case DOC_RECEIPT:
+							$list['comment'][] = '<b>KP_KW</b> '.$saldolist['comment'][$i];
+							break;
+						case DOC_CNOTE:
+							$number = docnumber($invoice['number'], $invoice['template'], $invoice['cdate']);
+							$list['comment'][] = '<b>Faktura korekta:'.$number.'</b> '.$saldolist['comment'][$i];
+							break;
+						case DOC_DELIV_INVOICE:
+							$number = $invoice['extnumber'];
+							$list['comment'][] = '<b>Faktura zakup: '.$number.'</b> '.$saldolist['comment'][$i];
+							break;
+						case DOC_DELIV_CNOTE:
+							$number = $invoice['extnumber'];
+							$list['comment'][] = '<b>Faktura zakup: '.$number.'</b> '.$saldolist['comment'][$i];
+							break;
+						default:
+							switch ($saldolist['type'][$i])
+								{
+								case 1:
+									if ($saldolist['importid'][$i])
+										//bank
+										$list['comment'][] = '<b>Bank: </b> '.$saldolist['comment'][$i];
+									elseif($saldolist['value'][$i] > 0)
+										//income
+										$list['comment'][] = '<b>KP: </b> '.$saldolist['comment'][$i];
+									else
+										//expense
+										$list['comment'][] = '<b>KW: </b> '.$saldolist['comment'][$i];
+									break;
+/*								case 3:
+									$list['comment'][] = '<b>Wplata zakup: </b> '.$saldolist['comment'][$i];
+									break;*/
+								default:
+									$list['comment'][] = '<b></b> '.$saldolist['comment'][$i];
+									break;
+								}
+						}
+					}
 				}
+//			echo "<PRE>";
+//			print_r($list);
+//			print_r($saldolist);
+//			echo "</PRE>";
+				$list['total'] = sizeof($list['id']);
 			}
-			
-			$list['total'] = sizeof($list['id']);
-		}
+		$list['customerid'] = $id;
 		
 		$SMARTY->assign('balancelist', $list);
 		if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
@@ -352,6 +405,7 @@ switch($type)
 		$from = $_POST['importfrom'];
 		$to = $_POST['importto'];
 		$source = $_POST['source'];
+		$sum = $_POST['importsum']; //NETER sgt
 
 		// date format 'yyyy/mm/dd'
 		if ($from) {
@@ -371,24 +425,44 @@ switch($type)
 
 		$layout['pagetitle'] = trans('Cash Import History ($a to $b)', $from, $to);
 
-		$importlist = $DB->GetAll('SELECT c.time, c.value, c.customerid, '
-			.$DB->Concat('upper(v.lastname)',"' '",'v.name').' AS customername 
-			FROM cash c
-			JOIN customersview v ON (v.id = c.customerid)
-			WHERE c.time >= ? AND c.time <= ?'
-			.($source ? ' AND c.sourceid = '.intval($source) : '')
-			.' AND c.importid IS NOT NULL
-			ORDER BY time', array($date['from'], $date['to']));
+//Neter sgt		
+		if ($sum) {
+			$importlist = $DB->GetAll('SELECT YEAR(FROM_UNIXTIME(c.time)) AS year, MONTH(FROM_UNIXTIME(c.time)) AS month, SUM(c.value) AS value '
+				.'FROM cash c
+				WHERE c.time >= ? AND c.time <= ?'
+				.($source ? ' AND c.sourceid = '.intval($source) : '')
+				.' AND c.importid IS NOT NULL
+				GROUP BY year, month
+				ORDER BY year, month', array($date['from'], $date['to']));
 
-		if ($source)
-			$SMARTY->assign('source', $DB->GetOne('SELECT name FROM cashsources WHERE id = ?', array($source)));
-		$SMARTY->assign('importlist', $importlist);
-		if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
-			$output = $SMARTY->fetch('printimportlist.html');
-			html2pdf($output, trans('Reports'), $layout['pagetitle']);
-		} else {
-			$SMARTY->display('printimportlist.html');
+			$SMARTY->assign('importlist', $importlist);
+			if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+				$output = $SMARTY->fetch('printimportlistsum.html');
+				html2pdf($output, trans('Reports'), $layout['pagetitle']);
+			} else {
+				$SMARTY->display('printimportlistsum.html');
+			}
+		} else { //Neter end
+			$importlist = $DB->GetAll('SELECT c.time, c.value, c.customerid, '
+				.$DB->Concat('upper(v.lastname)',"' '",'v.name').' AS customername 
+				FROM cash c
+				JOIN customersview v ON (v.id = c.customerid)
+				WHERE c.time >= ? AND c.time <= ?'
+				.($source ? ' AND c.sourceid = '.intval($source) : '')
+				.' AND c.importid IS NOT NULL
+				ORDER BY time', array($date['from'], $date['to']));
+
+			if ($source)
+				$SMARTY->assign('source', $DB->GetOne('SELECT name FROM cashsources WHERE id = ?', array($source)));
+			$SMARTY->assign('importlist', $importlist);
+			if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+				$output = $SMARTY->fetch('printimportlist.html');
+				html2pdf($output, trans('Reports'), $layout['pagetitle']);
+			} else {
+				$SMARTY->display('printimportlist.html');
+			}
 		}
+
 	break;
 
 	case 'invoices': /********************************************/

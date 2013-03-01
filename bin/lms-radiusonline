@@ -1,0 +1,195 @@
+#!/usr/bin/perl -Tw
+#
+#  LMS version 1.10.4 Pyrus
+#
+#  Copyright (C) 2001-2008 LMS Developers
+#
+#  Please, see the doc/AUTHORS for more information about authors!
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License Version 2 as
+#  published by the Free Software Foundation.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+#  USA.
+#
+#  $Id: lms-fping,v 1.15.2.2 2008/01/04 07:57:18 alec Exp $
+
+use strict;
+use DBI;
+use Config::IniFiles;
+use Getopt::Long;
+use vars qw($configfile $quiet $help $version);
+
+$ENV{'PATH'}='/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin';
+
+my $_version = '1.10.4 Pyrus';
+
+my %options = (
+	"--config-file|C=s"	=>	\$configfile,
+	"--quiet|q"		=>	\$quiet,
+	"--help|h"		=>	\$help,
+	"--version|v"		=>	\$version
+);
+
+Getopt::Long::config("no_ignore_case");
+GetOptions(%options);
+
+sub mask2prefix($)
+{
+        my $mask = shift @_;
+        my @tmp = split('\.',$mask,4);
+        my $q = sprintf("%b%b%b%b",$tmp[0],$tmp[1],$tmp[2],$tmp[3]);
+        $q =~ s/0*$//;
+        if ($q =~ /0/) {
+                print " You idiot. error in mask\n";
+        }
+        my $len = length($q) ;
+        return $len;
+}
+
+if($help)
+{
+	print STDERR <<EOF;
+lms-fping, version $_version
+(C) 2001-2008 LMS Developers
+
+-C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
+-h, --help			print this help and exit;
+-v, --version			print version info and exit;
+-q, --quiet			suppress any output, except errors;
+
+EOF
+	exit 0;
+}
+
+if($version)
+{
+	print STDERR <<EOF;
+lms-fping, version $_version
+(C) 2001-2008 LMS Developers
+
+EOF
+	exit 0;
+}
+
+if(!$configfile)
+{
+	$configfile = "/etc/lms/lms.ini";
+}
+
+if(!$quiet)
+{
+	print STDOUT "lms-fping, version $_version\n";
+	print STDOUT "(C) 2001-2008 LMS Developers\n";
+	print STDOUT "Using file $configfile as config.\n";
+}
+
+if(! -r $configfile)
+{
+	print STDERR "Fatal error: Unable to read configuration file $configfile, exiting.\n";
+	exit 1;
+}
+
+my $ini = new Config::IniFiles -file => $configfile;
+print @Config::IniFiles::errors;
+
+my $networks_list = $ini->val('fping','networks') || '';
+my $fping = $ini->val('fping','fping_binary') || '/usr/sbin/fping';
+my $tmpfile = $ini->val('fping','temp_file') || '/tmp/fping_hosts';
+
+my $dbtype = $ini->val('database', 'type') || 'mysql';
+my $dbhost = $ini->val('database', 'host') || 'localhost';
+my $dbuser = $ini->val('database', 'user') || 'root';
+my $dbpasswd = $ini->val('database', 'password') || '';
+my $dbname = $ini->val('database', 'database') || 'lms';
+
+my $rad_dbtype = $ini->val('radius','type') || 'mysql';
+my $rad_dbhost = $ini->val('radius','host') || 'localhost';
+my $rad_dbuser = $ini->val('radius','user') || 'user';
+my $rad_dbpasswd = $ini->val('radius','passwd') || '';
+my $rad_dbname = $ini->val('radius','database') || 'radius';
+
+
+my $dbase;
+my $utsfmt;
+
+if($dbtype =~ /mysql/)
+{
+	$dbase = DBI->connect("DBI:mysql:database=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$utsfmt = "UNIX_TIMESTAMP()";
+}
+elsif($dbtype eq "postgres")
+{
+	$dbase = DBI->connect("DBI:Pg:dbname=$dbname;host=$dbhost","$dbuser","$dbpasswd", { RaiseError => 1 });
+	$utsfmt = "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))";
+}
+else
+{
+	print STDERR "Fatal error: unsupported database type: $dbtype, exiting.\n";
+	exit 1;
+}
+
+# Connect to radius database
+my $rad_dbase;
+my $rad_utsfmt;
+
+if($rad_dbtype =~ /mysql/)
+{
+	$rad_dbase = DBI->connect("DBI:mysql:database=$rad_dbname;host=$rad_dbhost","$rad_dbuser","$rad_dbpasswd", { RaiseError => 1 });
+	$rad_dbase->do("SET NAMES utf8");
+	$rad_utsfmt = "UNIX_TIMESTAMP()";
+}
+elsif($rad_dbtype eq "postgres")
+{
+	$rad_dbase = DBI->connect("DBI:Pg:dbname=$rad_dbname;host=$rad_dbhost","$rad_dbuser","$rad_dbpasswd", { RaiseError => 1 });
+	$rad_utsfmt = "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))";
+}
+else
+{
+	print STDERR "Fatal error: unsupported database type: $rad_dbtype, exiting.\n";
+	exit 1;
+}
+
+my $rad_dbq = $rad_dbase->prepare("SELECT UserName,AcctStartTime,FramedIPAddress,CallingStationId from radacct where AcctStopTime is null");
+$rad_dbq->execute();
+
+
+while (my $row = $rad_dbq->fetchrow_hashref())
+{
+	print "Name: $row->{'UserName'}\tip:$row->{'FramedIPAddress'}\tmac:$row->{'CallingStationId'}\n";
+
+	my $inetnr = $row->{'FramedIPAddress'};
+	my $mac    = $row->{'CallingStationId'};
+
+	my $dbq = $dbase->prepare("SELECT id FROM nodes where ipaddr=INET_ATON('$inetnr')");
+	$dbq->execute();
+	my $row1 = $dbq->fetchrow_hashref();
+	my $nodeid = $row1->{'id'};
+	$dbq->finish();
+	
+	print("Name: $row->{'UserName'}\tnodeid: $row1->{'id'}\n");
+	
+	my $dbq = $dbase->prepare("UPDATE nodes SET lastonline=$utsfmt WHERE ipaddr=INET_ATON('$inetnr')");
+	$dbq->execute();
+	$dbq->finish();
+
+	my $dbu = $dbase->prepare("UPDATE macs SET mac='$mac' WHERE nodeid=$nodeid");
+	$dbu->execute();
+	$dbu->finish();
+	
+}	
+	
+
+
+$rad_dbq->finish();
+
+$dbase->disconnect();
+$rad_dbase->disconnect();

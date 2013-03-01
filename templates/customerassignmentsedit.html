@@ -196,7 +196,10 @@
 		<TD style="width: 98%;">
 			<SELECT SIZE="1" name="assignment[taxid]" {tip text="Select Tax value"}>
 				{foreach item=tax from=$taxeslist}
+<!-- NETER sgt 2011-10-24
 					<OPTION value="{$tax.id}"{if $tax.value == get_conf('phpui.default_taxrate')} selected{/if}>{$tax.label}</OPTION>
+-->
+					<OPTION value="{$tax.id}"{if $tax.id==$assignment.taxid} selected{/if}>{$tax.label}</OPTION>
 				{/foreach}
 			</SELECT>
 		</TD>

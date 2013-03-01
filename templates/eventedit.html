@@ -60,6 +60,33 @@
 	</TR>
 	<TR class="light">
 		<TD width="1%" class="fleft">
+			<IMG src="img/queue.gif" alt="">
+		</TD>
+		<TD width="1%">
+			<B>{trans("Kategoria:")}</B>
+		</TD>
+		<TD width="98%" class="fright">
+			<SELECT name="event[category]" value="{$event.category}" {tip text="Wybierz kategorię zadania" trigger="category"}>
+				<OPTION value="0"{if !$event.category} SELECTED{/if}>- Brak kategorii -</OPTION>
+				{foreach from=$scorelist item=scorelistitem}	
+				<OPTION value="{$scorelistitem.evs_id}"{if $scorelistitem.evs_id == $event.category} SELECTED{/if}>{$scorelistitem.evs_name}</OPTION>
+				{/foreach}
+			</SELECT>
+		</TD>
+	</TR>
+	<TR class="light">
+		<TD width="1%" class="fleft">
+			<IMG src="img/ticket.gif" alt="">
+		</TD>
+		<TD width="1%">
+			<B>Zgłoszenie:</B>
+		</TD>
+		<TD width="98%" class="fright">
+			<INPUT TYPE="TEXT" NAME="event[rtticketid]" VALUE="{$event.rtticketid}" SIZE="5" {tip text="Wpisz nr zgłoszenia" trigger="rtticketid"}>
+		</TD>
+	</TR>
+	<TR class="light">
+		<TD width="1%" class="fleft">
 			<IMG src="img/info.gif" alt="">
 		</TD>
 		<TD width="1%">

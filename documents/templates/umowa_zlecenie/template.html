@@ -1,0 +1,205 @@
+<html>
+<head>
+<title>Umowa Zlecenie</title>
+{literal}
+<STYLE type="text/css"><!--
+BODY		{ font-size: 8pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1			{ font-size: 14pt; text-align: center; }
+H2			{ font-size: 12pt; text-align: center; color: red;}
+TD			{ font-size: 8pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TD.head		{ color: white; background-color: black; font-weight: bold; border-width: 1pt; border-style: solid; }
+TD.fleft	{ border-left-width: 1pt; border-left-style: solid; }
+TD.fright	{ border-right-width: 1pt; border-right-style: solid; }
+TD.ftop		{ border-top-width: 1pt; border-top-style: solid; }
+TD.fbottom	{ border-bottom-width: 1pt; border-bottom-style: solid; }
+TD.fleftu	{ border-top-width: 1pt; border-top-style: solid; border-bottom-width: 1pt; border-bottom-style: solid; border-left-width: 1pt; border-left-style: solid; }
+TD.frightu	{ border-top-width: 1pt; border-top-style: solid; border-bottom-width: 1pt; border-bottom-style: solid; border-right-width: 1pt; border-right-style: solid; }
+TD.ftopu	{ border-top-width: 1pt; border-top-style: solid; border-left-width: 1pt; border-left-style: solid; border-right-width: 1pt; border-right-style: solid; }
+TD.fbottomu	{ border-bottom-width: 1pt; border-bottom-style: solid; border-left-width: 1pt; border-left-style: solid; border-right-width: 1pt; border-right-style: solid; }
+TD.fall		{ border-width: 1pt; border-style: solid; }
+TD.fbt		{ border-bottom-width: 1pt; border-bottom-style: solid; border-top-width: 1pt; border-top-style: solid; }
+TD.flr		{ border-left-width: 1pt; border-left-style: solid; border-right-width: 1pt; border-right-style: solid; }
+TD.fbl		{ border-bottom-width: 1pt; border-bottom-style: solid; border-left-width: 1pt; border-left-style: solid;}
+TD.fbr		{ border-bottom-width: 1pt; border-bottom-style: solid; border-right-width: 1pt; border-right-style: solid;}
+TABLE		{ border-collapse: collapse; }
+P			{ font-size: 12pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: center; }
+//-->
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+<TABLE width="100%">
+	<TR>
+		<TD size="40%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+		<TD size="20%" class="head" ALIGN="CENTER"><h1>Umowa Zlecenie Nr: {$document.nr}</h1></TD>
+		<TD size="40%" ALIGN="TOP">Zawarta w dniu:<br>{$document.fromdate|date_format:"%Y-%m-%d"}</TD>
+	</TR>
+	<TR>
+		<TD>&nbsp;</TD>
+		<TD colspan="2"> w <b>Poznaniu</b>, pomiędzy "Zleceniodawcą" a "Zleceniobiorcą"</TD>
+	</TR>
+</TABLE>
+
+<BR>
+
+<TABLE width="100%">
+	<TR>
+		<TD colspan="2" class="head">ZLECENIODAWCA:</TD>
+	</TR>
+	<TR>
+		<TD class="fleft">Nazwa:</TD>
+		<TD class="fright">Neter Sp. z o.o.</TD>
+	</TR>
+	<TR>
+		<TD class="fleft">Siedziba:</TD>
+		<TD class="fright">Ul. Sieradzka 28, 60-163 Poznań</TD>
+	</TR>
+	<TR>
+		<TD class="fleft">Rejestr:</TD>
+		<TD class="fright">Krajowy Rejest Sądowy prowadzony przez Sąd Rejeony Poznań - Nowe Miasto i Wilda w Poznaniu, VIII Wydział Gospodarczy Krajowego Rejestru Sądowego
+		    pod numerem 0000202092</TD>
+	</TR>
+	<TR>
+		<TD class="fleft">NIP:</TD>
+		<TD class="fright">779-22-07-498</TD>
+	</TR>
+	<TR>
+		<TD class="fleft">Regon:</TD>
+		<TD class="fright">634350031</TD>
+	</TR>
+	<TR>
+		<TD class="fbl" NOWRAP>Reprezentowaną przez:</TD>
+		<TD class="fbr">{$layout.logname}</TD>
+	</TR>
+	<TR>
+		<TD>&nbsp;</TD>
+		<TD>&nbsp;</TD>
+		
+	</TR>
+	<TR>
+		<TD colspan="2" class="head">ZLECENIOBIORCA:</TD>
+	</TR>
+    <TR>
+		<TD class="fleft" size="1%">Nazwa/Nazwisko, imię:</TD>
+		<TD class="fright" size="99%">{$customerinfo.customername}</TD>
+    </TR>
+    <TR>
+		<TD class="fleft" VALIGN="TOP">Adres:</TD> 
+		<TD class="fright">{$customerinfo.address}; {$customerinfo.zip} {$customerinfo.city}</TD>
+    </TR>
+    {if $customerinfo.ssn}	
+    <TR>
+		<TD class="fleft">PESEL: </TD>
+		<TD class="fright">{$customerinfo.ssn}</TD>
+    </TR>
+	{/if}
+	{if $customerinfo.ten}
+    <TR>
+	   	<TD class="fleft">NIP: </TD>
+    	<TD class="fright">{$customerinfo.ten}</TD>
+    	</TR>
+    {/if}
+    {if $customerinfo.icn}
+    <tr>
+    	<td class="fleft">Dowód osobisty: </td>
+    	<td class="fright">{$customerinfo.icn}</td>
+    	</tr>
+    {/if}
+    {if $customerinfo.regon}
+    <tr>
+    	<td class="fleft">REGON: </td>
+    	<td class="fright">{$customerinfo.regon}</td>
+    	</tr>
+    {/if}
+    {if $customerinfo.rbe}
+    <tr>
+    	<td class="fleft">EDG/KRS: </td>
+    	<td class="fright">{$customerinfo.rbe}</td>
+    	</tr>
+    {/if}    
+	<TR>
+		<TD class="fbl"></TD>
+		<TD class="fbr"></TD>
+	</TR>    
+</TABLE>
+
+<br>
+
+<TABLE WIDTH="100%">
+	<TR>
+		<TD colspan="2" class="head">ZAWARTA ZOSTAŁA UMOWA NASTĘPUJĄCEJ TREŚCI:</TD>
+	</TR>
+    <TR>
+	<TD class="fleft" VALIGN="top">&sect;1.</TD>
+	<TD class="fright" VALIGN="top">Zleceniodawca powierza, a zleceniobiorca zobowiązuje się do wykonania następujących czynności: <i>{$document.czynnosci}</i>
+	</TD>
+    </TR>
+    <TR>
+	<TD class="fleft" VALIGN="top">&sect;2.</TD>
+	<TD class="fright" VALIGN="top">Zleceniobiorca zobowiązuje się wymienione w &sect;1 czynności wykonać w terminie od dnia
+		{$document.fromdate|date_format:"%Y-%m-%d"} do dnia {$document.todate|date_format:"%Y-%m-%d"}.
+	</TD>
+    </TR>
+    <TR>
+	<TD class="fleft" VALIGN="top">&sect;3.</TD>
+	<TD class="fright" VALIGN="top">Za wykonanie wymienionych w &sect;1 czynności zleceniobiorca otrzyma wynagrodzenie brutto w wysokości {$document.value} zł,
+	słownie: {$document.valueslownie}.
+	</TD>
+    </TR>
+    <TR>
+	<TD class="fleft" VALIGN="top">&sect;4.</TD>
+	<TD class="fright" VALIGN="top">Wypłata wynagrodznia nastąpi w siedzibie zleceniodawcy w ciągu 10 dni, od złożenia rachunku przez Zleceniodawcę.
+	</TD>
+    </TR>
+    <TR>
+	<TD class="fleft" VALIGN="top">&sect;5.</TD>
+	<TD class="fright" VALIGN="top">Postanowienia szczegółowe
+	</TD>
+    </TR>
+    <TR>
+	<TD class="fleft" VALIGN="top">&sect;6.</TD>
+	<TD class="fright" VALIGN="top">W przypadku nie wykonania zlecenia w terminie, wykonania go wadliwie lub w sposób nienależyty zleceniodawca ma prawo do pomniejszenia
+		wynagrodzenia lub anulowania zlecenia bez odszkodowania.
+	</TD>
+    </TR>
+    <TR>
+	<TD class="fleft" VALIGN="top">&sect;7.</TD>
+	<TD class="fright" VALIGN="top">Jakiekolwiek zmiany w umowie mogą być dokonane tylko za pisemną zgodą stron. Strony nie mogą powoływać się na ustalenia pozaumowne.
+	</TD>
+    </TR>
+    <TR>
+	<TD class="fleft" VALIGN="top">&sect;8.</TD>
+	<TD class="fright" VALIGN="top">W sprawach nie objętych tekstem niniejszej umowy mają zastosowanie odpowiednie przepisy Kodeksu Cywilnego.
+	</TD>
+    </TR>
+    <TR>
+	<TD class="fbl" VALIGN="top">&sect;9.</TD>
+	<TD class="fbr" VALIGN="top">Umowę sporządzono w dwóch jednobrzmiących egzemplarzach, po jednym dla każdej ze stron.
+	</TD>
+    </TR>
+</TABLE>
+
+<BR>
+
+<TABLE WIDTH="100%">
+	<TR>
+	<TD>&nbsp;</TD>
+	<TD>&nbsp;</TD>
+	</TR>
+	<TR>
+	<TD>&nbsp;</TD>
+	<TD>&nbsp;</TD>
+	</TR>
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+	<TD WIDTH="50%" ALIGN="CENTER">.............................................</TD>
+    </TR>
+    <TR>
+	<TD ALIGN="CENTER">ZLECENIODAWCA</TD>
+	<TD ALIGN="CENTER">ZLECENIOBIORCA</TD>
+    </TR>
+</TABLE>
+</body>
+</html>
+

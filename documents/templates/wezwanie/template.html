@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Wezwanie do zapłaty</title>
+{literal}
+<STYLE type="text/css">
+p {margin:5px}
+div {position:absolute;}
+div.dane_firmy {left:10%;width:30%}
+div.data {left:70%; width:30%}
+div.dane_abonenta {left:60%; top:10%; width:40%}
+div.tresc {left:0%;width:80%;top:30%}
+BODY	{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+H1		{ font-size: 14pt; text-align: center; }
+H2		{ font-size: 11pt; text-align: center; color: red;}
+TD		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; }
+TABLE	{ border-collapse: collapse; }
+P		{ font-size: 9pt; font-family: Tahoma, Verdana, Arial, Helvetica; text-align: justify; }
+</STYLE>
+{/literal}
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+</head>
+<body>
+
+
+<div class="data">{$_config.invoices.cplace}, dnia: {$smarty.now|date_format:"%Y.%m.%d"} </div> 
+
+<TABLE WIDTH="100%" CELLSPACING="3">
+	<TR>
+		<TD WIDTH="60%" VALIGN="TOP">
+			{$_config.invoices.header|replace:"\\n":"<BR>"}
+		</TD>
+		<TD WIDTH="40%" VALIGN="TOP" CLASS="sdr">
+			<br><br><br><br><br><br><br><br>
+			<B>Szanowny Pan/Pani:</B><BR>
+			<B>{$customerinfo.customername}<BR>
+			{if $customerinfo.post_address neq ""}
+				{$customerinfo.post_address}<BR>
+				{$customerinfo.post_zip} {$customerinfo.post_city}
+			{else}
+			{$customerinfo.address}<BR>
+			{$customerinfo.zip} {$customerinfo.city}
+			{/if}</B>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH="100%" COLSPAN="2">
+			&nbsp;<BR>
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+
+<br><br>
+<h1>Wezwanie do zapłaty Nr {$document.nr}</h1>
+<p>
+Na podstawie art. 476 Kodeksu cywilnego (Dz. U. z 1964 r. nr 16, poz. 93, z późn. zmianami) wzywamy do natychmiastowego uregulowania należnej sumy, zgodnie z poniższym zestawieniem.
+</p>
+
+<TABLE border="1" cellpadding="5" cellspacing="0" width="100%">
+	<TR>
+		<TD width="20%" align="right">Numer faktury</td>
+    	<TD width="20%" align="right">Data wystawienia</TD>
+	    <TD width="10%" align="right">Kwota brutto</TD>
+    	<TD width="20%" align="right">Data płatności</TD>
+	    <TD width="10%" align="right">Pozostało do zapłaty</TD>
+	    <TD width="10%" align="right">Dni po terminie</TD>
+	    <TD width="10%" align="right">Odsetki</TD>
+	</TR>
+	{cycle values="grey,white" print=false}
+	{section name=balancelist loop=$balancelist}
+	<TR bgcolor="{cycle}">
+		<TD width="20%" align="right">{$balancelist[balancelist].numerfv}</TD>
+		<TD width="20%" align="right"><nobr>{$balancelist[balancelist].time|date_format:'%Y.%m.%d'}</nobr></TD>
+		<TD width="10%" align="right"><nobr>{$balancelist[balancelist].value|money_format}</nobr></TD>
+		<TD width="20%" align="right">{$balancelist[balancelist].dataplatnosci|date_format:'%Y.%m.%d'}</TD>
+		<TD width="10%" align="right"><nobr>{$balancelist[balancelist].pozostalo|money_format}</nobr></TD>
+		<TD width="10%" align="right">{$balancelist[balancelist].daysafter}</TD>
+		<td width="10%" align="right">{$balancelist[balancelist].odsetki|money_format}</td>
+	</TR>
+	{sectionelse}
+	<TR>
+	    <TD align="center" width="100%" colspan="6">
+			<p>&nbsp;</p>
+			<p><B>{t}That customer hasn't got any transactions.{/t}</B></p>
+			<p>&nbsp;</p>
+	    </TD>
+	</TR>
+	{/section}
+	<tr>
+		<td colspan="4" align="right"><b>Razem:</b></td>
+		<td align="right"><nobr><b>{$grandtotal.value|money_format}</b></nobr></td>
+		<td>&nbsp;</td>
+		<td align="right"><nobr><b>{$grandtotal.odsetki|money_format}</b></nobr></td>
+	</tr>
+</TABLE>
+<p><h1>Razem do zapłaty: {$grandtotal.all|money_format}</h1></p>
+<br><br>
+<p>
+Wymienioną sumę prosimy przekazać na nasz rachunek bankowy BZWBK S.A. Nr {$customerinfo.bankaccount} w ciągu 7 dni od daty otrzymania niniejszego wezwania.
+W przypadku nie przekazania należnej sumy w wyznaczonym terminie, zaniechamy świadczenia Państwu usług, skierujemy sprawę na drogę windykacji a później na drogę sądową.
+</p><br>
+
+<TABLE WIDTH="100%">
+    <TR>
+	<TD WIDTH="50%" ALIGN="CENTER"></TD>
+	<TD WIDTH="50%" ALIGN="CENTER">Z poważaniem<br><br></TD>
+    </TR>
+    <TR>
+	<TD ALIGN="CENTER"></TD>
+	<TD ALIGN="CENTER">.............................................</TD>
+    </TR>
+    <tr>
+    	<td align="center"></td>
+    	<td align="center">{$layout.logname}</td>
+</TABLE>
+
+
+</body>
+</html>
+

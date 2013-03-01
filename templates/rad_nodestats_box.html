@@ -1,0 +1,89 @@
+<!--// $Id: customernodesbox.html,v 1.29 2011/03/30 12:42:23 alec Exp $ //-->
+{literal}<SCRIPT type="text/javascript">
+</SCRIPT>{/literal}
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD width="15%" class="fleftu hand" onclick="showOrHide('radnodespanel-{$layout.module}');">
+			<IMG SRC="img/node.gif" alt="">
+			<B>Sesja radius</B>
+		</TD>
+		<TD width="85%" class="frightu"></TD>
+	</TR>
+        <TR id="radnodepanel-{$layout.module}" style="display">
+	        <TD WIDTH="100%" colspan="2" class="fall">
+		    <FORM method="post" action="" name="custnodeslist">
+		    <TABLE cellpadding="5" cellspacing="0" width="100%">
+		        <TR class="dark">
+	                <TD WIDTH="15%" class="fleftu"><B>{if $lastsession.state =='online'}Obecna sesja:{else}Ostatnia sesja:{/if}</B></TD>
+		    	    <TD WIDTH="85%" class="frightu" colspan=4>&nbsp;</TD>
+			    </TR>
+			<TR class="lucid">
+				<TD aling="right" width="10%">Stan:</TD>
+				<TD {if $lastsession.state == 'online'}class="green"{else}class="alert"{/if} colspan=4>{$lastsession.state}</TD>
+			</TR>
+			<TR class="lucid">
+				<TD aling="right" width="10%">Od:</TD>
+				<TD colspan=4>{$lastsession.fromdate} ({$lastsession.uptime})</TD>
+			</TR>
+			<TR class="lucid">
+				<TD aling="right" width="10%">Koncentrator PPPoE:</TD>
+				<TD colspan=4>{$lastsession.nasip}</TD>
+			</TR>
+			<TR class="lucid">
+				<TD aling="right" width="10%">IP:</TD>
+				<TD colspan=4>{$lastsession.ip}</TD>
+			</TR>
+			<TR class="lucid">
+				<TD aling="right" width="10%">MAC Stacji roboczej:</TD>
+				<TD colspan=4>{$lastsession.mac}</TD>
+			</TR>
+			<TR class="lucid">
+				<TD aling="right" width="10%">Odebrane:</TD>
+				<TD colspan=4>{$lastsession.download}</TD>
+			</TR>
+			<TR class="lucid">
+				<TD aling="right" width="10%">Wysłane:</TD>
+				<TD colspan=4>{$lastsession.upload}</TD>
+			</TR>
+		        <TR class="dark">
+	                <TD WIDTH="15%" class="fleftu"><B>Statystyki:</B></TD>
+	                <TD class="fbt">Ostatnia doba:</TD>
+	                <TD class="fbt">Ostatni tydzień:</TD>
+	                <TD class="frightu">Ostatni miesiąc::</TD>
+			    </TR>
+			<TR class="lucid">
+				<TD aling="right" width="10%">Download:</TD>
+				<TD>{$transfers.1.download}</TD>
+				<TD>{$transfers.7.download}</TD>
+				<TD>{$transfers.30.download}</TD>
+			</TR>
+			<TR class="lucid">
+				<TD aling="right" width="10%">Upload:</TD>
+				<TD>{$transfers.1.upload}</TD>
+				<TD>{$transfers.7.upload}</TD>
+				<TD>{$transfers.30.upload}</TD>
+			</TR>
+			
+			<TR CLASS="LIGHT">
+			    <TD COLSPAN="0" CLASS="FTOP">
+				<IMG SRC="img/access.gif">
+				<A HREF="javascript: setstatus(0)"> Rozłącz sesję</A>
+			    </TD>
+			    <TD COLSPAN="0" CLASS="FTOP">
+				<IMG SRC="img/traffic.gif">
+				<A HREF="?m=rad_accounting&name={$lastsession.username}"> Statystyki i sesje</A>
+			    </TD>
+			    <TD CLASS="ftop" ALIGN="right" COLSPAN="3">
+                </TD>
+			</TR>
+		    </TABLE>
+		    </FORM>
+		</TD>
+	</TR>
+</TABLE>
+<SCRIPT type="text/javascript">
+if(getCookie('radnodespanel-{$layout.module}')=='1')
+{literal}{{/literal}
+        document.getElementById('radnodespanel-{$layout.module}').style.display = '';
+{literal}}{/literal}
+</SCRIPT>

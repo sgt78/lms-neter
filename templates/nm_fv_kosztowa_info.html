@@ -1,0 +1,422 @@
+{include file="header.html"}
+<!--// $Id: invoicenew.html,v 1.56 2007/08/01 06:30:03 alec Exp $ //-->
+<H1>{$layout.pagetitle}</H1>
+{include file="calendar_js.html"}
+<script language="javascript">
+	<!--
+	function setItem(index)
+	{literal}{{/literal}
+		{foreach from=$tariffs item=tariff}
+		if(index=={$tariff.id})
+		{literal}{{/literal}
+			document.additem.name.value = '{$tariff.name|escape}';
+			document.additem.taxid.value = '{$tariff.taxid}';
+			document.additem.valuebrutto.value = '{$tariff.value}';
+			document.additem.prodid.value = '{$tariff.prodid}';
+			document.additem.tariffid.value = '{$tariff.id}';
+		{literal}}{/literal}
+		{/foreach}
+{literal}}
+	
+	function saveheader()
+	{
+	        if(document.setcustomer.customer)
+	                if(document.setcustomer.customer.value != 0)
+	                        document.setcustomer.customerid.value = document.setcustomer.customer.value;
+	
+	        document.setcustomer.submit();
+	}															
+
+	function CheckAll()
+	{
+		for (var i=0; i<document.additemlist.elements.length; i++)
+		{
+			var e = document.additemlist.elements[i];
+		        if (e.name != 'allbox')
+				e.checked = document.additemlist.allbox.checked;
+		}
+	}
+
+	function CheckAll2()
+	{
+		document.additemlist.allbox.checked = !document.additemlist.allbox.checked;
+		CheckAll();
+	}
+	//-->
+{/literal}
+</script>		
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="dark">
+		<TD CLASS="fall" WIDTH="100%" COLSPAN="4">
+			<B>{t}Main Informations:{/t}</B>
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Invoice number:{/t}</B>
+		</TD>
+		<TD CLASS="light" WIDTH="25%" NOWRAP>
+			{$invoice.extnumber}&nbsp;
+		</TD>
+		<TD CLASS="light" WIDTH="1%">
+			<B>Pozostało:</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="73%">
+			<B>{if $pozostalo > 0}<font color="red">{/if}{$pozostalo|money_format}{if $pozostalo > 0}</font>{/if}</B>
+		</TD>
+</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Settlement date:{/t}</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="99%" NOWRAP COLSPAN="3">
+			{$invoice.cdate|date_format:"%Y/%m/%d"}
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Deadline:{/t}</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="99%" NOWRAP COLSPAN="3">
+			{$invoice.pdate|date_format:"%Y/%m/%d"}
+			{if $invoice.pdate < 0}
+				tu dodać obsługę przeterminowania faktury
+				({$invoice.cdate+$invoice.paytime*86400|date_format:"%Y/%m/%d"})
+			{/if}
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Payment type:{/t}</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="99%" NOWRAP COLSPAN="3">
+			{$invoice.paytypename}
+		</TD>
+	</TR>			
+	<TR CLASS="light">
+		<TD CLASS="fleft" WIDTH="1%" NOWRAP>
+			<B>{t}Wprowadził:{/t}</B>
+		</TD>
+		<TD CLASS="fright" WIDTH="99%" NOWRAP COLSPAN="3">
+			({$invoice.userid|string_format:"%04s"}) - {$invoice.user}	
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD CLASS="fbl" WIDTH="1%" NOWRAP>
+			<B>{t}Notatka:{/t}</B>
+		</TD>
+		<TD CLASS="fbr" WIDTH="99%" NOWRAP COLSPAN="3">
+			{$invoice.reason}
+		</TD>
+	</TR>
+	<TR CLASS="DARK">
+		<TD COLSPAN="4" CLASS="fall" align="right">
+			<a href="?m=nm_fv_kosztowa_edytuj&id={$invoice.id}&action=edit">Edytuj <img src="img/edit.gif"></a>
+			{if $pozostalo > 0}<a href="?m=nm_fv_kosztowa_rozlicz&id={$invoice.id}">Rozlicz <img src="img/pay.gif"></a>{/if}
+		</TD>
+	</TR>
+</TABLE>
+</FORM>
+{if $invoice.customerid}
+<P>
+<TABLE WIDTH="100%" CELLPADDING="3">
+        <TR CLASS="dark">
+                <TD CLASS="fleftu" WIDTH="1%" nowrap>
+                        <IMG SRC="img/customer.gif" ALT=""> <B>{t}Dostawca:{/t}</B>
+                </TD>
+                <TD CLASS="frightu" WIDTH="99%">
+                        <B>{$invoice.name}</B>
+                        &nbsp;&raquo;&nbsp; {$invoice.address} &nbsp; {$invoice.zip} {$invoice.city}
+                        &nbsp;&raquo;&nbsp; {if $invoice.customerbalance > 0}<FONT class="red">{/if}{$invoice.customerbalance|money_format}{if $customer.balance > 0}</FONT>{/if}
+                </TD>
+        </TR>
+</TABLE>
+</P>
+{/if}
+<P>	
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD CLASS="fall" colspan="8">
+			<B>Pozycje faktury:</B>
+		</TD>
+	<TR CLASS="DARK">
+		<TD CLASS="fleftu" WIDTH="1%">
+			<B>{t}No.{/t}</B>
+		</TD>
+		<TD CLASS="fbt" WIDTH="93%">
+			{t}Name of product, commodity or service:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="RIGHT">
+			{t}Amount:{/t}<BR>
+			{t}Unit:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{t}Net Price:{/t}<BR>
+			{t}Net Value:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="RIGHT">
+			{t}Tax:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{t}Gross Price:{/t}<BR>
+			{t}Gross Value:{/t}
+		</TD>
+		<TD CLASS="frightu" WIDTH="1%">
+			&nbsp;
+		</TD>
+	</TR>
+	{cycle values="light,lucid" print=false}
+	{foreach from=$invoice.content item=item}
+	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD CLASS="fleft" WIDTH="1%">
+			<B>{counter name=fv}.</B>
+		</TD>
+		<TD WIDTH="92%">
+			{$item.description}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.count|string_format:"%.2f"}<BR>
+			{$item.content}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.basevalue|money_format}<BR>
+			{$item.totalbase|money_format}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.taxlabel}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.value|money_format}<BR>
+			{$item.total|money_format}
+		</TD>
+		<TD CLASS="fright" WIDTH="1%">
+			&nbsp;
+		</TD>
+	</TR>
+	{foreachelse}
+	<TR>
+		<TD COLSPAN="9" ALIGN="CENTER" CLASS="flr">
+			<P>&nbsp;</P>
+			<P><B>{t}Invoice have no items. Use form below for items addition.{/t}</B></P>
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	{/foreach}
+	{if $invoice.content}
+	<TR CLASS="light">
+		<TD COLSPAN="3" WIDTH="96%" ALIGN="RIGHT" CLASS="fleftu">
+			<B>{t}Total:{/t}</B>
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" CLASS="fbt">
+			<B>{sum array=$invoice.content column=totalbase string_format="%01.2f"}</B>
+		</TD>
+		<TD WIDTH="1%" CLASS="fbt">
+			&nbsp;
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" CLASS="fbt">
+			<B>{sum array=$invoice.content column=total string_format="%01.2f"}</B>
+		</TD>
+		<TD WIDTH="1%" CLASS="fright">
+			&nbsp;
+		</TD>
+	</TR>
+	{/if}
+	<TR CLASS="light">
+		<TD COLSPAN="9" CLASS="fbottomu" ALIGN="RIGHT">
+			<A HREF="?m=nm_fv_kosztowe_lista">{t}Wróć{/t} <IMG SRC="img/cancel.gif" alt=""></A>
+		</TD>
+	</TR>
+</TABLE>
+</P>
+<P>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD CLASS="fall" colspan="8">
+			<B>Wpłaty na fakturę:</B>
+		</TD>
+	<TR CLASS="DARK">
+		<TD CLASS="fleftu" WIDTH="1%">
+			<B>{t}No.{/t}</B>
+		</TD>
+		<TD CLASS="fbt" WIDTH="93%">
+			{t}Date:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="RIGHT">
+			{t}User:{/t}<BR>
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{t}Kwota:{/t}<BR>
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="RIGHT">
+			{t}Comment:{/t}
+		</TD>
+		<TD CLASS="fright" WIDTH="1%">
+			&nbsp;
+		</TD>
+	</TR>
+	{cycle values="light,lucid" print=false}
+	{foreach from=$wplaty item=item}
+	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD CLASS="fleft" WIDTH="1%">
+			<B>{counter name=wpl}.</B>
+		</TD>
+		<TD WIDTH="92%">
+			{$item.time|date_format:"%Y/%m/%d %H:%M"}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.username}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.value|money_format}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.comment}
+		</TD>
+		<TD CLASS="frightu" WIDTH="1%">
+			{if $item.id > 0}
+			<FORM name="paymentdel{$item.id}" method="POST" ACTION="?m=nm_fv_kosztowa_info&action=paymentdel&id={$invoice.id}">
+				<INPUT type="submit" class="hiddenbtn"></INPUT>
+				<INPUT type="hidden" name="cash[id]" value="{$item.id}"></INPUT>
+				<INPUT type="hidden" name="cash[dokid]" value="{$invoice.id}"></INPUT>
+				<A HREF="javascript:document.paymentdel{$item.id}.submit();"><IMG SRC="img/delete.gif"></IMG></A>
+			</FORM>
+			{/if}
+		</TD>
+	</TR>
+	{foreachelse}
+	<TR>
+		<TD COLSPAN="9" ALIGN="CENTER" CLASS="flr">
+			<P>&nbsp;</P>
+			<P><B>{t}Invoice have no items. Use form below for items addition.{/t}</B></P>
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	{/foreach}
+	<TR CLASS="light">
+		<TD COLSPAN="3" WIDTH="96%" ALIGN="RIGHT" CLASS="fleftu">
+			<B>{t}Total:{/t}</B><BR>
+			<B>Pozostało:<B>
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" CLASS="fbt">
+			<B>{sum array=$wplaty column=value string_format="%01.2f"} zł</B><br>
+			<B>{if $pozostalo > 0}<font color="red">{/if}{$pozostalo|money_format}{if $pozostalo > 0}</font>{/if}<B>
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" CLASS="fbt">
+			<B></B>
+		</TD>
+		<TD WIDTH="1%" CLASS="frightu">
+			&nbsp;
+		</TD>
+	</TR>
+	<TR CLASS="light">
+		<TD COLSPAN="6" CLASS="fbottomu" ALIGN="RIGHT">
+			<A HREF="?m=nm_fv_kosztowe_lista">{t}Wróć{/t} <IMG SRC="img/cancel.gif" alt=""></A>
+		</TD>
+	</TR>
+</TABLE>
+</P>
+{if $pozostalo > 0}
+<P>
+{if $nadplaty}
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD CLASS="fall" colspan="8">
+			<B>Przypisz nadpłaty:</B>
+		</TD>
+	<TR CLASS="DARK">
+		<TD CLASS="fleftu" WIDTH="1%">
+			<B>{t}No.{/t}</B>
+		</TD>
+		<TD CLASS="fbt" WIDTH="93%">
+			{t}Date:{/t}
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="RIGHT">
+			{t}User:{/t}<BR>
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{t}Kwota:{/t}<BR>
+		</TD>
+		<TD CLASS="fbt" WIDTH="1%" ALIGN="RIGHT">
+			{t}Comment:{/t}
+		</TD>
+		<TD CLASS="frightu" WIDTH="1%">
+			&nbsp;
+		</TD>
+	</TR>
+	{cycle values="light,lucid" print=false}
+	{foreach from=$nadplaty item=item}
+	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD CLASS="fleft" WIDTH="1%">
+			<B>{counter name=nwpl}.</B>
+		</TD>
+		<TD WIDTH="92%">
+			{$item.time|date_format:"%Y/%m/%d %H:%M"}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.username}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.value*-1|money_format}
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT">
+			{$item.comment}
+		</TD>
+		<TD CLASS="frightu" WIDTH="1%">
+			<FORM name="paymentasign{$item.id}" method="POST" ACTION="?m=nm_fv_kosztowa_info&action=paymentasign">
+				<INPUT type="submit" class="hiddenbtn">
+				<INPUT type="hidden" name="cash[id]" value="{$item.id}">
+				<INPUT type="hidden" name="cash[doc_id]" value="{$invoice.id}">
+				<A HREF="javascript:document.paymentasign{$item.id}.submit();"><IMG SRC="img/save.gif"></IMG></A>
+			</FORM>
+		</TD>
+	</TR>
+	{foreachelse}
+	<TR>
+		<TD COLSPAN="9" ALIGN="CENTER" CLASS="flr">
+			<P>&nbsp;</P>
+			<P><B>{t}Invoice have no items. Use form below for items addition.{/t}</B></P>
+			<P>&nbsp;</P>
+		</TD>
+	</TR>
+	{/foreach}
+	<TR CLASS="light">
+		<TD COLSPAN="6" CLASS="fall" ALIGN="RIGHT">
+			<A HREF="?m=nm_fv_kosztowe_lista">{t}Wróć{/t} <IMG SRC="img/cancel.gif" alt=""></A>
+		</TD>
+	</TR>
+</TABLE>
+{/if}
+</P>
+<P>
+<FORM name="paymentadd" method="POST" ACTION="?m=nm_fv_kosztowa_info&action=paymentadd">
+<INPUT type="submit" class="hiddenbtn">
+<INPUT type="hidden" name="payment[docid]" value="{$invoice.id}">
+<INPUT type="hidden" name="payment[customerid]" value="{$invoice.customerid}">
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD CLASS="fall" colspan="8">
+			<B>Dodaj wpłatę:</B>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD width="1%" class="fleftu">Data:</TD>
+		<TD width="1%" class="fbt"><INPUT name="payment[date]" TYPE="TEXT" SIZE=10 OnClick="javascript:cal1.popup();"></INPUT></TD>
+		<TD width="1%" class="fbt">Kwota:</TD>
+		<TD width="1%" class="fbt"><INPUT name="payment[value]" TYPE="TEXT" SIZE=10></INPUT></TD>
+		<TD width="1%" class="fbt">Opis:</TD>
+		<TD width="94%" class="fbt"><INPUT name="payment[comment]" TYPE="TEXT" SIZE=30></INPUT></TD>
+		<TD width="1%" class="frightu" nowrap><a href="javascript:document.paymentadd.submit();">Zapisz <img src="img/save.gif"></a></TD>
+	</TR>
+</TABLE>
+</FORM>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+var cal1 = new calendar(document.forms['paymentadd'].elements['payment[date]']);
+cal1.time_comp = false;
+document.forms['setcustomer'].elements['invoice[number]'].focus();
+//-->
+</SCRIPT>
+</P>
+{/if}
+{include file="footer.html"}

@@ -1,0 +1,76 @@
+{include file="header.html"}
+<!-- $Id: rtqueuelist.html,v 1.19 2007/03/06 09:29:10 alec Exp $ -->
+<H1><B>{$layout.pagetitle}</B></H1>
+<TABLE cellpadding="5" WIDTH="100%">
+	<TR CLASS="dark">
+		<TD CLASS="fleftu" WIDTH="1%" NOWRAP>
+			<IMG src="img/info1.gif" ALT="">
+			<B>ID:</B>
+		</TD>
+		<TD CLASS="fbt" WIDTH="97%" align="left" NOWRAP>
+			<B>Nazwa</B>
+		</TD>
+		<TD CLASS="fbt" align="right"  WIDTH="1%">
+			<B>Punktacja:</B>
+		</TD>
+		<TD CLASS="frightu" WIDTH="1%">
+			&nbsp;
+		</TD>
+	</TR>
+	<TR CLASS="dark"></TR>
+		<FORM method="POST" action="?m=eventscore&action=save" name="sc">
+		<TD CLASS="fleftu" WIDTH="1%" NOWRAP>
+			<IMG src="img/new.gif" ALT=""></IMG>
+			<INPUT type=hidden name="sc[evs_id]" value="{$sc.evs_id}"></INPUT>
+			<INPUT type="submit" class="hiddenbtn">
+		</TD>
+		<TD CLASS="fbt">
+			<INPUT type=TEXT name="sc[evs_name]" value="{$sc.evs_name}" size=70></INPUT>
+		</TD>
+		<TD CLASS="fbt" align="right">
+			<INPUT type=TEXT name="sc[evs_score]" value="{$sc.evs_score}" size=5></INPUT>
+		</TD>
+		<TD CLASS="frightu" WIDTH="1%" align="right">
+			<A href="javascript:document.sc.submit();"><IMG src="img/save.gif" alt=""></IMG></A>
+		</TD>
+		</FORM>
+	</TR>
+		
+	{cycle values="light,lucid" print=false}
+	{foreach from=$scores item=score}
+	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD CLASS="fleft" NOWRAP>
+			<IMG src="img/queue.gif" ALT="">
+			<B>{$score.evs_id|string_format:"%04d"}</B><BR>
+		</TD>
+		<TD ALIGN="left">
+			{$score.evs_name}
+		</TD>
+		<TD ALIGN="right">
+			{$score.evs_score}
+		</TD>
+		<TD CLASS="fright" NOWRAP>
+			<A HREF="?m=eventscore&action=edit&id={$score.evs_id}"><IMG SRC="img/edit.gif" alt="[ {t}Edit{/t} ]" title="[ {t}Edit{/t} ]"></A>
+			<A HREF="?m=eventscore&action=delete&id={$score.evs_id}" OnClick="return confirmLink(this, '{t a=$queue.name}Are you sure, you want to remove queue \'$a\' and all assigned tickets and messages?{/t}');"><IMG src="img/delete.gif" alt="[ {t}Delete{/t} ]" title="[ {t}Delete{/t} ]"></A>
+		</TD>
+	</TR>
+	{foreachelse}
+	<TR>
+		<TD colspan="4" align="center" class="flr">
+			<p>&nbsp;</p>
+			<p><B>Brak punktacji w bazie danych<B></p>
+			<p>&nbsp;</p>
+		</TD>
+	</TR>
+	{/foreach}
+	<TR CLASS="light">
+		<TD COLSPAN="2" ALIGN="RIGHT" CLASS="fleftu">
+			<IMG src="img/info2.gif" ALT="">
+			<B>{t}Total:{/t}</B>
+		</TD>
+		<TD CLASS="frightu" COLSPAN="2">
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+{include file="footer.html"}

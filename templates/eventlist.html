@@ -112,6 +112,9 @@
 			{/if}
 		</TD>
 		<TD width="1%" class="fright" align="right" nowrap>
+			{if $eventlist[eventlist].rtticketid > 0}
+			<A href="?m=rtticketview&id={$eventlist[eventlist].rtticketid}"><IMG src="img/ticket.gif" alt="[ {trans("Open")} ]" title="[ {trans("Zgłoszenie")} ]"></A> 
+			{/if}
 			{if $eventlist[eventlist].closed}
 			<A href="?m=eventedit&id={$eventlist[eventlist].id}&action=open"><IMG src="img/resolved.gif" alt="[ {trans("Open")} ]" title="[ {trans("Open")} ]"></A> 
 			{else}

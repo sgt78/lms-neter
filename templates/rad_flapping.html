@@ -1,0 +1,111 @@
+{include file="header.html"}
+<!--// $Id: nodelist.html,v 1.95 2007/05/17 10:55:32 alec Exp $ //-->
+<H1>{$layout.pagetitle}</H1>
+<TABLE cellpadding="3" width="100%">
+	<TR class="dark" {tip text="Click on column name to change sorting order"}>
+		<TD class="fleftu" width="5%">
+			<B>Ilość:</B>
+		</TD>
+		<TD Class="fbt" align="left" valign="top" width="40%" nowrap>
+			<B>Czas (sum):</B>
+		</TD>
+		<TD Class="fbt" align="left" valign="top" width="40%" nowrap>
+			<img src="img/node.gif" ALT="">
+			<B>Login:</B><BR>
+			<img src="img/mac.gif" ALT="">
+			<B>{t}MAC address:{/t}</B>
+			</A> {if $listdata.order eq "name"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}<BR>
+		</TD>
+		<TD CLASS="fbt" width="40%" nowrap>
+			<img src="img/uprate.gif" ALT="">
+			<B>Wysłano:</B><BR>
+			<img src="img/downrate.gif" ALT="">
+			<B>Pobrano:</B>
+		</TD>
+		<TD CLASS="fbt" width="40%" nowrap>
+			<img src="img/ip.gif" ALT="">
+			<B>Adres IP:</B><BR>
+			<img src="img/winbox.png" ALT="">
+			<B>Serwer PPPoE:</B>
+		</TD>
+		<TD CLASS="frightu" width="1%" align="right">
+			<NOBR><B>Powód:</B></NOBR>
+		</TD>
+	</TR>
+	<TR CLASS="DARK">
+		<TD CLASS="fall" colspan="6">
+			<P><FORM METHOD="POST" ACTION="?m=rad_flapping" NAME="choosefilter">
+				<INPUT type="submit" class="hiddenbtn">
+				Ilość godzin wstecz: <INPUT TYPE="text" name="hours" size="5" value="{$hours}"></INPUT>
+				<a href="javascript:document.choosefilter.submit();">Wyszukaj</a>
+			</FORM></P>
+		</TD>
+	</TR>		
+	{if $listdata.total != 0}
+	<TR CLASS="dark">
+		<TD CLASS="fall" colspan="6">
+			{include file="scroller.html" loop=$nodelist}
+		</TD>
+	</TR>
+	{/if}
+	{cycle values="light,lucid" print=false}
+	{section name=nodelist loop=$nodelist start=$start max=$pagelimit}
+	<TR class="{cycle}{if ! $nodelist[nodelist].access} blend{/if}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD width="5%" class="fleft" onClick="return self.location.href='?m=nodesearch&search&name={$nodelist[nodelist].user}';" nowrap>
+			{$nodelist[nodelist].count}
+		</TD>
+		<TD align="left" width="40%" onClick="return self.location.href='?m=nodesearch&search&name={$nodelist[nodelist].user}';" valign="top">
+			<a name="{$nodelist[nodelist].id}">
+			<B>{$nodelist[nodelist].session}</B></A><BR>
+		</TD>
+		<TD align="left" width="40%" onClick="return self.location.href='?m=nodesearch&search&name={$nodelist[nodelist].user}';" valign="top">
+			<a name="{$nodelist[nodelist].id}">
+			<img src="img/node.gif" ALT=""><B>{$nodelist[nodelist].name}</B></A><BR>
+			<img src="img/mac.gif" ALT="">{$nodelist[nodelist].mac}
+		</TD>
+		<TD align="left" width="40%" onClick="return self.location.href='?m=nodesearch&search&name={$nodelist[nodelist].user}';" valign="top">
+			<a name="{$nodelist[nodelist].id}">
+			<img src="img/uprate.gif" ALT=""><B>{$nodelist[nodelist].upload}</B></A><BR>
+			<img src="img/downrate.gif" ALT="">{$nodelist[nodelist].download}
+		</TD>
+		<TD width="40%" onClick="return self.location.href='?m=nodesearch&search&name={$nodelist[nodelist].user}';" valign="top" nowrap>
+			<img src="img/ip.gif" ALT="">&nbsp;{$nodelist[nodelist].ip}<BR>
+			<a href="winbox:{$nodelist[nodelist].nasip}"><img src="img/winbox.png" ALT="">&nbsp;{$nodelist[nodelist].nasip}</a>
+		</TD>
+		<TD class="fright" width="1%">
+			<nobr>
+			{$nodelist[nodelist].cause}
+			</nobr>
+		</TD>
+	</TR>
+	{if $nodelist[nodelist.index_next].ownerid eq $nodelist[nodelist].ownerid && $listdata.order eq "owner"}{cycle print=false}{/if}
+	{sectionelse}
+	<TR>
+		<TD colspan="6" class="fall" align="center">
+			<p>&nbsp;</p>
+			<p><B>{t}No such nodes in database.{/t}</b></p>
+			<p>&nbsp;</p>
+		</TD>
+	</TR>
+	{/section}
+	{if $listdata.total != 0}
+	<TR CLASS="dark">
+		<TD CLASS="fall" colspan="6">
+			{include file="scroller.html" loop=$nodelist}
+		</TD>
+	</TR>
+	{/if}
+	<TR CLASS="light">
+		<TD WIDTH="98%" COLSPAN="5" CLASS="fleftu" ALIGN="right">
+			<B>
+				{t}Total:{/t}<BR>
+			</B>
+		</TD>
+		<TD WIDTH="2%" CLASS="frightu" VALIGN="TOP">
+			<B>
+				{if $listdata.total}{$listdata.total}{else}0{/if}
+			</B>
+		</TD>				
+	</TR>			
+</TABLE>
+{include file="footer.html"}

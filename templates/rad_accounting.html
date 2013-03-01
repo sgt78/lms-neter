@@ -1,0 +1,153 @@
+{include file="header.html"}
+<!--// $Id: nodelist.html,v 1.103 2010/05/06 20:24:58 chilek Exp $ //-->
+<H1>{$layout.pagetitle}</H1>
+<TABLE cellpadding="3" width="100%">
+	<TR CLASS="DARK">
+		<TD CLASS="fall" colspan="8">
+			<FORM METHOD="GET" ACTION="?m={$layout.module}" NAME="choosefilter">
+				<INPUT type="submit" class="hiddenbtn">
+				<INPUT TYPE="HIDDEN" NAME="m" VALUE="rad_accounting">
+				<INPUT TYPE="HIDDEN" NAME="page" VALUE="1">
+				<B>{t}Filter:{/t}</B> 
+				<NOBR>Od:
+				<INPUT TYPE="TEXT" SIZE="3" NAME="from" VALUE="{$listdata.from}" ONCHANGE="document.choosefilter.submit();">
+				dni temu.&nbsp;
+				</NOBR>&nbsp;
+				<NOBR>Do:
+				<INPUT TYPE="TEXT" SIZE="3" NAME="to" VALUE="{$listdata.to}" ONCHANGE="document.choosefilter.submit();" >
+				dni temu&nbsp;
+				</NOBR>&nbsp;
+				<NOBR>Login:
+				<INPUT TYPE="TEXT" NAME="name" VALUE="{$listdata.name}" ONCHANGE="document.choosefilter.submit();">
+				</NOBR>&nbsp;
+				<NOBR>Grupuj po:
+				<SELECT SIZE="1" NAME="groupby" ONCHANGE="document.choosefilter.submit();">
+					<OPTION value="" {if !$listdata.groupby} SELECTED {/if}>- bez grupowania -</OPTION>
+					<OPTION value="name" {if $listdata.groupby eq 'name'} SELECTED {/if}>Loginie</OPTION>
+					<OPTION value="ip" {if $listdata.groupby eq 'ip'} SELECTED {/if}>Adresie IP</OPTION>
+					<OPTION value="mac" {if $listdata.groupby eq 'mac'} SELECTED {/if}>Adresie MAC</OPTION>
+				</SELECT></NOBR>
+			</FORM>
+		</TD>
+	</TR>		
+	<TR class="dark" {tip text="Click on column name to change sorting order"}>
+		<TD class="fleftu" width="10%">
+			<img src="img/access.gif" ALT="">&nbsp;<B>{t}Start sesji:{/t}</B>
+		</TD>
+		<TD Class="fbt" align="left" valign="top" width="10%" nowrap>
+			<img src="img/noaccess.gif" ALT="">&nbsp;<B>Stop sessji:</B>
+		</TD>
+		<TD Class="fbt" align="left" valign="top" width="10%" nowrap>
+			<img src="img/downrate.gif" ALT="">Pobrano:<br>
+		</TD>
+		<TD Class="fbt" align="left" valign="top" width="10%" nowrap>
+			<img src="img/uprate.gif" ALT="">Wysłano:
+		</TD>
+		<TD Class="fbt" align="left" valign="top" width="10%" nowrap>
+			<img src="img/time.gif" ALT="">&nbsp;Czas sesji:<br>
+		</TD>
+		<TD Class="fbt" align="left" valign="top" width="10%" nowrap>
+			<img src="img/node.gif" ALT="">&nbsp;Login:
+		</TD>
+		<TD CLASS="fbt" width="1%" nowrap>
+			<img src="img/ip.gif" ALT="">&nbsp;Adres IP:<BR>
+			<img src="img/mac.gif" ALT="">&nbsp;Adres MAC:
+		</TD>
+		<TD CLASS="frightu" width="10%" align="left">
+			<NOBR><B>{t a=$listdata.total}Total: $a{/t}</B></NOBR><BR>
+			<IMG SRC="img/winbox.png">&nbsp;Serwer PPPoE:
+			</TD>
+	</TR>
+	{if $listdata.total != 0}
+	<TR CLASS="dark">
+		<TD CLASS="fall" colspan="8">
+			{include file="scroller.html" loop=$nodelist}
+		</TD>
+	</TR>
+	{/if}
+	{cycle values="light,lucid" print=false}
+	{section name=nodelist loop=$nodelist start=$start max=$pagelimit}
+	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+		<TD width="10%" class="fleft" onClick="return self.location.href='?m=nodeinfo&id={$nodelist[nodelist].id}';">
+			<NOBR><img src="img/access.gif">&nbsp;{$nodelist[nodelist].AcctStartTime}</NOBR>
+		</TD>
+		<TD align="left" width="1%" onClick="return self.location.href='?m=nodeinfo&id={$nodelist[nodelist].id}';" valign="top">
+			<NOBR><img src="img/noaccess.gif">&nbsp;{$nodelist[nodelist].AcctStopTime}</NOBR>
+<!--	
+			<a name="{$nodelist[nodelist].id}">
+			{if $nodelist[nodelist].lastonline}
+			    {if ($smarty.now-$nodelist[nodelist].lastonline) > $_config.phpui.lastonline_limit}
+				<img src="img/node_off.gif" ALT="">
+			    {else}
+				<img src="img/node_on.gif" ALT="">
+			    {/if}
+			{else}
+			    <img src="img/node_unk.gif" ALT="">
+			{/if}
+			{if $nodelist[nodelist].info}
+			    <IMG src="img/info1.gif" alt="" {tip text=$nodelist[nodelist].info}>
+			{/if}
+			<B>{$nodelist[nodelist].name}</B></A><BR>
+			<img src="img/customer.gif" ALT="">&nbsp;<A href="?m=customerinfo&id={$nodelist[nodelist].ownerid}" {tip a=$nodelist[nodelist].ownerid dynpopup='?m=customerinfoshort&id=$a'}>{if ! $nodelist[nodelist].access}<font class="blend">{/if}{$nodelist[nodelist].owner|truncate:40:"...":true|replace:" ":"&nbsp;"}{if ! $nodelist[nodelist].access}</FONT>{/if}</A>
+-->
+		</TD>
+		<TD align="left" width="1%" onClick="return self.location.href='?m=nodeinfo&id={$nodelist[nodelist].id}';" valign="top">
+			<img src="img/downrate.gif" ALT="">&nbsp;{$nodelist[nodelist].download}<BR>
+		</TD>
+		<TD align="left" width="1%" onClick="return self.location.href='?m=nodeinfo&id={$nodelist[nodelist].id}';" valign="top">
+			<img src="img/uprate.gif" ALT="">&nbsp;{$nodelist[nodelist].upload}
+		</TD>
+		<TD align="left" width="1%" {if $nodelist[nodelist].AcctStopTime == 0}class="green"{/if} onClick="return self.location.href='?m=nodeinfo&id={$nodelist[nodelist].id}';" valign="top">
+			<img src="img/time.gif" ALT="">&nbsp;{$nodelist[nodelist].uptime}
+		</TD>
+		<TD align="left" width="1%" onClick="return self.location.href='?m=nodeinfo&id={$nodelist[nodelist].id}';" valign="top">
+			<img src="img/node.gif" ALT="">&nbsp;{$nodelist[nodelist].name}
+		</TD>
+		<TD width="1%" onClick="return self.location.href='?m=nodeinfo&id={$nodelist[nodelist].id}';" valign="top" nowrap>
+			<img src="img/ip.gif" ALT="">&nbsp;{$nodelist[nodelist].ip}<BR>
+			<nobr><img src="img/mac.gif" ALT="">&nbsp;{$nodelist[nodelist].mac|replace:",":"</nobr><BR><nobr><img src=\"img/mac.gif\" ALT=\"\">&nbsp;"}</nobr>
+		</TD>
+		<TD class="fright" width="1%">
+			<nobr>
+			<a href="winbox:{$nodelist[nodelist].nasip}"><img src="img/winbox.png" alt="[ winbox ]" title="[ winbox ]">&nbsp;{$nodelist[nodelist].nasip}</A>
+			</nobr>
+		</TD>
+	</TR>
+	{if $nodelist[nodelist.index_next].ownerid eq $nodelist[nodelist].ownerid && $listdata.order eq "owner"}{cycle print=false}{/if}
+	{sectionelse}
+	<TR>
+		<TD colspan="8" class="fall" align="center">
+			<p>&nbsp;</p>
+			<p><B>Brak danych w radiusie.</b></p>
+			<p>&nbsp;</p>
+		</TD>
+	</TR>
+	{/section}
+	{if $listdata.total != 0}
+	<TR CLASS="dark">
+		<TD CLASS="fall" colspan="8">
+			{include file="scroller.html" loop=$nodelist}
+		</TD>
+	</TR>
+	{/if}
+	<TR CLASS="light">
+		<TD WIDTH="10%" COLSPAN="5" CLASS="fleftu" ALIGN="left">
+			<IMG SRC="img/print.gif">&nbsp;Drukuj
+		</TD>
+		<TD CLASS="Fbt" ALIGN="right">
+			<B>
+				{t}Total:{/t}<BR>
+				{t}Connected<!nodes>:{/t}<BR>
+				{t}Disconnected:{/t}
+			</B>
+		</TD>
+		<TD WIDTH="2%" COLSPAN="2" CLASS="frightu" VALIGN="TOP">
+			<B>
+				{if $listdata.total}{$listdata.total}{else}0{/if}<BR>
+				{if $listdata.totalon}{$listdata.totalon}{else}0{/if}<BR>
+				{if $listdata.totaloff}{$listdata.totaloff}{else}0{/if}
+			</B>
+		</TD>				
+	</TR>			
+</TABLE>
+{include file="footer.html"}
