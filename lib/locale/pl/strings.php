@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -795,7 +795,7 @@ $_LANG['Link to:'] = 'Przypisz do:';
 $_LANG['List'] = 'Lista';
 $_LANG['List of arpd servers for MAC addresses retrieval from remote networks. That list should include IP[:port] items separated with spaces. Default: empty.'] = 'Lista serwerów arpd dla czytania adresów MAC ze zdalnych sieci. Ta lista powinna zawierać pozycje IP[:port] oddzielone spacjami. Domyślnie: pusta.';
 $_LANG['List of Customers'] = 'Lista klientów';
-$_LANG['List of Customers Groups'] = 'Lista grup komputerów';
+$_LANG['List of Customers Groups'] = 'Lista grup klientów';
 $_LANG['List of Hosts'] = 'Lista hostów';
 $_LANG['List of invoices'] = 'Lista faktur';
 $_LANG['List of IP pools'] = 'Lista sieci IP';
@@ -2644,9 +2644,13 @@ $_LANG['Enter access start date in YYYY/MM/DD format. If you don\'t want to defi
 $_LANG['Enter access end date in YYYY/MM/DD format. If you don\'t want to define \'To\' date leave this field empty'] = 'Wprowadź datę do której ważność konta powinna obowiązywać lub zostaw to pole puste. Data powinna być w formacie RRRR/MM/DD';
 $_LANG['Last modification time:'] = 'Czas ostatniej modyfikacji:';
 $_LANG['Last modified by:'] = 'Ostatnio zmodyfikował:';
+
 $_LANG['Enter SIP account and press Enter'] = 'Wprowadź nazwę konta SIP i naciśnij Enter';
 $_LANG['SIP Search Results'] = 'Wyniki wyszukiwania kont SIP';
 $_LANG['No such SIP matching search criteria.'] = 'Brak kont SIP spełniających warunki wyszukiwania.';
 $_LANG['Are you sure, you want to delete SIP \\\'$a\\\' from database?'] = 'Jesteś pewien, że chcesz usunąć konto SIP \\\'$a\\\' z bazy danych?';
 $_LANG['Disk usage'] = 'Użycie przestrzeni dyskowej';
+
+$_LANG['current:'] = 'aktualnie:';
+
 ?>
