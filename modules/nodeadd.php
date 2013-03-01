@@ -29,10 +29,13 @@ $nodedata['ownerid'] = 0;
 
 if(isset($_GET['ownerid']))
 {
+	($voip->CustomerExists($_GET['ownerid']) ? $v=true : $v=false);
+	$SMARTY->assign('isvoip',$v);
 	if($LMS->CustomerExists($_GET['ownerid']) == true)
 	{
 		$nodedata['ownerid'] = $_GET['ownerid'];
 		$customerinfo = $LMS->GetCustomer($_GET['ownerid']);
+		$customerinfo=$voip->GetCustomer($customerinfo,$_GET['ownerid']); 
 		$SMARTY->assign('customerinfo', $customerinfo);
 	}
 	else
@@ -223,6 +226,15 @@ if(!isset($CONFIG['phpui']['big_networks']) || !chkconfig($CONFIG['phpui']['big_
 
 $nodedata = $LMS->ExecHook('node_add_init', $nodedata);
 
+if($v)
+{
+$customersip = $voip->GetCustomerNodes($nodedata['ownerid']);
+$customersip['ownerid']=$nodedata['ownerid'];
+$SMARTY->assign('customersip',$customersip);
+if($customerid) $customerinfo = $voip->GetCustomer($customerinfo, $customerid);
+}
+
+$SMARTY->assign('cstateslist',$LMS->GetCountryStates());
 $SMARTY->assign('netdevices', $LMS->GetNetDevNames());
 $SMARTY->assign('error', $error);
 $SMARTY->assign('nodedata', $nodedata);

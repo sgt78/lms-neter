@@ -1,0 +1,58 @@
+<!--// $Id: balance.html,v 1.4 2005/08/29 15:12:50 lexx Exp $ //-->
+{box title="Balance"}
+<center>
+<h1>{if $userinfo.voipbalance < 0}
+	<div style="color: red; white-space: nowrap;"><b>{$userinfo.voipbalance|money_format}</b></div>
+    {else}
+	<div style="white-space: nowrap;">{$userinfo.voipbalance|money_format}</div>
+    {/if}
+</h1>
+{if $userinfo.type=='prepaid'}
+<form action="https://www.platnosci.pl/paygw/UTF/NewPayment" method="POST" name="payform" onsubmit="makeamount(this);">
+   <input type="hidden" name="first_name" value="{$userinfo.name}">
+   <input type="hidden" name="last_name" value="{$userinfo.lastname}">
+   <input type="hidden" name="email" value="{$userinfo.email}">
+   <input type="hidden" name="pos_id" value="12324">
+   <input type="hidden" name="pos_auth_key" value="ZI2ZKRe">
+   <input type="hidden" name="session_id" value="{$listdata.session_id}">
+   <input type="hidden" name="amount" value="0">
+   <input type="hidden" name="desc" value="Doładowanie konta (UID: {$userinfo.id})">
+   <input type="hidden" name="client_ip" value="{$smarty.server.REMOTE_ADDR}">
+   <input type="hidden" name="js" value="0">
+Kwota:	 <input type="text" name="kwota" size="3">
+   <input type="submit" value="Doładuj">
+</form>
+{literal}
+<script language="JavaScript" type="text/javascript">
+<!--
+  document.forms['payform'].js.value=1;
+function makeamount(form)
+{
+form.elements['amount'].value=form.elements['kwota'].value * 100;
+}
+function changeinv(forma)
+{
+if(forma.elements['uinvoicec'].checked==false) forma.elements['notuinvoicec'].value=1;
+forma.submit();
+}
+  -->
+</script>
+{/literal}
+<br>
+<form action="?m=voip" method="POST" name="uinvoice">
+<label><input type="checkbox" name="uinvoicec" value="1" onchange="changeinv(document.forms['uinvoice']);"{if $userinfo.invoice_prepaid eq 't'} checked="checked"{/if}> Wystawiaj fakturę VAT</label>
+<input type="hidden" name="notuinvoicec" value="0">
+</form>
+{else}
+{if $userinfo.voipbalance < 0}
+	{if !$_config.userpanel.disable_transferform}
+	<a href="?m=voip&amp;f=transferform" target="_blank">
+	<font color="red">{trans("Click here to print payment form")}</font>
+	</a>
+	{/if}
+{else}
+	{trans("All your covenants are settled")}
+{/if}
+{/if}
+</center>
+{/box}

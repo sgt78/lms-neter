@@ -86,4 +86,13 @@ function module_main()
     include 'main.php';
 }
 
+function module_v_attachment()
+{
+    include 'v_attachment.php';
+}
+
+
+require_once(LIB_DIR.'/ezpdf/class.ezpdf.php');
+$pdf =& new Cezpdf('A4','portrait');
+
 ?>

@@ -1,0 +1,44 @@
+<!--// $Id: userbalancebox.html,v 1.9 2005/09/29 10:29:42 alec Exp $ //-->
+{box title="Your balance"}
+<table style="width: 100%;" cellpadding="3">
+	<tr class="darkest">
+		<td width="1%">{trans("Date:")}</td>
+		<td width="1%" align="right">{trans("Value:")}</td>
+		<td width="1%" align="center">&raquo;</td>
+		<td width="1%" align="right">{trans("After:")}</td>
+		<td width="95%">{trans("Description:")}</td>
+		{if !$_config.userpanel.disable_invoices}
+		<td width="1%" align="right"></td>
+		{/if}
+	</tr>
+	{section name=balancelist loop=$balancelist start=$limit}
+	<tr class="dark">
+		<td width="1%" class="nobr">{$balancelist[balancelist].date|date_format:'%Y-%m-%d %H:%M:%S'}</td>
+		<td width="1%" align="right" class="nobr">{$balancelist[balancelist].value|money_format}</td>
+		<td width="1%" align="center">&raquo;</td>
+		<td width="1%" align="right" class="nobr">{if $balancelist[balancelist].after < 0}<font color="red">{/if}{$balancelist[balancelist].after|money_format}{if $balancelist[balancelist].after < 0}</font>{/if}</td>
+		<td width="95%">{$balancelist[balancelist].comment}</td>
+		{if !$_config.userpanel.disable_invoices}
+		<td width="1%">
+{*			{if $balancelist[balancelist].doctype==1 || $balancelist[balancelist].type==0}
+			<a href="?m=voip&amp;f=invoice&amp;id={$balancelist[balancelist].id}" target="_blank">{img src="print.gif" alt="[ Print ]" text=$balancelist[balancelist].number}</a>
+			{else}
+			&nbsp;
+			{/if}
+			*}
+			&nbsp;
+		</td>
+		{/if}
+	</tr>
+	{assign var=bal value=$balancelist[balancelist].invoiceid}
+	{sectionelse}
+	<tr>
+		<td align="center" width="100%" colspan="6">
+			<p>&nbsp;</p>
+			<p><b>{trans("No such transactions on your account.")}</b></p>
+			<p>&nbsp;</p>
+		</td>
+	</tr>
+	{/section}
+</table>
+{/box}

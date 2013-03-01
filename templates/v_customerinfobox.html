@@ -1,0 +1,184 @@
+{if $isvoip}
+<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+		</TD>
+		<TD WIDTH="99%" colspan="2"><hr>
+</TD>
+	</TR>
+<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+			<IMG SRC="img/money.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>Bilans całkowity:</B>
+		</TD>
+		<TD WIDTH="98%">
+{if $customerinfo.voipbalance+$customerinfo.balance < 0}<FONT class="alert">{$customerinfo.voipbalance+$customerinfo.balance|money_format}</FONT>{else}{$customerinfo.voipbalance+$customerinfo.balance|default:"0"|money_format}{/if}
+		</TD>
+	</TR>
+	
+<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+		</TD>
+		<TD WIDTH="99%" colspan="2"><hr>
+</TD>
+	</TR>	
+		<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+			<IMG SRC="img/money.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>VOIP {t}Balance:{/t}</B>
+		</TD>
+		<TD WIDTH="98%">
+{if $customerinfo.voipbalance < 0}<FONT class="alert">{$customerinfo.voipbalance|money_format}</FONT>{else}{$customerinfo.voipbalance|default:"0"|money_format}{/if}
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+			<IMG SRC="img/money.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>Koszt rozmów w bieżącym okresie rozliczeniowym</B>
+		</TD>
+		<TD WIDTH="98%">
+{$customerinfo.voipbalanceact|default:"0"|money_format}
+		</TD>
+	</TR>
+		<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+			<IMG SRC="img/phone.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>VOIP pozostało darmowych</B>
+		</TD>
+		<TD WIDTH="98%">
+{$customerinfo.voipfreesec|default:"0"} minut
+		</TD>
+	</TR>
+		<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+			<IMG SRC="img/users.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>{t}Created:{/t}<BR>
+{t}Modified:{/t}</B>
+		</TD>
+		<TD WIDTH="98%">
+{$customerinfo.voipcreationdateh}<BR>
+{$customerinfo.voipmoddateh}
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+			<IMG SRC="img/phone.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>VOIP początek umowy</B>
+		</TD>
+		<TD WIDTH="98%">
+{if $customerinfo.voippoczatekum > $smarty.now|date_format:"%Y-%m-%d"}<FONT class="alert">{$customerinfo.voippoczatekum}</FONT>{else}{$customerinfo.voippoczatekum}{/if}
+		</TD>
+	</TR>	
+{if $setl}
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+			<IMG SRC="img/phone.gif" ALT="">
+		</TD>
+		<TD WIDTH="99%" COLSPAN="2" style="font-weight:bold; font-size:16px; color:#FF0000;">
+Umowa klienta kończy się przed upływem {$setl} miesięcy !
+		</TD>
+	</TR>
+{/if}	
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%">
+			<IMG SRC="img/phone.gif" ALT="">
+		</TD>
+		<TD WIDTH="1%">
+			<B>VOIP koniec umowy</B>
+		</TD>
+		<TD WIDTH="98%">
+{if $customerinfo.voipkoniecum < $smarty.now|date_format:"%Y-%m-%d"}<FONT class="alert">{$customerinfo.voipkoniecum}</FONT>{else}{$customerinfo.voipkoniecum}{/if}
+		</TD>
+	</TR>	
+	<TR CLASS="LIGHT">
+<TD WIDTH="1%">
+	<IMG SRC="img/phone.gif" ALT="">
+</TD>
+<TD WIDTH="1%">
+	<B>VOIP dzień wystawienia faktury</B>
+</TD>
+<TD WIDTH="98%">
+{$customerinfo.payday}
+</TD>
+</TR>
+	<TR CLASS="LIGHT">
+<TD WIDTH="1%">
+	<IMG SRC="img/phone.gif" ALT="">
+</TD>
+<TD WIDTH="1%">
+	<B>VOIP typ użytkownika</B>
+</TD>
+<TD WIDTH="98%">
+{$customerinfo.type}
+</TD>
+</TR>
+</TR>
+{if $customerinfo.sumsubscriptions}
+<TR CLASS="LIGHT">
+<TD WIDTH="1%">
+<IMG SRC="img/phone.gif" ALT="">
+</TD>
+<TD WIDTH="1%">
+<B>VOIP suma miesięcznych abonamentów</B>
+</TD>
+<TD WIDTH="98%">
+{$customerinfo.sumsubscriptions|default:0} zł netto
+</TD>
+</TR>
+{/if}
+<TR CLASS="LIGHT">
+<TD WIDTH="1%">
+<IMG SRC="img/phone.gif" ALT="">
+</TD>
+<TD WIDTH="1%">
+<B>Wirtualna centrala PBX</B>
+</TD>
+<TD WIDTH="98%">
+{if $customerinfo.virtualpbx eq 't'}TAK{else}NIE{/if}
+</TD>
+</TR>
+<TR CLASS="LIGHT">
+<TD WIDTH="1%">
+<IMG SRC="img/phone.gif" ALT="">
+</TD>
+<TD WIDTH="1%">
+<B>VOIP wystawiaj fakturę</B>
+</TD>
+<TD WIDTH="98%">
+{if $customerinfo.invoice eq 't'}TAK{else}NIE{/if}
+</TD>
+</TR>
+<TR CLASS="LIGHT">
+<TD WIDTH="1%">
+<IMG SRC="img/phone.gif" ALT="">
+</TD>
+<TD WIDTH="1%">
+<B>Lokalizacja klienta</B>
+</TD>
+<TD WIDTH="98%">
+{$geoloc}
+</TD>
+</TR>
+{if $customerinfo.payday eq 1}
+<TR CLASS="LIGHT">
+<TD WIDTH="1%">
+<IMG SRC="img/phone.gif" ALT="">
+</TD>
+<TD WIDTH="98%" colspan="2">
+<a href="?m=v_invh&id={$smarty.get.id}" onclick="od=prompt('Faktura od dnia:','{$smarty.now|date_format:"%d"}');if(od) this.href += '&od=' + od; else return false;">Wystaw fakturę wyrównującą (do ostatniego dnia miesiąca)</a>
+</TD>
+</TR>
+{/if}
+{/if}
+

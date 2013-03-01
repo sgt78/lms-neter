@@ -1,0 +1,61 @@
+<!--// $Id: userassignments.html,v 1.5 2005/10/14 18:47:23 alec Exp $ //-->
+{box title="Konta SIP"}
+<table style="width: 100%;" cellpadding="3">
+	<tr class="darkest">
+		<td width="1%" class="nobr"><b>Numer</b></td>
+		<td width="1%" class="nobr" align="right">{trans("Value:")}</td>
+		<td width="1%" class="nobr">Abonament</td>
+		<td width="1%" class="nobr">{trans("Accounting day:")}</td>
+		<td width="1%" class="nobr" colspan="4">Ustawienia</td>
+		<!--{if $_config.userpanel.show_speeds}
+			<td width="1%" class="nobr" align="right">{trans("Downrate (ceil):")}</td>
+			<td width="1%" class="nobr" align="right">{trans("Uprate (ceil):")}</td>
+		{/if}
+		<td width="1%" class="nobr">{trans("Invoice:")}</td>
+		<td width="93%">{trans("Period:")}</td>-->
+	</tr>
+	{foreach from=$assignments item=assignment}
+	<tr class="dark">
+		<td class="nobr"><b>
+		{if $_config.userpanel.show_tariffname}{$assignment.name}{/if}
+		</b></td>
+		<td class="nobr" align="right">{$assignment.value|money_format}</td>
+		<td class="nobr" align="right">{$assignment.subscription}</td>
+		<td class="nobr">{$assignment.period} ({$assignment.at})</td>
+		<td class="nobr"><a href="?m=voip&f=settings&id={$assignment.id}">Edytuj</a></td>
+		<td><a href="?m=voip&f=allowedrates&id={$assignment.id}">Dozwolone strefy</a></td>
+		<td><a href="?m=voip&f=cost&id={$assignment.id}">Sprawdź koszt połączenia</a></td>
+		<td><a href="?m=voip&f=tariff&id={$assignment.id}" target="_blank">Wydrukuj cennik</a><br>
+		<a href="?m=voip&f=tariff&csv=1&id={$assignment.id}">Pobierz jako CSV</a></td>
+		<!--{if $_config.userpanel.show_speeds}
+			<td class="nobr" align="right">{$assignment.downrate|default:"-"}({$assignment.downceil|default:"-"}) kbps</td>
+			<td class="nobr" align="right">{$assignment.uprate|default:"-"}({$assignment.upceil|default:"-"}) kbps</td>
+		{/if}
+		<td>{if $assignment.invoice}{trans("yes")}{else}&nbsp;{/if}</td>
+		<td>
+			{if $assignment.datefrom}{trans("from")} {$assignment.datefrom|date_format:"%Y/%m/%d"}{/if}
+			{if $assignment.dateto}{trans("to")} {$assignment.dateto|date_format:"%Y/%m/%d"}{/if}
+		</td>-->
+	</tr>
+
+	{foreachelse}
+	<tr>
+		<td align="center" width="100%" colspan="8">
+			<p>&nbsp;</p>
+			<p><b>{trans("You haven't got any assigned subscriptions.")}</b></p>
+			<p>&nbsp;</p>
+		</td>
+	</tr>
+	{/foreach}
+	<tr class="darkest">
+		<td align="right"><b>{trans("Total:")}</b></td>
+		<td class="nobr" align="right">{sum array=$assignments column="value" string_format=$LANGDEFS.$_language.money_format}</td>
+		<td class="nobr" align="right">({sum array=$assignments column="discounted_value" string_format=$LANGDEFS.$_language.money_format})</td>
+		<td>&nbsp;</td>
+<td colspan="4">&nbsp;</td>
+	</tr>
+	<tr class="dark">
+<td align="center" colspan="8"><b><a href="?m=voip&f=fax">Skrzynka FAX</a></b>&nbsp;&nbsp;<b><a href="?m=voip&f=addressbook">Książka telefoniczna</a></b>&nbsp;&nbsp;<b><a href="?m=voip&f=ivr">IVR</a></b></td>
+</tr>
+</table>
+{/box}
