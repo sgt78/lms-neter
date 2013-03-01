@@ -4,7 +4,7 @@
 /*
  * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -51,7 +51,7 @@ if (array_key_exists('version', $options))
 {
 	print <<<EOF
 lms-cashimport-bgz.php
-(C) 2001-2012 LMS Developers
+(C) 2001-2013 LMS Developers
 
 EOF;
 	exit(0);
@@ -61,7 +61,7 @@ if (array_key_exists('help', $options))
 {
 	print <<<EOF
 lms-cashimport-bgz.php
-(C) 2001-2012 LMS Developers
+(C) 2001-2013 LMS Developers
 
 -C, --config-file=/etc/lms/lms.ini      alternate config file (default: /etc/lms/lms.ini);
 -h, --help                      print this help and exit;
@@ -77,7 +77,7 @@ if (!$quiet)
 {
 	print <<<EOF
 lms-cashimport-bgz.php
-(C) 2001-2012 LMS Developers
+(C) 2001-2013 LMS Developers
 
 EOF;
 }
@@ -145,7 +145,7 @@ $LMS = new LMS($DB, $AUTH, $CONFIG);
 $LMS->ui_lang = $_ui_language;
 $LMS->lang = $_language;
 
-if (empty($CONFIG['finances']['bgz_username']) || empty($CONFIG['finances']['bgz_firm']) || empty($CONFIG['finances']['bgz_firm']))
+if (empty($CONFIG['finances']['bgz_username']) || empty($CONFIG['finances']['bgz_password']) || empty($CONFIG['finances']['bgz_firm']))
 	die("Fatal error: BGZ credentials are not set!\n");
 
 define('USER_AGENT', "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)");
@@ -610,7 +610,7 @@ while ($xml->valid()) {
 				while ($props->valid()) {
 					switch ($props->key()) {
 						case "id":
-							$fileid = $props->current();
+							$fileid = strval($props->current());
 							break;
 						case "file_name":
 							$filename = strval($props->current());
