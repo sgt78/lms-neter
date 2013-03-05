@@ -95,6 +95,10 @@ my $dbname = $ini->val('database', 'database') || 'lms';
 
 my $limit = $ini->val('cutoff', 'limit') || 0;
 my $message = $ini->val('cutoff', 'message') || 'Automatic cutoff caused by exceeding of liabilities limit on %now';
+my $only_due = $ini->val('cutoff', 'only_due') || '1';
+my $extend_deadline = $ini->val('cutoff', 'extend_deadline') || '7';
+my $excluded_customergroups = $ini->val('cutoff', 'excluded_customergroups') || '';
+my $customergroups = $ini->val('cutoff', 'customergroups') || '';
 
 my $dbase;
 my $utsfmt;
@@ -121,15 +125,35 @@ $message =~ s/%now/$now_date/g;
 my $keepmessage = $message;
 my $absolute = 0;
 
+my $filter = "deleted = 0 AND cutoffstop < $utsfmt";
+
+if ($only_due) {
+    $filter = $filter . " AND ((documents.paytime > 0 AND cdate + ((documents.paytime + $extend_deadline) * 86400) < $utsfmt)
+                           OR documents.paytime = 0
+                           OR documents.paytime IS NULL)";
+}
+
+if ($excluded_customergroups ne '') {
+    $filter = $filter . " AND (SELECT count(*) FROM customerassignments
+                                WHERE customerassignments.customerid = customers.id
+                                  AND customerassignments.customergroupid IN ($excluded_customergroups)) = 0";
+}
+
+if ($customergroups ne '') {
+    $filter = $filter . " AND (SELECT count(*) FROM customerassignments
+                                WHERE customerassignments.customerid = customers.id
+                                  AND customerassignments.customergroupid IN ($customergroups)) = 0";
+}
+
 my $dbq = $dbase->prepare("
-    SELECT customers.id AS id, UPPER(lastname) AS lastname, 
-	    name, SUM(cash.value) AS balance 
-    FROM customers 
-    JOIN cash ON customers.id = cash.customerid 
-    WHERE deleted = 0 
-	    AND cutoffstop < $utsfmt
-    GROUP BY customers.id, lastname, name 
-    HAVING SUM(cash.value) < $limit 
+    SELECT customers.id AS id, UPPER(lastname) AS lastname,
+    customers.name AS name, SUM(cash.value) AS balance
+    FROM customers
+    JOIN cash ON customers.id = cash.customerid
+    LEFT JOIN documents ON cash.docid=documents.id
+    WHERE $filter
+    GROUP BY customers.id, lastname, name
+    HAVING SUM(cash.value) < $limit
     ORDER BY lastname, name
 ");
 

@@ -48,7 +48,7 @@ $_LANG['No such requests in database.'] = 'Nie ma żadnych zgłoszeń w bazie da
 $_LANG['Number:'] = 'Numer:';
 $_LANG['open'] = 'otwarty';
 $_LANG['Request history'] = 'Historia zgłoszeń';
-$_LANG['Request No. $0'] = 'Zgłoszenie Nr $0';
+$_LANG['Request No. $a'] = 'Zgłoszenie Nr $a';
 $_LANG['resolved'] = 'rozwiązany';
 $_LANG['- select queue -'] = '- wybierz kolejkę -';
 $_LANG['- select user -'] = '- wybierz użytkownika -';
@@ -61,5 +61,7 @@ $_LANG['This module allows your customers to contact with you'] = 'Ten moduł po
 $_LANG['Ticket must have its body!'] = 'Musisz podać treść zgłoszenia!';
 $_LANG['Ticket must have its title!'] = 'Zgłoszenie musi mieć tytuł!';
 $_LANG['Message'] = 'Wiadomość';
+
+$_LANG['Default categories:'] = 'Domyślne kategorie:';
 
 ?>

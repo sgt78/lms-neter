@@ -32,7 +32,8 @@ if ($cid)
         LEFT JOIN ewx_stm_channels c2 ON (c.id = c2.cid)
         WHERE c.id = ?', array($cid));
 else
-    $channel = $DB->GetRow('SELECT 0 AS id, ch.upceil, ch.downceil, ch.id AS cid
+    $channel = $DB->GetRow('SELECT 0 AS id, ch.upceil, ch.downceil,
+        ch.halfduplex, ch.id AS cid
         FROM ewx_stm_channels ch
         WHERE ch.cid = 0');
 
@@ -41,7 +42,7 @@ if(!$channel)
 	$SESSION->redirect('?m=ewxchlist');
 }
 
-$layout['pagetitle'] = trans('Info Channel: $0', $channel['name']);
+$layout['pagetitle'] = trans('Info Channel: $a', $channel['name']);
 
 $SESSION->save('backto', $_SERVER['QUERY_STRING']);
 
@@ -59,7 +60,13 @@ if ($channel['id']) {
     $channel['devices'] = $DB->GetAll('SELECT id, name, location,
         (SELECT COUNT(*) FROM nodes WHERE netdev = netdevices.id AND ownerid > 0) AS nodes
 	    FROM netdevices WHERE id IN (
-	        SELECT nodeid FROM ewx_stm_nodes WHERE channelid = ?)
+            SELECT netdev
+            FROM nodes
+            WHERE netdev > 0 AND id IN (
+                SELECT nodeid
+                FROM ewx_stm_nodes
+                WHERE channelid IN (SELECT id FROM ewx_stm_channels
+                    WHERE cid = 0)))
 	    ORDER BY name', array($channel['id']));
 }
 

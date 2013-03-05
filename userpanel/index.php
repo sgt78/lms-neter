@@ -35,6 +35,14 @@ $CONFIG_FILE = (is_readable('lms.ini')) ? 'lms.ini' : '/etc/lms/lms.ini';
 ini_set('session.name','LMSSESSIONID');
 ini_set('error_reporting', E_ALL&~E_NOTICE);
 
+// find alternative config files:
+if(is_readable('lms.ini'))
+        $CONFIG_FILE = 'lms.ini';
+elseif(is_readable('/etc/lms/lms-'.$_SERVER['HTTP_HOST'].'.ini'))
+        $CONFIG_FILE = '/etc/lms/lms-'.$_SERVER['HTTP_HOST'].'.ini';
+elseif(!is_readable($CONFIG_FILE))
+        die('Unable to read configuration file ['.$CONFIG_FILE.']!');
+
 // Parse configuration file
 $CONFIG = (array) parse_ini_file($CONFIG_FILE, true);
 
@@ -83,8 +91,14 @@ $SMARTY = new Smarty;
 
 // test for proper version of Smarty
 
-if(version_compare('2.6.0', $SMARTY->_version) > 0)
-     die('<B>Old version of Smarty engine! You shuld get newest from <A HREF="http://www.smarty.net/distributions/Smarty-2.6.9.tar.gz">http://www.smarty.net/distributions/Smarty-2.6.9.tar.gz</A>!</B>');
+if (constant('Smarty::SMARTY_VERSION'))
+	$ver_chunks = preg_split('/-/', Smarty::SMARTY_VERSION);
+else
+	$ver_chunks = NULL;
+if (count($ver_chunks) != 2 || version_compare('3.0', $ver_chunks[1]) > 0)
+	die('<B>Wrong version of Smarty engine! We support only Smarty-3.x greater than 3.0.</B>');
+
+define('SMARTY_VERSION', $ver_chunks[1]);
 
 // Read configuration of LMS-UI from database
 
@@ -137,13 +151,13 @@ while (false !== ($filename = readdir($dh))) {
 	@include(USERPANEL_MODULES_DIR.$filename.'/locale/'.$_ui_language.'/strings.php');
 	include(USERPANEL_MODULES_DIR.$filename.'/configuration.php');
     }
-};																						    
+};
 
 $SMARTY->assign('_config',$CONFIG);
-$SMARTY->assign_by_ref('_LANG', $_LANG);
-$SMARTY->assign_by_ref('LANGDEFS', $LANGDEFS);
-$SMARTY->assign_by_ref('_ui_language', $LMS->ui_lang);
-$SMARTY->assign_by_ref('_language', $LMS->lang);
+$SMARTY->assignByRef('_LANG', $_LANG);
+$SMARTY->assignByRef('LANGDEFS', $LANGDEFS);
+$SMARTY->assignByRef('_ui_language', $LMS->ui_lang);
+$SMARTY->assignByRef('_language', $LMS->lang);
 $SMARTY->template_dir = USERPANEL_DIR.'/templates/';
 $SMARTY->compile_dir = SMARTY_COMPILE_DIR;
 $SMARTY->debugging = chkconfig($CONFIG['phpui']['smarty_debug']);
@@ -152,12 +166,12 @@ require_once(USERPANEL_LIB_DIR.'/smarty_addons.php');
 $layout['upv'] = $USERPANEL->_version.' ('.$USERPANEL->_revision.'/'.$SESSION->_revision.')';
 $layout['lmsdbv'] = $DB->_version;
 $layout['lmsv'] = $LMS->_version;
-$layout['smarty_version'] = $SMARTY->_version;
+$layout['smarty_version'] = SMARTY_VERSION;
 $layout['hostname'] = hostname();
 $layout['dberrors'] =& $DB->errors;
 
-$SMARTY->assign_by_ref('modules', $USERPANEL->MODULES);
-$SMARTY->assign_by_ref('layout', $layout);
+$SMARTY->assignByRef('modules', $USERPANEL->MODULES);
+$SMARTY->assignByRef('layout', $layout);
 
 header('X-Powered-By: LMS/'.$layout['lmsv']);
 
@@ -191,7 +205,7 @@ if($SESSION->islogged)
 		    $to_execute = 'module_'.$function;
 		    $to_execute();
 		} else {
-    		    $layout['error'] = trans('Function <b>$0</b> in module <b>$1</b> not found!', $function, $module);
+    		    $layout['error'] = trans('Function <b>$a</b> in module <b>$b</b> not found!', $function, $module);
     		    $SMARTY->display('error.html');
 		}
         }
@@ -218,7 +232,7 @@ if($SESSION->islogged)
         }
         else
         {
-    		$layout['error'] = trans('Module <b>$0</b> not found!', $module);
+    		$layout['error'] = trans('Module <b>$a</b> not found!', $module);
     		$SMARTY->display('error.html');
     	}
 

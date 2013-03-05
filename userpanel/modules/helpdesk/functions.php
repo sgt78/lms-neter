@@ -28,13 +28,24 @@ if (defined('USERPANEL_SETUPMODE'))
 {
     function module_setup()
     {
-	global $SMARTY, $LMS;
+	global $SMARTY, $LMS, $AUTH;
+
+	$default_categories = explode(',', $LMS->CONFIG['userpanel']['default_categories']);
+	$categories = $LMS->GetCategoryListByUser($AUTH->id);
+	foreach($categories as $category)
+	{
+		if (in_array($category['id'], $default_categories))
+			$category['checked'] = true;
+		$ncategories[] = $category;
+	}
+	$categories = $ncategories;
 
 	$SMARTY->assign('userlist', $LMS->GetUserNames());
 	$SMARTY->assign('queuelist', $LMS->GetQueueNames());
 	$SMARTY->assign('default_queue', $LMS->CONFIG['userpanel']['default_queue']);
         $SMARTY->assign('default_userid', $LMS->CONFIG['userpanel']['default_userid']);
         $SMARTY->assign('lms_url', $LMS->CONFIG['userpanel']['lms_url']);
+        $SMARTY->assign('categories', $categories);
 	$SMARTY->display('module:helpdesk:setup.html');
     }
 
@@ -44,6 +55,8 @@ if (defined('USERPANEL_SETUPMODE'))
         $DB->Execute('UPDATE uiconfig SET value = ? WHERE section = \'userpanel\' AND var = \'default_queue\'',array($_POST['default_queue']));
 	$DB->Execute('UPDATE uiconfig SET value = ? WHERE section = \'userpanel\' AND var = \'default_userid\'',array($_POST['default_userid']));
 	$DB->Execute('UPDATE uiconfig SET value = ? WHERE section = \'userpanel\' AND var = \'lms_url\'',array($_POST['lms_url']));
+	$categories = array_keys((isset($_POST['lms_categories']) ? $_POST['lms_categories'] : array()));
+	$DB->Execute('UPDATE uiconfig SET value = ? WHERE section = \'userpanel\' AND var = \'default_categories\'', array(implode(',', $categories)));
         header('Location: ?m=userpanel&module=helpdesk');
     }
 }
@@ -59,10 +72,11 @@ function module_main()
         $ticket = $_POST['helpdesk'];
 
 	$ticket['queue'] = $CONFIG['userpanel']['default_queue'];
+	$ticket['categories'] = $CONFIG['userpanel']['default_categories'];
 	$ticket['subject'] = strip_tags($ticket['subject']);
 	$ticket['body'] = strip_tags($ticket['body']);
 
-	if(!$ticket['queue'])
+	if(!$ticket['queue'] || !$ticket['categories'])
 	{
 		header('Location: ?m=helpdesk');
 		die;
@@ -106,6 +120,10 @@ function module_main()
 					$ticket['mailfrom']
 				));
 
+		foreach(explode(',', $ticket['categories']) as $catid)
+			$DB->Execute('INSERT INTO rtticketcategories (ticketid, categoryid) VALUES (?, ?)',
+				array($id, $catid));
+
 		if(isset($CONFIG['phpui']['newticket_notify']) && chkconfig($CONFIG['phpui']['newticket_notify']))
 		{
 			$user = $LMS->GetUserInfo($CONFIG['userpanel']['default_userid']);
@@ -133,14 +151,14 @@ function module_main()
 			$body = $ticket['body']."\n\n".$CONFIG['userpanel']['lms_url'].'/?m=rtticketview&id='.$id;
 
             if (chkconfig($CONFIG['phpui']['helpdesk_customerinfo'])) {
-                $info = $DB->GetRow('SELECT '.$DB->Concat('UPPER(lastname)',"' '",'name').' AS customername,
+                $info = $DB->GetRow('SELECT id AS customerid, '.$DB->Concat('UPPER(lastname)',"' '",'name').' AS customername,
                         email, address, zip, city, (SELECT phone FROM customercontacts
                             WHERE customerid = customers.id ORDER BY id LIMIT 1) AS phone
                         FROM customers WHERE id = ?', array($SESSION->id));
 
                 $body .= "\n\n-- \n";
                 $body .= trans('Customer:').' '.$info['customername']."\n";
-                $body .= trans('ID:').' '.sprintf('%04d', $ticket['customerid'])."\n";
+                $body .= trans('ID:').' '.sprintf('%04d', $info['customerid'])."\n";
                 $body .= trans('Address:').' '.$info['address'].', '.$info['zip'].' '.$info['city']."\n";
                 $body .= trans('Phone:').' '.$info['phone']."\n";
                 $body .= trans('E-mail:').' '.$info['email'];
@@ -248,7 +266,7 @@ function module_main()
 
 	$ticket['id'] = $_GET['id'];
 
-	$SMARTY->assign('title', trans('Request No. $0', sprintf('%06d',$ticket['ticketid'])));
+	$SMARTY->assign('title', trans('Request No. $a', sprintf('%06d',$ticket['ticketid'])));
 	
 	if($ticket['customerid'] == $SESSION->id)
 	{
@@ -274,7 +292,7 @@ function module_main()
 	        $SMARTY->assign('helpdesk', $helpdesk);
 	}
 
-        $SMARTY->assign('title', trans('Request No. $0', sprintf('%06d',$ticket['ticketid'])));
+        $SMARTY->assign('title', trans('Request No. $a', sprintf('%06d',$ticket['ticketid'])));
         if($ticket['customerid'] == $SESSION->id)
         {
         	$SMARTY->assign('ticket', $ticket);

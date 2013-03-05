@@ -24,15 +24,15 @@
  *  $Id$
  */
 
-// Przygotowane dla druków firmy Michalczyk i Prokop Sp. z o.o.
-// dla drukarki HP LJ 1010 zostawiæ leftmargin = 0, bottommargin = 0
+// Przygotowane dla drukÃ³w firmy Michalczyk i Prokop Sp. z o.o.
+// dla drukarki HP LJ 1010 zostawiÅ‚ leftmargin = 0, bottommargin = 0
 
 function truncate($str, $max=60)
 {
 	$len = strlen($str);
 	if(!$max || $max >= $len)
 		return $str;
-		
+
 	// musimy pokombinowac bo nie mamy czcionki o stalym rozmiarze,
 	// ten sposob i tak jest do kitu, ale dziala lepiej niz staly limit
 	for($i=0; $i<$len; $i++)
@@ -51,7 +51,7 @@ function main_form($x, $y, $data)
 {
     global $pdf;
     global $_TITLE, $_LMARGIN, $_BMARGIN;
-    
+
     $balance = $data['balance'] < 0 ? -$data['balance'] : $data['balance'];
 
     $font_size = 14;
@@ -72,7 +72,7 @@ function main_form($x, $y, $data)
     $y -= $lineh;
     $pdf->addtext($x+220,$y,$font_size,sprintf('%.2f',$balance));
     $y -= $lineh;
-    $pdf->addtext($x,$y,$font_size,iconv('UTF-8', 'ISO-8859-2',trans('$0 dollars $1 cents',to_words(floor($balance)),to_words(round(($balance-floor($balance))*100)))));
+    $pdf->addtext($x,$y,$font_size,iconv('UTF-8', 'ISO-8859-2',trans('$a dollars $b cents',to_words(floor($balance)),to_words(round(($balance-floor($balance))*100)))));
     $y -= $lineh;
     $pdf->addtext($x,$y,$font_size,truncate(iconv('UTF-8', 'ISO-8859-2',$data['customername'])));
     $y -= $lineh;
@@ -80,7 +80,7 @@ function main_form($x, $y, $data)
     $y -= $lineh;
     $pdf->addtext($x,$y,$font_size,iconv('UTF-8', 'ISO-8859-2',$_TITLE));
     $y -= $lineh;
-    $pdf->addtext($x,$y,$font_size,iconv('UTF-8', 'ISO-8859-2',trans('Customer ID: $0',sprintf('%04d',$data['id']))));
+    $pdf->addtext($x,$y,$font_size,iconv('UTF-8', 'ISO-8859-2',trans('Customer ID: $a',sprintf('%04d',$data['id']))));
 }
 
 $balance = $_POST['balance'] ? $_POST['balance'] : 0;
@@ -88,10 +88,10 @@ $customer = isset($_POST['customer']) ? intval($_POST['customer']) : 0;
 $group = isset($_POST['customergroup']) ? intval($_POST['customergroup']) : 0;
 $exclgroup = isset($_POST['groupexclude']) ? 1 : 0;
 
-$list = $DB->GetAll('SELECT c.id, c.address, c.zip, c.city, d.account, 
+$list = $DB->GetAll('SELECT c.id, c.address, c.zip, c.city, d.account,
 	d.name AS d_name, d.address AS d_address, d.zip AS d_zip, d.city AS d_city, '
-	.$DB->Concat('UPPER(lastname)',"' '",'c.name').' AS customername,   
-	COALESCE(SUM(value), 0.00) AS balance
+	.$DB->Concat('UPPER(lastname)',"' '",'c.name').' AS customername,
+	COALESCE(SUM(cash.value), 0.00) AS balance
 	FROM customersview c 
 	LEFT JOIN cash ON (c.id = cash.customerid)
 	LEFT JOIN divisions d ON (d.id = c.divisionid)
@@ -100,9 +100,9 @@ $list = $DB->GetAll('SELECT c.id, c.address, c.zip, c.city, d.account,
 	.($group ?
         ' AND '.($exclgroup ? 'NOT' : '').'
 	        EXISTS (SELECT 1 FROM customerassignments a
-		WHERE a.customergroupid = '.$group.' AND a.customerid = c.id)' : '')						
-	.' GROUP BY c.id, lastname, c.name, address, zip, city
-	HAVING COALESCE(SUM(value), 0.00) < ? ORDER BY c.id',
+		WHERE a.customergroupid = '.$group.' AND a.customerid = c.id)' : '')
+	.' GROUP BY c.id, c.lastname, c.name, c.address, c.zip, c.city, d.account, d.name, d.address, d.zip, d.city
+	HAVING COALESCE(SUM(cash.value), 0.00) < ? ORDER BY c.id',
 	array(str_replace(',','.',$balance)));
 
 if(!$list)

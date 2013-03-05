@@ -1,5 +1,41 @@
 $Id$
 
+version ? (????-??-??):
+
+  - Fixed nodes list in Userpanel [alec]
+  - lmsd/ewx-pt: Fixed issues on nodes deletion [alec]
+  - lmsd/ewx-stm-channels: Fixed issues on nodes deletion, improved performance [alec]
+  - lmsd/ewx-stm_channels: Added channel/customer limits checking [alec]
+  - lmsd/ewx-stm_channels: Added channel half duplex setting [alec]
+  - Fixed promotion assignments creation on MySQL [alec]
+  - BTS#0000868: Fixed bug where country wasn't saved when adding customer [alec]
+  - lms-notify-sms: Fixed wrong number prefix, when prefix was set to empty string [alec]
+  - fixed bug in dbview bound to inproper Content-Length header [chilan]
+  - daemon: disambiguation of halfduplex field usage in ewx-stm module [chilan]
+  - Implemented nodes/devices localization database [alec]
+  - lms-teryt: Script for Polish TERYT localization database import [alec]
+  - Userpanel: added bank account to userinfobox [maniac]
+  - Userpanel: reversed sorting of finance history [maniac]
+  - Added bank account number to default invoice template [maniac]
+  - lms-cutoff: added options to include only due payments and to extend paytime [maniac]
+  - Userpanel: allow lms.ini to be virtual host dependend (like in UI) [maniac]
+  - lmsd/ewx-pt: code rewrite, some improvements, added debug [alec]
+  - RT: fixed replys to tickets created from userpanel with backend enabled [maniac]
+  - BTS#0000880: Fixed transfer forms report printing [alec]
+  - BTS#0000877: Fixed node assignments for all promotion periods [alec]
+  - BTS#0000876: contrib/customer: Fixed customer tariff is always zero [alec]
+  - BTS#0000878: Fixed calculation of first promotion period length [alec]
+  - lms-cutoff: added 'customergroups' & 'excluded_customergroups' opts [maniac]
+  - welcome: added posibility of hiding links, system information and registration info [chilan]
+  - helpdesk: ticket categories introduced [chilan]
+  - documents: fixed aliases sql query in default template [chilan]
+  - userpanel/helpdesk: missed customer id in footer of the notification mail [chilan]
+  - ported to Smarty 3 [chilan]
+    -----------------------------------------------------------------
+    WARNING: This update changes required version of Smarty from 2.6 to 3.x.
+    		It was quite strongly tested with Smarty 3.1.3
+    -----------------------------------------------------------------
+
 version 1.11.13 Dira (2011-04-07)
 
   - contrib/cutoff2: Fixed "Column 'period' in where clause is ambiguous" [alec]

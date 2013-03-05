@@ -82,6 +82,7 @@ $SMARTY = new Smarty;
 
 require_once(LIB_DIR.'/unstrip.php');
 require_once(LIB_DIR.'/language.php');
+require_once(LIB_DIR.'/definitions.php');
 require_once(LIB_DIR.'/common.php');
 require_once(LIB_DIR.'/LMS.class.php');
 
@@ -94,17 +95,17 @@ $LMS->lang = $_language;
 
 // set some template and layout variables
 
-$SMARTY->assign_by_ref('_LANG', $_LANG);
-$SMARTY->assign_by_ref('LANGDEFS', $LANGDEFS);
-$SMARTY->assign_by_ref('_ui_language', $LMS->ui_lang);
-$SMARTY->assign_by_ref('_language', $LMS->lang);
+$SMARTY->assignByRef('_LANG', $_LANG);
+$SMARTY->assignByRef('LANGDEFS', $LANGDEFS);
+$SMARTY->assignByRef('_ui_language', $LMS->ui_lang);
+$SMARTY->assignByRef('_language', $LMS->lang);
 $SMARTY->template_dir = getcwd();
 $SMARTY->compile_dir = SMARTY_COMPILE_DIR;
 @include('locale/'.$LMS->ui_lang.'/strings.php');
 
 $layout['lmsv'] = '1.11-cvs';
 
-$SMARTY->assign_by_ref('layout', $layout);
+$SMARTY->assignByRef('layout', $layout);
 
 header('X-Powered-By: LMS/'.$layout['lmsv']);
 
@@ -114,6 +115,8 @@ if($customerid = $LMS->GetNodeOwner($LMS->GetNodeIDByIP($_SERVER['REMOTE_ADDR'])
 {
 	$balance = $LMS->GetCustomerBalanceList($customerid);
 	$customerinfo = $LMS->GetCustomer($customerid);
+
+    $customerinfo['tariffsvalue'] = $LMS->GetCustomerTariffsValue($customerid);
 }
 
 $SMARTY->assign('customerinfo', $customerinfo);

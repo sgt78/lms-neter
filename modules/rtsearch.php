@@ -66,7 +66,7 @@ function RTSearch($search, $order='createtime,desc')
 		$where[] = 't.customerid = '.intval($search['customerid']);
 	if(!empty($search['subject']))
 		$where[] = 't.subject ?LIKE? '.$DB->Escape('%'.$search['subject'].'%');
-	if(isset($search['state']))
+	if(!empty($search['state']))
 	{
 		if($search['state'] == '-1')
 			$where[] = 'state != '.RT_RESOLVED;
@@ -85,17 +85,20 @@ function RTSearch($search, $order='createtime,desc')
 		$where[] = 'queueid IN ('.implode(',', $search['queue']).')';
 	elseif(!empty($search['queue']))
 		$where[] = 'queueid = '.intval($search['queue']);
-	
+	if(isset($search['catids']))
+		$where[] = 'tc.categoryid IN ('.implode(',', $search['catids']).')';
+
 	if(isset($where))
 		$where = ' WHERE '.implode($op, $where);
 
-	if($result = $DB->GetAll('SELECT t.id, t.customerid, t.subject, t.state, t.owner AS ownerid, 
+	if($result = $DB->GetAll('SELECT DISTINCT t.id, t.customerid, t.subject, t.state, t.owner AS ownerid, 
 			users.name AS ownername, CASE WHEN customerid = 0 THEN t.requestor ELSE '
 			.$DB->Concat('UPPER(customers.lastname)',"' '",'customers.name').'
 			END AS requestor, t.requestor AS req, 
 			t.createtime, (SELECT MAX(createtime) FROM rtmessages 
 				WHERE t.id = ticketid) AS lastmodified 
 			FROM rttickets t
+			LEFT JOIN rtticketcategories tc ON t.id = tc.ticketid 
 			LEFT JOIN users ON (t.owner = users.id) 
 			LEFT JOIN customers ON (t.customerid = customers.id)'
 			.(isset($where) ? $where : '') 
@@ -119,6 +122,8 @@ function RTSearch($search, $order='createtime,desc')
 	return $result;
 }
 
+$categories = $LMS->GetCategoryListByUser($AUTH->id);
+
 $layout['pagetitle'] = trans('Ticket Search');
 
 if(isset($_POST['search']))
@@ -139,7 +144,8 @@ if(isset($_GET['state']))
 		'email' => '',
 		'owner' => '0',
 		'queue' => '0',
-		'uptime' => ''
+		'uptime' => '',
+		'catids' => NULL
 		);
 }
 
@@ -162,8 +168,22 @@ if(isset($search) || isset($_GET['s']))
 		if(sizeof($queues) != $DB->GetOne('SELECT COUNT(*) FROM rtqueues'))
 			$search['queue'] = $queues;
 	}
-	elseif(!$LMS->GetUserRightsRT($AUTH->id, $search['queue']))
-		$error['queue'] = trans('You have no privileges to review this queue!');
+	else
+		if (is_array($search['queue']))
+			foreach($search['queue'] as $queue)
+			{
+				if(!$LMS->GetUserRightsRT($AUTH->id, $queue))
+					$error['queue'] = trans('You have no privileges to review this queue!');
+			}
+		else
+			if(!$LMS->GetUserRightsRT($AUTH->id, $search['queue']))
+				$error['queue'] = trans('You have no privileges to review this queue!');
+
+	if(!isset($search['categories']))
+		$search['catids'] = NULL;
+	else
+		foreach($search['categories'] as $catid => $val)
+			$search['catids'][] = $catid;
 
 	if(!$error)
 	{
@@ -196,10 +216,20 @@ if(isset($search) || isset($_GET['s']))
 		die;
 	}
 }
+else
+{
+	foreach($categories as $category)
+	{
+		$category['checked'] = true;
+		$ncategories[] = $category;
+	}
+	$categories = $ncategories;
+}
 
 $SESSION->save('backto', $_SERVER['QUERY_STRING']);
 
 $SMARTY->assign('queuelist', $LMS->GetQueueNames());
+$SMARTY->assign('categories', $categories);
 $SMARTY->assign('userlist', $LMS->GetUserNames());
 $SMARTY->assign('customerlist', $LMS->GetAllCustomerNames());
 $SMARTY->assign('search', isset($search) ? $search : NULL);

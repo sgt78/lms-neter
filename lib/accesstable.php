@@ -47,7 +47,7 @@ $access['table'][5]['name']		= trans('customers management');
 $access['table'][5]['allow_reg']	= '^((customer|document)(add|edit|info|infoshort|list|del|print|search|warn|cutoffstop|group)|documentgen|documentview|nodewarn|choosenode)$';
 
 $access['table'][6]['name'] 		= trans('nodes management');
-$access['table'][6]['allow_reg']  	= '^(node(add|info|infoshort|list|listshort|scan|search|del|edit|print|warn)|choose(mac|ip))$';
+$access['table'][6]['allow_reg']  	= '^(node(add|info|infoshort|list|listshort|scan|search|del|edit|print|warn)|choose(mac|ip|location))$';
 
 $access['table'][7]['name']    	     	= trans('traffic stats');
 $access['table'][7]['allow_reg']	= '^(traffic|traffic(print|graph))$';
@@ -56,7 +56,7 @@ $access['table'][8]['name']         	= trans('messaging (email, sms)');
 $access['table'][8]['allow_reg']    	= '^message(add|list|info)$';
 
 $access['table'][9]['name']         	= trans('Helpdesk (RT) administration');
-$access['table'][9]['allow_reg']    	= '^(rtsearch|rtprint|(rtqueue|rtticket|rtmessage|rtnote)(add|del|edit|info|view|list|print))$';
+$access['table'][9]['allow_reg']    	= '^(rtsearch|rtprint|(rtqueue|rtticket|rtmessage|rtnote|rtcategory)(add|del|edit|info|view|list|print))$';
 
 $access['table'][10]['name']        	= trans('Helpdesk (RT) operation');
 $access['table'][10]['allow_reg']   	= '^(rtsearch|rtqueue(list|info|view)|(rtticket|rtmessage|rtnote)(add|edit|info|view|del|print))$';
@@ -68,7 +68,7 @@ $access['table'][12]['name']        	= trans('configuration');
 $access['table'][12]['allow_reg']   	= '^(((host|config|numberplan|taxrate|state|division|cashsource)(list|edit|add|del|load))|((promotion|promotionschema)(list|edit|add|del|set|info)))$';
 
 $access['table'][13]['name']        	= trans('networks and devices management');
-$access['table'][13]['allow_reg']   	= '^((net|netdev|ewxch)(info|list|edit|add|del|cmp|map|remap|search)|choose(mac|ip)|ewxnodelist|ewxdevlist)$';
+$access['table'][13]['allow_reg']   	= '^((net|netdev|ewxch)(info|list|edit|add|del|cmp|map|remap|search)|choose(mac|ip)|ewxnodelist|ewxdevlist|chooselocation)$';
 
 $access['table'][14]['name']        	= trans('timetable management');
 $access['table'][14]['allow_reg']   	= '^(event(list|edit|add|del|info|print|search)|choosecustomer)$';
@@ -99,6 +99,12 @@ $access['table'][22]['allow_reg']	= '^(voipimport|voipaccount(list|search|info|a
 
 $access['table'][23]['name']		= trans('Userpanel management');
 $access['table'][23]['allow_reg']	= '^userpanel$';
+
+$access['table'][24]['name']		= trans('system information hiding');
+$access['table'][24]['privilege']	= 'hide_sysinfo';
+
+$access['table'][25]['name']		= trans('links hiding');
+$access['table'][25]['privilege']	= 'hide_links';
 
 $access['table'][253]['name']		= trans('users edition and addition forbidden');
 $access['table'][253]['deny_reg']	= '^(user(add|del|edit|passwd))$';
