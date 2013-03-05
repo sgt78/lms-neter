@@ -251,7 +251,7 @@ while (my $row = $dbq->fetchrow_hashref())
 
 $dbq->finish();
 
-$dbq = $dbase->prepare("SELECT ipaddr, mac, access, ownerid FROM nodes");
+$dbq = $dbase->prepare("SELECT ipaddr, mac, access, ownerid FROM vnodes");
 $dbq->execute();
 my %maclist;
 my %accesslist;
@@ -295,7 +295,10 @@ foreach my $key (@networks)
 				{
 					if(!$lock_na || ($accesslist{$ipaddr} eq 1))
 					{
-						print MACSFILE $ipbin." -t nat -A ".$chain." -s ".$ipaddr." -m mac --mac-source ".$maclist{$ipaddr}." -j RETURN\n";
+						foreach my $mac (split ',', $maclist{$ipaddr})
+						{
+							print MACSFILE $ipbin." -t nat -A ".$chain." -s ".$ipaddr." -m mac --mac-source ".$mac." -j RETURN\n";
+						}
 					}
 				}
 			}

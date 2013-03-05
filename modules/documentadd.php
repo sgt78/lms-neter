@@ -34,23 +34,26 @@ function plugin($template, $customer)
 	global $_DOC_DIR;
 
 	$result = '';
-	
+
+	// xajax response object, can be used in the plugin
+	$JSResponse = new xajaxResponse();
+
 	// read template information
-	@include(DOC_DIR.'/templates/'.$template.'/info.php');
+	if (file_exists($file = DOC_DIR.'/templates/'.$template.'/info.php'))
+	    include($file);
 	// call plugin
-	@include(DOC_DIR.'/templates/'.$engine['name'].'/'.$engine['plugin'].'.php');
-	
-	// xajax response
-	$objResponse = new xajaxResponse();
-	$objResponse->addAssign("plugin", "innerHTML", $result);
-	return $objResponse;
+	if (!empty($engine['plugin']) && file_exists($file = DOC_DIR.'/templates/'.$engine['name'].'/'.$engine['plugin'].'.php'))
+	    include($file);
+
+	$JSResponse->addAssign('plugin', 'innerHTML', $result);
+	return $JSResponse;
 }
 
 $xajax = new xajax();
 //$xajax->debugOn();
 $xajax->errorHandlerOn();
 $xajax->registerFunction("plugin");
-$xajax->processRequests();						
+$xajax->processRequests();
 
 $SMARTY->assign('xajax', $xajax->getJavascript('img/', 'xajax.js'));
 /* end AJAX plugin stuff */
@@ -66,12 +69,12 @@ if(isset($_POST['document']))
 	{
 		$SESSION->redirect('?'.$SESSION->get('backto'));
 	}
-	
+
 	$document['customerid'] = isset($_POST['customerid']) ? intval($_POST['customerid']) : intval($_POST['customer']);
-	
+
 	if(!$LMS->CustomerExists(intval($document['customerid'])))
 		$error['customer'] = trans('Customer not selected!');
-	
+
 	if(!$document['type'])
 		$error['type'] = trans('Document type is required!');
 
@@ -98,7 +101,7 @@ if(isset($_POST['document']))
     		$error['number'] = trans('Document number must be an integer!');
 	elseif($LMS->DocumentExists($document['number'], $document['type'], $document['numberplanid']))
 		$error['number'] = trans('Document with specified number exists!');
-	
+
 	if($document['fromdate'])
 	{
 		$date = explode('/',$document['fromdate']);
@@ -120,7 +123,7 @@ if(isset($_POST['document']))
 	}
 	else 
 		$document['todate'] = 0;
-	
+
 	if($document['fromdate'] > $document['todate'] && $document['todate']!=0)
 		$error['todate'] = trans('Start date can\'t be greater than end date!');
 
@@ -136,13 +139,13 @@ if(isset($_POST['document']))
 		else // upload errors
 			switch($_FILES['file']['error'])
 			{
-				case 1: 			
+				case 1:
 				case 2: $error['file'] = trans('File is too large.'); break;
 				case 3: $error['file'] = trans('File upload has finished prematurely.'); break;
 				case 4: $error['file'] = trans('Path to file was not specified.'); break;
 				default: $error['file'] = trans('Problem during file upload.'); break;
 			}
-	}	
+	}
 	elseif($document['templ'])
 	{
 		$result = '';
@@ -151,11 +154,11 @@ if(isset($_POST['document']))
 		// set some variables (needed in e.g. plugin)
 		$SMARTY->assign_by_ref('document', $document);
 		// call plugin
-		if(isset($engine['plugin']) && file_exists(DOC_DIR.'/templates/'.$engine['name'].'/'.$engine['plugin'].'.php'))
+		if(!empty($engine['plugin']) && file_exists(DOC_DIR.'/templates/'.$engine['name'].'/'.$engine['plugin'].'.php'))
 			include(DOC_DIR.'/templates/'.$engine['name'].'/'.$engine['plugin'].'.php');
 		// get plugin content
 		$SMARTY->assign('plugin_result', $result);
-		
+
 		// run template engine
 		if(file_exists(DOC_DIR.'/templates/'.$engine['engine'].'/engine.php'))
 			require_once(DOC_DIR.'/templates/'.$engine['engine'].'/engine.php');
@@ -168,12 +171,12 @@ if(isset($_POST['document']))
 			$fh = fopen($file, 'w');
 			fwrite($fh, $output);
 			fclose($fh);
-			
+
 			$document['md5sum'] = md5_file($file);
 			$document['contenttype'] = $engine['content_type'];
 			$document['filename'] = $engine['output'];
 		}
-		else
+		else if (empty($error))
 			$error['template'] = trans('Problem during file generation!');
 	}
 	else
@@ -181,25 +184,34 @@ if(isset($_POST['document']))
 
 	if(!$error)
 	{
-		$path = DOC_DIR.'/'.substr($document['md5sum'],0,2);
-		@mkdir($path, 0700);
-		$newfile = $path.'/'.$document['md5sum'];
-		if(!file_exists($newfile))
-		{
+        if ($DB->GetOne('SELECT docid FROM documentcontents WHERE md5sum = ?',
+            array($document['md5sum']))
+        ) {
+			$error['file'] = trans('Specified file exists in database!');
+        }
+        else {
+    		$path = DOC_DIR.'/'.substr($document['md5sum'],0,2);
+	    	@mkdir($path, 0700);
+		    $newfile = $path.'/'.$document['md5sum'];
+
+            // If we have a file with specified md5sum, we assume
+            // it's here because of some error. We can replace it with
+            // the new document file
+		    if (file_exists($newfile)) {
+		        @unlink($newfile);
+		    }
 			if(!@rename($file, $newfile))
 				$error['file'] = trans('Can\'t save file in "$0" directory!', $path);
 		}
-		else
-			$error['file'] = trans('Specified file exists in database!');
 	}
-	
+
 	if(!$error)
 	{
 		$customer = $LMS->GetCustomer($document['customerid']);
 		$time = time();
-		
+
 		$DB->BeginTrans();
-		
+
 		$DB->Execute('INSERT INTO documents (type, number, numberplanid, cdate, 
 			customerid, userid, name, address, zip, city, ten, ssn, divisionid, closed)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -218,7 +230,7 @@ if(isset($_POST['document']))
 				$customer['divisionid'],
 				isset($document['closed']) ? 1 : 0
 			));
-		
+
 		$docid = $DB->GetLastInsertID('documents');
 
 		$DB->Execute('INSERT INTO documentcontents (docid, title, fromdate, todate, filename, contenttype, md5sum, description)
@@ -234,19 +246,19 @@ if(isset($_POST['document']))
 			));
 
 		// template post-action
-		if(isset($engine['post-action']) && file_exists(DOC_DIR.'/templates/'.$engine['name'].'/'.$engine['post-action'].'.php'))
+		if(!empty($engine['post-action']) && file_exists(DOC_DIR.'/templates/'.$engine['name'].'/'.$engine['post-action'].'.php'))
 			include(DOC_DIR.'/templates/'.$engine['name'].'/'.$engine['post-action'].'.php');
 
 		$DB->CommitTrans();
-		
+
 		if(!isset($document['reuse']))
 		{
 			if(isset($_GET['print']))
 				$SESSION->save('documentprint', $docid);
-			
+
 			$SESSION->redirect('?m=documentlist&c='.$document['customerid']);
 		}
-		
+
 		unset($document['title']);
 		unset($document['number']);
 		unset($document['description']);

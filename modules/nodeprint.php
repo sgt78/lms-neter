@@ -57,7 +57,7 @@ switch($type)
 				switch($order)
 				{
 					case 'name':
-						$sqlord = ' ORDER BY nodes.name';
+						$sqlord = ' ORDER BY vnodes.name';
 					break;
 					case 'id':
 						$sqlord = ' ORDER BY id';
@@ -81,17 +81,17 @@ switch($type)
 				
 				$group = $_POST['customergroup'];
 
-				$nodelist = $DB->GetAll('SELECT nodes.id AS id, inet_ntoa(ipaddr) AS ip, mac, 
-					    nodes.name AS name, nodes.info AS info, 
-					    COALESCE(SUM(value), 0.00)/(CASE COUNT(DISTINCT nodes.id) WHEN 0 THEN 1 ELSE COUNT(DISTINCT nodes.id) END) AS balance, '
+				$nodelist = $DB->GetAll('SELECT vnodes.id AS id, inet_ntoa(ipaddr) AS ip, mac, 
+					    vnodes.name AS name, vnodes.info AS info, 
+					    COALESCE(SUM(value), 0.00)/(CASE COUNT(DISTINCT vnodes.id) WHEN 0 THEN 1 ELSE COUNT(DISTINCT vnodes.id) END) AS balance, '
 					    .$DB->Concat('UPPER(lastname)',"' '",'customers.name').' AS owner
-					    FROM nodes 
+					    FROM vnodes 
 					    LEFT JOIN customers ON (ownerid = customers.id)
 					    LEFT JOIN cash ON (cash.customerid = customers.id) 
 					    WHERE 1=1 '
 					    .($net ? ' AND ((ipaddr > '.$net['address'].' AND ipaddr < '.$net['broadcast'].') OR (ipaddr_pub > '.$net['address'].' AND ipaddr_pub < '.$net['broadcast'].'))' : '')
 					    .($group ? ' AND EXISTS (SELECT 1 FROM customerassignments WHERE customerid = ownerid)' : '')
-					    .' GROUP BY nodes.id, ipaddr, mac, nodes.name, nodes.info, customers.lastname, customers.name
+					    .' GROUP BY vnodes.id, ipaddr, mac, vnodes.name, vnodes.info, customers.lastname, customers.name
 					    HAVING SUM(value) < 0'
 					    .($sqlord != '' ? $sqlord.' '.$direction : ''));
 				

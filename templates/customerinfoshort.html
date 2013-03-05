@@ -2,11 +2,12 @@
 <!--// $Id$ //-->
 <html><head>
 <meta name="GENERATOR" content="LMS {$layout.lmsv}">
-<meta http-equiv="Content-Language" content="{$LANGDEFS.$_language.html}">
-<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+<meta http-equiv="Content-Language" content="{$LANGDEFS.$_ui_language.html}">
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_ui_language.charset}">
 <title>::: LMS :::</title>
 <link href="img/style.css" rel="stylesheet" type="text/css">
 <SCRIPT TYPE="text/javascript" SRC="img/autoiframe.js"></SCRIPT>
+<SCRIPT TYPE="text/javascript" SRC="img/common.js"></SCRIPT>
 </head>
 <body>
 <TABLE WIDTH="100%" CELLPADDING="3" id="table">
@@ -22,7 +23,7 @@
 		<TD WIDTH="1%">
 			{if $customerinfo.status eq "3"}<IMG src="img/customer.gif" alt="">{/if}
 			{if $customerinfo.status eq "2"}<IMG src="img/wait.gif" alt="">{/if}
-			{if $customerinfo.status eq "1"}<IMG src="img/unk.gif" alt="">{/if}			
+			{if $customerinfo.status eq "1"}<IMG src="img/unk.gif" alt="">{/if}
 		</TD>
 		<TD WIDTH="99%" COLSPAN="2">
 			{if $customerinfo.status eq "3"}<B>{t}connected<!singular>{/t}</B>{/if}
@@ -36,32 +37,32 @@
 		</TD>
 		<TD WIDTH="99%" COLSPAN="2" NOWRAP>
 			{$customerinfo.address}<BR>
-			{$customerinfo.zip} {$customerinfo.city}<BR>
-			{t}{$customerinfo.country}{/t}
+			{$customerinfo.zip} {$customerinfo.city}
 		</TD>
 	</TR>
-{if $customerinfo.contacts}
-	<TR>
-		<TD WIDTH="1%">
-			<IMG SRC="img/phone.gif" ALT="">
-		</TD>
-		<TD WIDTH="99%" COLSPAN="2">
-			{foreach from=$customerinfo.contacts item=item}
-		              {if $item.phone}{$item.phone}{if $item.name} ({$item.name|truncate:"40":"...":true}){/if}<BR>{/if}
-			{/foreach}
-		</TD>
-	</TR>
-{/if}
-{if $customerinfo.serviceaddr neq ""}
+{if $customerinfo.post_address neq ""}
 	<TR>
 		<TD WIDTH="1%" >
 			<IMG SRC="img/post.gif" ALT="">
 		</TD>
 		<TD WIDTH="99%" COLSPAN="2" NOWRAP>
-			{$customerinfo.serviceaddr|replace:"\n":"<BR>"}
+			{$customerinfo.post_address}<BR>
+			{$customerinfo.post_zip} {$customerinfo.post_city}
 		</TD>
 	</TR>
 {/if}
+{foreach from=$customerinfo.contacts item=item}
+	<TR>
+		<TD WIDTH="1%">
+			<IMG SRC="img/phone.gif" ALT="">
+		</TD>
+		<TD WIDTH="99%" COLSPAN="2" NOWRAP>
+		    {$item.phone}
+		    {if $item.typestr}[{$item.typestr}]{/if}
+		    {if $item.name} ({$item.name|truncate:"40":"...":true}){/if}
+		</TD>
+	</TR>
+{/foreach}
 {if $customerinfo.email neq ""}
 	<TR>
 		<TD WIDTH="1%" >
@@ -174,7 +175,7 @@
 </TABLE>
 <SCRIPT TYPE="text/javascript">
 <!--
-parent.document.getElementById('autoiframe').width = document.getElementById('table').offsetWidth;
+autoiframe_setsize(document.getElementById('table').offsetWidth);
 //-->
 </SCRIPT>
 </BODY>

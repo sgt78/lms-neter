@@ -67,6 +67,7 @@ function GetRecipients($filter, $type=MSG_MAIL)
 	#GROUP BY customerid
 		$smstable = 'JOIN (SELECT phone AS phone, customerid
 				FROM customercontacts '.$smswhere.'
+				AND (type & '.CONTACT_MOBILE.') = '.CONTACT_MOBILE.'
 			AND name NOT LIKE "%#no_sms%") x ON (x.customerid = c.id)';
 	}
 	
@@ -108,7 +109,7 @@ function GetRecipients($filter, $type=MSG_MAIL)
 function GetRecipient($customerid, $type=MSG_MAIL)
 {
 	global $DB, $LMS, $CONFIG, $LANGDEFS, $_language;
-	
+
 	if($type == MSG_SMS)
 	{
 		if ($CONFIG['database']['type'] == 'postgres')
@@ -126,10 +127,12 @@ function GetRecipient($customerid, $type=MSG_MAIL)
 		$smstable = 'JOIN (SELECT phone, customerid
 				FROM customercontacts 
 				WHERE customerid = '.$customerid . $smswhere
+				.'AND (type & '.CONTACT_MOBILE.') = '.CONTACT_MOBILE
 				.'AND name NOT LIKE "%#no_sms%" ORDER BY phone 
+				ORDER BY phone LIMIT 1
 			) x ON (x.customerid = c.id)';
 	}
-	
+
 	return $DB->GetAll('SELECT c.id, email, pin, '
 		.($type==MSG_SMS ? 'x.phone, ': '')
 		.$DB->Concat('c.lastname', "' '", 'c.name').' AS customername,
@@ -159,7 +162,7 @@ function BodyVars(&$body, $data)
 			foreach($last10_array as $r)
 			{
 				$last10 .= date("Y/m/d | ", $r['time']);
-				$last10 .= sprintf("%20s | ", sprintf($LANGDEFS[$LMS->lang][money_format],$r['value']));
+				$last10 .= sprintf("%20s | ", sprintf($LANGDEFS[$LMS->ui_lang][money_format],$r['value']));
 				$last10 .= $r['comment']."\n";
 			}
 		}

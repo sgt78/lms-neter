@@ -334,7 +334,7 @@ while (my $row = $dbq->fetchrow_hashref())
 
 	print DHCPDCONF "\n";
 
-	my $dbq2 = $dbase->prepare("SELECT id, name, ipaddr, mac, ownerid FROM nodes ORDER BY ipaddr");
+	my $dbq2 = $dbase->prepare("SELECT id, name, ipaddr, mac, ownerid FROM vnodes ORDER BY ipaddr");
 	$dbq2->execute();
 	while (my $row2 = $dbq2->fetchrow_hashref())
 	{
@@ -360,26 +360,32 @@ while (my $row = $dbq->fetchrow_hashref())
 				my $ngateway = $ini->val("dhcp:$ipaddr",'gateway') || '';
 				my $ndns = $ini->val("dhcp:$ipaddr",'dns') || '';
 				my $nwins = $ini->val("dhcp:$ipaddr",'wins') || '';
-				print DHCPDCONF "\t\thost $row2->{'name'} { # ID: $row2->{'id'}\n";
-				print DHCPDCONF "\t\t\thardware ethernet $row2->{'mac'};\n";
-				print DHCPDCONF "\t\t\tfixed-address $row2->{'ipaddr'};\n";
-				if($ndomain)
+				my @macs = split ',', $row2->{'mac'};
+				my $idx = 0;
+				foreach my $mac (@macs)
 				{
-					print DHCPDCONF "\t\t\toption domain-name \"$ndomain\";\n";
+					print DHCPDCONF "\t\thost $row2->{'name'}".($idx>0 ? "-$idx" : "")." { # ID: $row2->{'id'}\n";
+					print DHCPDCONF "\t\t\thardware ethernet $mac;\n";
+					print DHCPDCONF "\t\t\tfixed-address $row2->{'ipaddr'};\n";
+					if($ndomain)
+					{
+						print DHCPDCONF "\t\t\toption domain-name \"$ndomain\";\n";
+					}
+					if($ngateway)
+					{
+						print DHCPDCONF "\t\t\toption routers $ngateway;\n";
+					}
+					if($ndns)
+					{
+						print DHCPDCONF "\t\t\toption domain-name-servers $ndns;\n";
+					}
+					if($nwins)
+					{
+						print DHCPDCONF "\t\t\toption netbios-name-servers $nwins;\n";
+					}
+					print DHCPDCONF "\t\t}\n";
+					$idx++;
 				}
-				if($ngateway)
-				{
-					print DHCPDCONF "\t\t\toption routers $ngateway;\n";
-				}
-				if($ndns)
-				{
-					print DHCPDCONF "\t\t\toption domain-name-servers $ndns;\n";
-				}
-				if($nwins)
-				{
-					print DHCPDCONF "\t\t\toption netbios-name-servers $nwins;\n";
-				}
-				print DHCPDCONF "\t\t}\n";
 			}
 		}
 	}

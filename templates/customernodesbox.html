@@ -6,7 +6,7 @@ function setstatus(access)
 		document.custnodeslist.action = '?m=nodeset&access=1';
 	else
 		document.custnodeslist.action = '?m=nodeset';
-	
+
 	document.custnodeslist.submit();
 }
 function setwarning(warning)
@@ -15,7 +15,7 @@ function setwarning(warning)
 		document.custnodeslist.action = '?m=nodewarn&warning=1';
 	else
 		document.custnodeslist.action = '?m=nodewarn';
-	
+
 	document.custnodeslist.submit();
 }
 function setgroup(act)
@@ -58,12 +58,13 @@ function CheckAllN2()
 		    <FORM method="post" action="" name="custnodeslist">
 		    <TABLE cellpadding="5" cellspacing="0" WIDTH="100%">
 		        <TR class="dark">
-	                    <TD WIDTH="{math equation="x-y" x=95 y=$ewx}%" class="fleftu"><B>{t}Name:{/t}</B></TD>
+	                <TD WIDTH="{math equation="x-y" x=95 y=$ewx}%" class="fleftu"><B>{t}Name:{/t}</B></TD>
 		    	    <TD WIDTH="1%" class="fbt" align="right">{t}ID:{/t}</TD>
 			    {if $ewx}
 		    	    <TD WIDTH="1%" class="fbt" align="right">{t}Channel:{/t}</TD>
 			    {/if}
 		    	    <TD WIDTH="1%" class="fbt" align="right">{t}Address:{/t}</TD>
+		    	    <TD WIDTH="1%" class="fbt" align="right">{t}MAC:{/t}</TD>
 		    	    <TD WIDTH="1%" class="fbt" align="right">{t}Groups:{/t}</TD>
 		    	    <TD WIDTH="1%" class="fbt" align="right">{t}Network:{/t}</TD>
 		    	    <TD WIDTH="1%" class="frightu">&nbsp;</TD>
@@ -79,10 +80,10 @@ function CheckAllN2()
 					<img src="img/node_off.gif" ALT="" {tip 0=$customernodes[customernodes].lastonlinedate text="Last online: \$0"}>
 				    {else}
 				        <img src="img/node_on.gif" ALT="" {tip 0="on-line" text="Last online: \$0"}>
-				    {/if}															
+				    {/if}
 				{else}
 				<img src="img/node_unk.gif" alt="">
-				{/if}	
+				{/if}
 				<B>{$customernodes[customernodes].name}</B>
 				{if $customernodes[customernodes].location}<BR>
 				<NOBR>{$customernodes[customernodes].location|truncate:60:"...":true}</NOBR>
@@ -95,15 +96,24 @@ function CheckAllN2()
 				({$customernodes[customernodes].id|string_format:"%04d"})
 			    </TD>
 			    {if $ewx}
-		    	    <TD onClick="return self.location.href='?m=nodeinfo&id={$customernodes[customernodes].id}';">
-				{if $customernodes[customernodes].channelname}
-				<a href="?m=ewxchinfo&id={$customernodes[customernodes].channelid}"><b>{$customernodes[customernodes].channelname|truncate:20:"...":true}</b></a>
-				{elseif $customernodes[customernodes].channelid}<b>[{$customernodes[customernodes].channelid|string_format:"%04d"}]</b>
-				{/if}
-			    </TD>
+		    	    <TD onClick="return self.location.href='?m=nodeinfo&id={$customernodes[customernodes].id}';" align="right" NOWRAP>
+    				{if $customernodes[customernodes].channelname}
+	        	    <a href="?m=ewxchinfo&id={$customernodes[customernodes].channelid}">{$customernodes[customernodes].channelname|truncate:30:"...":true}</a>
+			    	{elseif $customernodes[customernodes].channelid}
+				        {if !$customernodes[customernodes].cid}
+    				    <a href="?m=ewxchinfo&id=0">[{t}default{/t}]</a>
+	    			    {else}
+		    		    [{$customernodes[customernodes].channelid|string_format:"%04d"}]
+				        {/if}
+				    {/if}
+				    {if $customernodes[customernodes].downceil}({$customernodes[customernodes].downceil}/{$customernodes[customernodes].upceil|default:0} kbit/s){/if}
+			        </TD>
 			    {/if}
 			    <TD onClick="return self.location.href='?m=nodeinfo&id={$customernodes[customernodes].id}';" align="right" NOWRAP>
-				{$customernodes[customernodes].ip} {if $customernodes[customernodes].ip_pub != "0.0.0.0"} ({$customernodes[customernodes].ip_pub}){/if} / {$customernodes[customernodes].mac}
+				{$customernodes[customernodes].ip} {if $customernodes[customernodes].ip_pub != "0.0.0.0"} ({$customernodes[customernodes].ip_pub}){/if}
+			    </TD>
+		    	    <TD onClick="return self.location.href='?m=nodeinfo&id={$customernodes[customernodes].id}';">
+				{$customernodes[customernodes].mac|replace:",":"<BR>"}
 			    </TD>
 			    <TD align="right" NOWRAP>
 				{if $customernodes[customernodes].gcount}
@@ -149,7 +159,7 @@ function CheckAllN2()
 				</SELECT>
 				{/if}
 			    </TD>
-			    <TD CLASS="ftop" ALIGN="right" COLSPAN="2">
+			    <TD CLASS="ftop" ALIGN="right" COLSPAN="3">
 			        <NOBR><A href="javascript:CheckAllN2();">{t}Check All{/t}</A><INPUT TYPE="checkbox" NAME="allbox" onClick="CheckAllN();" VALUE="Check All Boxes" CHECKED></NOBR>
                             </TD>
 			</TR>

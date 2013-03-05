@@ -1966,7 +1966,6 @@ if(isset($_GET['l']) && sprintf('%d',$_GET['l']) > 0 && sprintf('%d',$_GET['l'])
 		$customeradd['rbe'] = '';
 		$customeradd['icn'] = '';
 		$customeradd['notes'] = '';
-		$customeradd['serviceaddr'] = '';
 		$customeradd['info'] = '';
 		$customeradd['message'] = '';
 		$customeradd['pin'] = mt_rand(10000,99999);
@@ -1989,7 +1988,8 @@ if(isset($_GET['l']) && sprintf('%d',$_GET['l']) > 0 && sprintf('%d',$_GET['l'])
 			'settlement' => 0, 
 			'nodes' => NULL
 		));
-		$DB->Execute('INSERT INTO customercontacts (customerid, phone) VALUES (?, ?)', array($id, $customeradd['phone']));
+		$DB->Execute('INSERT INTO customercontacts (customerid, phone)
+		    VALUES (?, ?)', array($id, $customeradd['phone']));
 
 		$nodes = mt_rand(1,2);
 		for($j = 0; $j < $nodes; $j++)
@@ -1999,7 +1999,7 @@ if(isset($_GET['l']) && sprintf('%d',$_GET['l']) > 0 && sprintf('%d',$_GET['l'])
 			$startip++;
 			$nodedata['ipaddr'] = long2ip($startip);
 			$nodedata['ipaddr_pub'] = '0.0.0.0';
-			$nodedata['mac'] = makemac();
+			$nodedata['macs'] = (array) makemac();
 			$nodedata['ownerid'] = $id;
 			$nodedata['access'] = 1;
 			$nodedata['warning'] = 0;
@@ -2048,10 +2048,11 @@ if(isset($_GET['l']) && sprintf('%d',$_GET['l']) > 0 && sprintf('%d',$_GET['l'])
 			$LMS->NetDevLinkNode($nodes,$i);
 			$nodes--;
 		}
+/*
 		$ip['ownerid'] = 0;
 		$ip['ipaddr'] = long2ip($startip);
 		$ip['ipaddr_pub'] = '0.0.0.0';
-		$ip['mac'] = makemac();
+		$ip['macs'] = (array) makemac();
 		$ip['name'] = 'SWITCH_'.$i;
 		$ip['access'] = 1;
 		$ip['warning'] = 0;
@@ -2059,6 +2060,7 @@ if(isset($_GET['l']) && sprintf('%d',$_GET['l']) > 0 && sprintf('%d',$_GET['l'])
 		$ip['passwd'] = '';
 		$ip['netdev'] = $i;
 		$startip++;
+*/
 		if($i>1)
 			$LMS->NetDevLink($i,$i-1);
 	}
@@ -2072,7 +2074,7 @@ if(isset($_GET['l']) && sprintf('%d',$_GET['l']) > 0 && sprintf('%d',$_GET['l'])
 		
 		$inv['number'] = 0;
 		$inv['paytime'] = 14;
-		$inv['paytype'] = trans('CASH');
+		$inv['paytype'] = 1; // cash
 		$inv['numberplanid'] = 0;
 		$inv['type'] = DOC_INVOICE;
 		$inv['cdate'] = time() - ($_GET['i']+1) * 86400;

@@ -111,6 +111,10 @@
                     <member>zip - kod pocztowy</member>
                     <member>city - nazwa miasta</member>
 		    <member>countryid - identyfikator kraju</member>
+		    <member>post_address - adres korespondencyjny (ulica, nr domu, nr lokalu)</member>
+                    <member>post_zip - adres korespondencyjny - kod pocztowy</member>
+                    <member>post_city - adres korespondencyjny - nazwa miasta</member>
+		    <member>post_countryid - adres korespondencyjny - identyfikator kraju</member>
                     <member>ten - numer identyfikacji podatkowej NIP</member>
                     <member>ssn - numer PESEL</member>
 		    <member>regon - numer REGON</member>
@@ -118,7 +122,6 @@
 		    <member>icn - numer dowodu osobistego</member>
                     <member>info - dodatkowe informacje</member>
                     <member>notes - notatki</member>
-		    <member>serviceaddr - adres do dorêczeñ (np. na faktury)</member>
                     <member>creationdate - czas utworzenia wpisu</member>
                     <member>moddate - czas modyfikacji</member>
                     <member>creatorid - identyfikator u¿ytkownika tworz±cego wpis</member>
@@ -127,7 +130,10 @@
                     <member>message - komunikat do wy¶wietlenia przy w³±czonych ostrze¿eniach</member>
 		    <member>cutoffstop - data, do której blokowanie klientów zad³u¿onych jest wy³±czone</member>
 		    <member>paytime - termin p³atno¶ci faktur</member>
-		    <member>paytype - typ p³atno¶ci faktur</member>
+		    <member>paytype - typ p³atno¶ci faktur (zobacz tabela documents)</member>
+		    <member>einvoice - zezwolenie na faktury elektroniczne</member>
+		    <member>invoicenotice - zezwolenie na dostarczanie faktur poczt± elektroniczn±</member>
+		    <member>mailingnotice - zezwolenie na dostarczanie informacji poczt± elektroniczn± lub smsem</member>
                </simplelist>
           </sect2>
           <sect2 id="customergroups">
@@ -191,6 +197,7 @@
 		    <member>clients - liczba klientów (radius)</member>
 		    <member>secret - has³o (radius)</member>
 		    <member>community - community SNMP</member>
+		    <member>channelid - identyfikator kana³u STM (tabela ewx_channels)</member>
 	    </simplelist>
           </sect2>
           <sect2 id="netlinks">
@@ -209,7 +216,6 @@
                <simplelist>
                     <member>id - identyfikator</member>
                     <member>name - nazwa</member>
-                    <member>mac - adres MAC</member>
                     <member>ipaddr - adres IP</member>
                     <member>passwd - has³o np. pppoe</member>
                     <member>ownerid - identyfikator w³a¶ciciela ('0' - dla adresu urz±dzenia)</member>
@@ -226,8 +232,18 @@
                     <member>warning - ostrzegaj/nie ostrzegaj (1/0)</member>
                     <member>lastonline - znacznik czasu ostatniej obecno¶ci w sieci</member>
                     <member>info - informacje dodatkowe</member>
-		    <member>location - lokalizacja (adres)</member>
+		    <member>location_address - adres lokalizacji - ulica, nr domu, nr lokalu</member>
+		    <member>location_zip - adres lokalizacji - kod pocztowy</member>
+		    <member>location_city - adres lokalizacji - miasto</member>
 		    <member>nas - flaga NAS (0/1)</member>
+               </simplelist>
+          </sect2>
+          <sect2 id="macs">
+               <title>Adresy MAC ('macs')</title>
+               <simplelist>
+                    <member>id - identyfikator</member>
+                    <member>mac - adres MAC</member>
+                    <member>nodeid - identyfikator adresu IP (tabela nodes)</member>
                </simplelist>
           </sect2>
 	    <sect2 id="nodegroups">
@@ -282,6 +298,7 @@
                     <member>customerid - identyfikator klienta</member>
                     <member>hash - unikalny skrót danych operacji</member>
 		    <member>sourceid - identyfikator ¼ród³a importu</member>
+		    <member>sourcefileid - identyfikator pliku importu</member>
                     <member>closed - status operacji</member>
                </simplelist>
           </sect2>
@@ -291,6 +308,15 @@
                     <member>id - identyfikator</member>
                     <member>name - nazwa</member>
                     <member>description - opis</member>
+               </simplelist>
+          </sect2>
+          <sect2 id="sourcefiles">
+               <title>Paczki importu ('sourcefiles')</title>
+               <simplelist>
+                    <member>id - identyfikator</member>
+                    <member>name - nazwa pliku</member>
+                    <member>idate - data/czas importu</member>
+                    <member>userid - identyfikator u¿ytkownika</member>
                </simplelist>
           </sect2>
           <sect2 id="taxes">
@@ -312,6 +338,7 @@
                     <member>type - typ taryfy (zobacz lib/definitions.php)</member>
                     <member>value - kwota</member>
                     <member>taxid - identyfikator stawki podatkowej</member>
+                    <member>period - okres p³atno¶ci (dla podanej kwoty taryfy)</member>
                     <member>prodid - numer PKWiU</member>
                     <member>uprate - gwarantowany upload</member>
                     <member>upceil - maksymalny upload</member>
@@ -378,6 +405,8 @@
                     <member>discount - warto¶æ procentowa rabatu</member>
                     <member>suspended - zawieszenie p³atno¶ci (1 - tak, 0 - nie)</member>
 		    <member>settlement - rozliczenie okresu niepe³nego (1 - tak, 0 - nie)</member>
+		    <member>paytype - identyfikator typu p³atno¶ci faktury</member>
+		    <member>numberplanid - identyfikator planu numeracyjnego</member>
                </simplelist>
           </sect2>
 	<sect2 id="nodeassignments">
@@ -448,7 +477,7 @@
 		    <member>type - typ dokumentu (1-faktura, 2-KP)</member>
                     <member>cdate - data wystawienia</member>
                     <member>paytime - termin p³atno¶ci (ilo¶æ dni)</member>
-                    <member>paytype - rodzaj p³atno¶ci (przelew/gotówka/etc.)</member>
+                    <member>paytype - rodzaj p³atno¶ci (1-gotówka, 2-przelew, 3-przelew/gotówka, 4-karta, 5-kompensata, 6-barter, 7-umowa)</member>
                     <member>customerid - identyfikator klienta-nabywcy</member>
 		    <member>userid - identyfikator u¿ytkownika wystawiaj±cego dokument</member>
 		    <member>divisionid - identyfikator firmy (oddzia³u)</member>
@@ -535,6 +564,7 @@
 			<member>customerid - identyfikator klienta</member>
 			<member>phone - numer telefoniczny</member>
 			<member>name - nazwa/opis kontaktu</member>
+			<member>type - typ kontaktu (suma flag: 1-komórka, 2-fax)</member>
 		</simplelist>
 	</sect2>
 	<sect2 id="domains">
@@ -817,7 +847,7 @@
 			<member>inv_author - wystawca faktury</member>
 			<member>inv_cplace - miejsce wystawienia faktury</member>
 			<member>inv_paytime - termin p³atno¶ci faktury</member>
-			<member>inv_paytype - sposób p³atno¶ci faktury</member>
+			<member>inv_paytype - sposób p³atno¶ci faktury (zobacz tabela documents)</member>
 		</simplelist>
 	</sect2>
 	<sect2 id="messages">

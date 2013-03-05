@@ -309,8 +309,9 @@
                </listitem>
                <listitem>
                    <para>paytype</para>
-                   <para>Payment type. Default: 'TRANSFER'.</para>
-                   <para>Example: <prompt>paytype = 'CASH'</prompt></para>
+                   <para>Payment type identifier (1-cash, 2-transfer, 3-transfer/cash,
+                        4-card, 5-compensation, 6-barter, 7-contract). Default: 2 (transfer).</para>
+                   <para>Example: <prompt>paytype = 1</prompt></para>
                </listitem>
                <listitem>
                    <para>numberplan</para>
@@ -687,6 +688,7 @@
 			<member>%ipub - public IP address,</member>
 			<member>%id - node ID,</member>
 			<member>%m - MAC address,</member>
+			<member>%ms - comma-separated list of node MACs</member>
 			<member>%n - host name,</member>
 			<member>%p - node (computer) password,</member>
 			<member>%port - device's port to which computer is connected,</member>
@@ -842,9 +844,14 @@
                    <para>If enabled (yes, true) hosts IPs (customers nodes) will be ignored (omitted). Default: no</para>
                    <para>Example: <prompt>skip_host_ips = yes</prompt></para>
                </listitem>
+               <listitem>
+                   <para>multi_mac</para>
+                   <para>If enabled (yes, true) each IP-MAC pair will be listed. Default: no</para>
+                   <para>Example: <prompt>multi_mac = yes</prompt></para>
+               </listitem>
               </itemizedlist>
               </sect3>
-          </sect2>         
+          </sect2>
           <sect2 id="daemon-traffic" xreflabel="traffic">
           <title>Traffic</title>
               <sect3 id="traffic-desc">
@@ -1171,8 +1178,8 @@ $IPT -t filter -I FORWARD -p tcp -s %i -m limit --limit %plimit/s -m ipp2p --ipp
                <listitem>
                    <para>conf-reverse-entry</para>
                    <para>Entry for each reverse zone in main configuration file.
-                   Default: 'zone "%c.in-addr.arpa" { \ntype master; \nfile "reverse/%i"; \nnotify yes; \n}; \n'.</para>
-                   <para>Example: <prompt>conf-revers-entry = 'zone "%c.in-addr.arpa" { \n\ttype master; \n\tfile "reverse/%i"; \n\tnotify yes; \n}; \n'</prompt></para>
+                   Default: 'zone "%c.in-addr.arpa" { \ntype master; \nfile "reverse/%c"; \nnotify yes; \n}; \n'.</para>
+                   <para>Example: <prompt>conf-revers-entry = 'zone "%c.in-addr.arpa" { \n\ttype master; \n\tfile "reverse/%c"; \n\tnotify yes; \n}; \n'</prompt></para>
                </listitem>
                <listitem>
                    <para>command</para>

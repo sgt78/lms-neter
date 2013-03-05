@@ -414,11 +414,12 @@ CLASS="PROMPT"
 ><P
 >paytype</P
 ><P
->Payment type. Default: 'TRANSFER'.</P
+>Payment type identifier (1-cash, 2-transfer, 3-transfer/cash,
+                        4-card, 5-compensation, 6-barter, 7-contract). Default: 2 (transfer).</P
 ><P
 >Example: <SAMP
 CLASS="PROMPT"
->paytype = 'CASH'</SAMP
+>paytype = 1</SAMP
 ></P
 ></LI
 ><LI
@@ -1199,6 +1200,10 @@ BORDER="0"
 ></TR
 ><TR
 ><TD
+>%ms - comma-separated list of node MACs</TD
+></TR
+><TR
+><TD
 >%n - host name,</TD
 ></TR
 ><TR
@@ -1574,6 +1579,17 @@ CLASS="PROMPT"
 >Example: <SAMP
 CLASS="PROMPT"
 >skip_host_ips = yes</SAMP
+></P
+></LI
+><LI
+><P
+>multi_mac</P
+><P
+>If enabled (yes, true) each IP-MAC pair will be listed. Default: no</P
+><P
+>Example: <SAMP
+CLASS="PROMPT"
+>multi_mac = yes</SAMP
 ></P
 ></LI
 ></UL
@@ -2134,11 +2150,11 @@ CLASS="PROMPT"
 >conf-reverse-entry</P
 ><P
 >Entry for each reverse zone in main configuration file.
-                   Default: 'zone "%c.in-addr.arpa" { \ntype master; \nfile "reverse/%i"; \nnotify yes; \n}; \n'.</P
+                   Default: 'zone "%c.in-addr.arpa" { \ntype master; \nfile "reverse/%c"; \nnotify yes; \n}; \n'.</P
 ><P
 >Example: <SAMP
 CLASS="PROMPT"
->conf-revers-entry = 'zone "%c.in-addr.arpa" { \n\ttype master; \n\tfile "reverse/%i"; \n\tnotify yes; \n}; \n'</SAMP
+>conf-revers-entry = 'zone "%c.in-addr.arpa" { \n\ttype master; \n\tfile "reverse/%c"; \n\tnotify yes; \n}; \n'</SAMP
 ></P
 ></LI
 ><LI

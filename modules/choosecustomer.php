@@ -28,10 +28,8 @@ $layout['pagetitle'] = trans('Select customer');
 
 $p = isset($_GET['p']) ? $_GET['p'] : '';
 
-if(!$p)
-	$SMARTY->assign('js', 'var targetfield = window.opener.targetfield;');
-elseif($p == 'main')
-	$SMARTY->assign('js', 'var targetfield = parent.targetfield;');
+if(!$p || $p == 'main')
+	$SMARTY->assign('js', 'var targetfield = window.parent.targetfield;');
 
 if(isset($_POST['searchcustomer']) && $_POST['searchcustomer'])
 {
@@ -77,7 +75,8 @@ if(isset($where_node) || isset($where_cust))
 				.'ORDER BY customername LIMIT 15) c'))
 	{
 		foreach($customerlist as $idx => $row)
-			$customerlist[$idx]['nodes'] = $DB->GetAll('SELECT id, name, mac, inet_ntoa(ipaddr) AS ip, inet_ntoa(ipaddr_pub) AS ip_pub FROM nodes WHERE ownerid=? ORDER BY name',array($row['id']));
+			$customerlist[$idx]['nodes'] = $DB->GetAll('SELECT id, name, mac, inet_ntoa(ipaddr) AS ip, inet_ntoa(ipaddr_pub) AS ip_pub FROM vnodes 
+									WHERE ownerid=? ORDER BY name',array($row['id']));
 	}
 
 	$SMARTY->assign('customerlist', $customerlist);

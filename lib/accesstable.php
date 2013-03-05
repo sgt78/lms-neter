@@ -32,13 +32,13 @@ $access['table'][0]['name']		= trans('full access');
 $access['table'][0]['allow_reg']	= '^.*$';
 
 $access['table'][1]['name']		= trans('read only (excluding helpdesk)');
-$access['table'][1]['allow_reg']	= '^((user|balance|db|net|node|netdev|tariff|payment|invoice|note|customer|customergroup|nodegroup|account|voipaccount|alias|domain|record|config|event|taxrate|document|numberplan|state|host|division|message|ewxch)(list|info|view|search|balance|infoshort)|netdevmap|eventprint|nodelistshort|number|cashsourcelist)$';
+$access['table'][1]['allow_reg']	= '^((user|balance|db|net|node|netdev|tariff|payment|invoice|note|customer|customergroup|nodegroup|account|voipaccount|alias|domain|record|config|event|taxrate|document|numberplan|state|host|division|message|ewxch)(list|info|view|search|balance|infoshort)|ewxnodelist|ewxdevlist|netdevmap|eventprint|nodelistshort|number|cashsourcelist|customerassignmentinfo)$';
 
 $access['table'][2]['name']		= trans('nodes connection/disconnection');
 $access['table'][2]['allow_reg']	= '^nodeset$';
 
 $access['table'][3]['name']		= trans('finances management');
-$access['table'][3]['allow_reg']	= '^((tariff)(add|info|list|move|edit|del)|(payment)(add|del|edit|info|list)|(balance|customerbalance)(new|add|ok|del|list)|(cashreg(list|add|edit|del|info))|(invoice|invoice(list|new|edit|del|note|report|paid))|(note|note(list|add|edit|del|paid))|number|export|print|cashimport|cashimportparser|customerassignments|customerassignmentsedit)$';
+$access['table'][3]['allow_reg']	= '^((tariff|customerassignment)(add|info|list|move|edit|del)|(payment)(add|del|edit|info|list)|(balance|customerbalance)(new|add|ok|del|list)|(cashreg(list|add|edit|del|info))|(invoice|invoice(list|new|edit|del|note|report|paid))|(note|note(list|add|edit|del|paid))|number|export|print|cashimport|cashimportparser|cashpackagedel)$';
 
 $access['table'][4]['name']    		= trans('configuration reload');
 $access['table'][4]['allow_reg']    	= '^reload$';
@@ -68,10 +68,10 @@ $access['table'][12]['name']        	= trans('configuration');
 $access['table'][12]['allow_reg']   	= '^((host|config|numberplan|taxrate|state|division|cashsource)(list|edit|add|del|load))$';
 
 $access['table'][13]['name']        	= trans('networks and devices management');
-$access['table'][13]['allow_reg']   	= '^((net|netdev|ewxch)(info|list|edit|add|del|cmp|map|remap|search)|choose(mac|ip))$';
+$access['table'][13]['allow_reg']   	= '^((net|netdev|ewxch)(info|list|edit|add|del|cmp|map|remap|search)|choose(mac|ip)|ewxnodelist|ewxdevlist)$';
 
 $access['table'][14]['name']        	= trans('timetable management');
-$access['table'][14]['allow_reg']   	= '^(event(list|edit|add|del|info|print|search))$';
+$access['table'][14]['allow_reg']   	= '^(event(list|edit|add|del|info|print|search)|choosecustomer)$';
 
 $access['table'][15]['name']        	= trans('daemon management and configuration');
 $access['table'][15]['allow_reg']   	= '^((daemoninstance|daemonconfig)(list|edit|add|del|view))$';
@@ -92,7 +92,7 @@ $access['table'][20]['name']		= trans('nodes to groups assignment');
 $access['table'][20]['allow_reg']	= '^nodegroup$';
 
 $access['table'][21]['name']		= trans('summaries hiding');
-$access['table'][21]['privillege']	= 'hide_summaries';
+$access['table'][21]['privilege']	= 'hide_summaries';
 
 $access['table'][22]['name']		= trans('voip accounts management');
 $access['table'][22]['allow_reg']	= '^(voipimport|voipaccount(list|search|info|add|del|edit))$';

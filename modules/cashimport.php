@@ -70,11 +70,11 @@ if(isset($_GET['action']) && $_GET['action'] == 'csv')
 elseif(isset($_GET['action']) && $_GET['action'] == 'txt')
 {
 	$filename = 'import-'.date('Y-m-d').'.txt';
-	
+
 	header('Content-Type: text/plain');
         header('Content-Disposition: attachment; filename='.$filename);
 	header('Pragma: public');
-	
+
 	if($importlist = $DB->GetAll('SELECT i.date, i.value, i.customer, i.description,
 		i.customerid, '.$DB->Concat('UPPER(lastname)',"' '",'name').' AS customername
 		FROM cashimport i
@@ -114,12 +114,12 @@ elseif(isset($_POST['marks']))
 	$customers = $_POST['customer'];
 	foreach($marks as $id)
 	{
-		if(isset($customers[$id]))
+		if(!empty($customers[$id]))
 		{
 			$DB->BeginTrans();
-	
+
 			$import = $DB->GetRow('SELECT * FROM cashimport WHERE id = ?', array($id));
-	
+
 			$balance['time'] = $import['date'];
 			$balance['type'] = 1;
 			$balance['value'] = $import['value'];
@@ -127,7 +127,7 @@ elseif(isset($_POST['marks']))
 			$balance['comment'] = $import['description'];
 			$balance['importid'] = $import['id'];
 			$balance['sourceid'] = $import['sourceid'];
-			
+
 			if($import['value'] > 0 && isset($CONFIG['finances']['cashimport_checkinvoices'])
 				&& chkconfig($CONFIG['finances']['cashimport_checkinvoices']))
 			{
@@ -146,11 +146,12 @@ elseif(isset($_POST['marks']))
 				{
 					foreach($invoices as $inv)
 						$sum += $inv['value'];
-					
-					$bval = $LMS->GetCustomerBalance($customers[$id]);
-					$value = $bval + $import['value'] + $sum;
 
-					foreach($invoices as $inv)
+					$bval = $LMS->GetCustomerBalance($customers[$id]);
+					$value = f_round($bval + $import['value'] + $sum);
+
+					foreach($invoices as $inv) {
+					    $inv['value'] = f_round($inv['value']);
 						if($inv['value'] > $value)
 							break;
 						else
@@ -159,12 +160,13 @@ elseif(isset($_POST['marks']))
 							$DB->Execute('UPDATE documents SET closed = 1
 								WHERE id = ? OR reference = ?',
 								array($inv['id'], $inv['id']));
-							
+
 							$value -= $inv['value'];
 						}
+				    }
 				}
 			}
-			
+
 			$DB->Execute('UPDATE cashimport SET closed = 1 WHERE id = ?', array($id));
 			$LMS->AddBalance($balance);
 
@@ -200,9 +202,16 @@ if($importlist = $DB->GetAll('SELECT i.*, c.divisionid
 
 $SESSION->save('backto', $_SERVER['QUERY_STRING']);
 
+$sourcefiles = $DB->GetAll('SELECT s.*, u.name AS username,
+    (SELECT COUNT(*) FROM cashimport WHERE sourcefileid = s.id) AS count
+    FROM sourcefiles s
+    LEFT JOIN users u ON (u.id = s.userid)
+    ORDER BY s.idate DESC LIMIT 10');
+
 $SMARTY->assign('divisions', $divisions);
 $SMARTY->assign('listdata', isset($listdata) ? $listdata : NULL);
 $SMARTY->assign('error', $error);
+$SMARTY->assign('sourcefiles', $sourcefiles);
 $SMARTY->assign('customerlist', $LMS->GetCustomerNames());
 $SMARTY->assign('sourcelist', $DB->GetAll('SELECT id, name FROM cashsources ORDER BY name'));
 $SMARTY->display('cashimport.html');

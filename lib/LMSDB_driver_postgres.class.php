@@ -60,7 +60,7 @@ class LMSDB_driver_postgres extends LMSDB_common
 			($dbname != '' ? 'dbname='.$dbname : '')
 		));
 
-		if($this->_dblink = @pg_connect($cstring))
+		if($this->_dblink = @pg_connect($cstring, PGSQL_CONNECT_FORCE_NEW))
 		{
 			$this->_dbhost = $dbhost;
 			$this->_dbuser = $dbuser;
@@ -145,7 +145,7 @@ class LMSDB_driver_postgres extends LMSDB_common
 */	
 	function _driver_now()
 	{
-		return 'EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))';
+		return 'EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))::integer';
 	}
 
 	function _driver_like()
@@ -191,11 +191,16 @@ class LMSDB_driver_postgres extends LMSDB_common
 	{
 		return TRUE;
 	}
-																		
+
 	function _driver_lastinsertid($table)
 	{
                return $this->GetOne('SELECT currval(\''.$table.'_id_seq\')');
-	}       
+	}
+
+	function _driver_groupconcat($field, $separator = ',')
+	{
+		return 'array_to_string(array_agg('.$field.'), \''.$separator.'\')';
+	}
 }
 
 ?>

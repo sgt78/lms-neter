@@ -94,7 +94,7 @@ void reload(GLOBAL *g, struct dhcp_module *dhcp)
 	fh = fopen(dhcp->file, "w");
 	if(fh)
 	{
-		res = g->db_query(g->conn, "SELECT name, mac, ipaddr, ipaddr_pub, ownerid FROM nodes ORDER BY ipaddr");
+		res = g->db_query(g->conn, "SELECT name, mac, ipaddr, ipaddr_pub, ownerid FROM vnodes ORDER BY ipaddr");
 
 		for(i=0; i<g->db_nrows(res); i++)
 		{
@@ -259,13 +259,24 @@ void reload(GLOBAL *g, struct dhcp_module *dhcp)
 			
 			for(j=0; j<nh; j++) 
 			{
+				char *mac;
 				if( (hosts[j].ipaddr & netmask) == network ) {
-					s = strdup(dhcp->host);
-					g->str_replace(&s, "%i", inet_ntoa(inet_makeaddr(htonl(hosts[j].ipaddr), 0)));
-					g->str_replace(&s, "%n", hosts[j].name);
-					g->str_replace(&s, "%m", hosts[j].mac);
-					fprintf(fh, "%s\n", s);
-					free(s);
+					for(mac = strtok(hosts[j].mac, ","), m = 0; mac != NULL; mac = strtok(NULL, ","), m++)
+					{
+						static char name_suffix[12];
+						char *name;
+						name_suffix[0] = 0;
+						if (m > 0)
+							sprintf(name_suffix, "-%d", m);
+						name = g->str_concat(hosts[j].name, name_suffix);
+						s = strdup(dhcp->host);
+						g->str_replace(&s, "%i", inet_ntoa(inet_makeaddr(htonl(hosts[j].ipaddr), 0)));
+						g->str_replace(&s, "%n", name);
+						g->str_replace(&s, "%m", mac);
+						fprintf(fh, "%s\n", s);
+						free(s);
+						free(name);
+					}
 				}
 			}
 			

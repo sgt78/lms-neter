@@ -375,7 +375,7 @@ $menu = array(
 			'submenu' => array(
 				array(
 					'name' => trans('List'),
-					'link' => '?m=documentlist',
+					'link' => '?m=documentlist&init=1',
 					'tip' => trans('List of documents'),
 					'prio' => 10,
 				),
@@ -685,7 +685,7 @@ $menu = array(
 		'documentation' => array(
 			'name' => trans('Documentation'),
 			'img' => 'doc.gif',
-			'link' => (is_dir('doc/html/'.$LMS->lang) ? 'doc/html/'.$LMS->lang.'/' : 'doc/html/en/'),
+			'link' => (is_dir('doc/html/'.$LMS->ui_lang) ? 'doc/html/'.$LMS->ui_lang.'/' : 'doc/html/en/'),
 			'tip' => trans('Documentation'),
 			'accesskey' => 'h',
 			'prio' => 70,

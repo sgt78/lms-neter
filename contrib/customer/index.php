@@ -89,16 +89,18 @@ require_once(LIB_DIR.'/LMS.class.php');
 
 $AUTH = NULL;
 $LMS = new LMS($DB, $AUTH, $CONFIG);
+$LMS->ui_lang = $_ui_language;
 $LMS->lang = $_language;
 
 // set some template and layout variables
 
 $SMARTY->assign_by_ref('_LANG', $_LANG);
 $SMARTY->assign_by_ref('LANGDEFS', $LANGDEFS);
+$SMARTY->assign_by_ref('_ui_language', $LMS->ui_lang);
 $SMARTY->assign_by_ref('_language', $LMS->lang);
 $SMARTY->template_dir = getcwd();
 $SMARTY->compile_dir = SMARTY_COMPILE_DIR;
-@include('locale/'.$LMS->lang.'/strings.php');
+@include('locale/'.$LMS->ui_lang.'/strings.php');
 
 $layout['lmsv'] = '1.11-cvs';
 

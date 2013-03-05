@@ -1987,14 +1987,14 @@ sql_hostnames: localhost
 sql_database: lms
 # MySQL
 #sql_engine: mysql
-#sql_select: SELECT password FROM passwd, domains WHERE domainid = domains.id
-#       AND login='%u' AND domains.name ='%r' AND type & 2 = 2
-#       AND (expdate = 0 OR expdate > UNIX_TIMESTAMP())
+#sql_select: SELECT p.password FROM passwd p, domains d WHERE p.domainid = d.id
+#       AND p.login='%u' AND d.name ='%r' AND p.type & 2 = 2
+#       AND (p.expdate = 0 OR p.expdate > UNIX_TIMESTAMP())
 # PostgreSQL
 sql_engine: pgsql
-sql_select: SELECT password FROM passwd, domains WHERE domainid = domains.id
-        AND login='%u' AND domains.name ='%r' AND type & 2 = 2
-        AND (expdate = 0 OR expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
+sql_select: SELECT p.password FROM passwd p, domains d WHERE p.domainid = d.id
+        AND p.login='%u' AND d.name ='%r' AND p.type & 2 = 2
+        AND (p.expdate = 0 OR p.expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
 
 # authpgsqlrc (lub authmysqlrc) (Courier):
 
@@ -2012,19 +2012,19 @@ PGSQL_USERNAME          lms
 PGSQL_PASSWORD          hasło
 #MYSQL_DATABASE         lms
 PGSQL_DATABASE          lms
-#MYSQL_SELECT_CLAUSE SELECT login, \
-#       password, '', 104, 104, '/var/spool/mail/virtual', \
-#       CONCAT(domains.name,'/',login,'/'), '', login, '' \
-#       FROM passwd, domains WHERE domainid = domains.id \
-#       AND login = '$(local_part)' AND domains.name = '$(domain)' \
-#       AND type & 2 = 2 AND (expdate = 0 OR expdate > UNIX_TIMESTAMP())
-PGSQL_SELECT_CLAUSE SELECT login, \
-        password, '', 104, 104, '/var/spool/mail/virtual', \
-        domains.name || '/' || login ||'/', '', login, '' \
-        FROM passwd, domains WHERE domainid = domains.id
-        AND login = '$(local_part)' AND domains.name = '$(domain)' \
-        AND type & 2 = 2 \
-        AND (expdate = 0 OR expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
+#MYSQL_SELECT_CLAUSE SELECT p.login, \
+#       p.password, '', 104, 104, '/var/spool/mail/virtual', \
+#       CONCAT(d.name,'/', p.login, '/'), '', p.login, '' \
+#       FROM passwd p, domains d WHERE p.domainid = d.id \
+#       AND p.login = '$(local_part)' AND d.name = '$(domain)' \
+#       AND p.type & 2 = 2 AND (p.expdate = 0 OR p.expdate > UNIX_TIMESTAMP())
+PGSQL_SELECT_CLAUSE SELECT p.login, \
+        p.password, '', 104, 104, '/var/spool/mail/virtual', \
+        d.name || '/' || p.login ||'/', '', p.login, '' \
+        FROM passwd p, domains d WHERE p.domainid = d.id
+        AND p.login = '$(local_part)' AND d.name = '$(domain)' \
+        AND p.type & 2 = 2 \
+        AND (p.expdate = 0 OR p.expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
 
 # main.cf (Postfix):
 
@@ -2051,16 +2051,16 @@ hosts = localhost
 dbname = lms
 
 # MySQL
-#query = SELECT CONCAT(domains.name,'/',login,'/')
-#       FROM passwd, domains WHERE domainid = domains.id
-#       AND login = '%u' AND domains.name = '%d'
-#       AND type & 2 = 2 AND (expdate = 0 OR expdate > UNIX_TIMESTAMP())
+#query = SELECT CONCAT(d.name,'/', p.login, '/')
+#       FROM passwd p, domains d WHERE p.domainid = d.id
+#       AND p.login = '%u' AND d.name = '%d'
+#       AND p.type & 2 = 2 AND (p.expdate = 0 OR p.expdate > UNIX_TIMESTAMP())
 # PostgresSQL
-query = SELECT domains.name || '/' || login || '/'
-        FROM passwd, domains WHERE domainid = domains.id
-        AND login = '%u' AND domains.name = '%d'
-        AND type & 2 = 2
-        AND (expdate = 0 OR expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
+query = SELECT d.name || '/' || p.login || '/'
+        FROM passwd p, domains d WHERE p.domainid = d.id
+        AND p.login = '%u' AND d.name = '%d'
+        AND p.type & 2 = 2
+        AND (p.expdate = 0 OR p.expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
 
 # virtual_alias_maps.cf (Postfix):
 
@@ -2069,35 +2069,35 @@ password = hasło
 hosts = localhost
 dbname = lms
 # MySQL
-#query = SELECT mail_forward
+#query = SELECT p.mail_forward
 #       FROM passwd p
-#       JOIN domains pd ON (p.domainid = pd.id)
-#       WHERE p.login = '%u' AND pd.name = '%d'
-#               AND type & 2 = 2 AND mail_forward != ''
-#               AND (expdate = 0 OR expdate > UNIX_TIMESTAMP())
+#       JOIN domains d ON (p.domainid = d.id)
+#       WHERE p.login = '%u' AND d.name = '%d'
+#               AND p.type & 2 = 2 AND p.mail_forward != ''
+#               AND (p.expdate = 0 OR p.expdate > UNIX_TIMESTAMP())
 #       UNION
 #       SELECT CASE WHEN aa.mail_forward != '' THEN aa.mail_forward ELSE CONCAT(p.login, '@', pd.name) END
 #       FROM aliases a
 #       JOIN domains ad ON (a.domainid = ad.id)
 #       JOIN aliasassignments aa ON (aa.aliasid = a.id)
-#       LEFT JOIN passwd p ON (aa.accountid = p.id AND (expdate = 0 OR expdate > UNIX_TIMESTAMP()))
+#       LEFT JOIN passwd p ON (aa.accountid = p.id AND (p.expdate = 0 OR p.expdate > UNIX_TIMESTAMP()))
 #       LEFT JOIN domains pd ON (p.domainid = pd.id)
 #       WHERE a.login = '%u' AND ad.name = '%d'
 #               AND (aa.mail_forward != '' OR p.id IS NOT NULL)
 # PostgreSQL
-query = SELECT mail_forward
+query = SELECT p.mail_forward
         FROM passwd p
-        JOIN domains pd ON (p.domainid = pd.id)
-        WHERE p.login = '%u' AND pd.name = '%d'
-                AND type & 2 = 2 AND mail_forward != ''
-                AND (expdate = 0 OR expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
+        JOIN domains d ON (p.domainid = d.id)
+        WHERE p.login = '%u' AND d.name = '%d'
+                AND p.type & 2 = 2 AND p.mail_forward != ''
+                AND (p.expdate = 0 OR p.expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
         UNION
         SELECT CASE WHEN aa.mail_forward != '' THEN aa.mail_forward ELSE p.login || '@' || pd.name END
         FROM aliases a
         JOIN domains ad ON (a.domainid = ad.id)
         JOIN aliasassignments aa ON (aa.aliasid = a.id)
         LEFT JOIN passwd p ON (aa.accountid = p.id
-                AND (expdate = 0 OR expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))))
+                AND (p.expdate = 0 OR p.expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))))
         LEFT JOIN domains pd ON (p.domainid = pd.id)
         WHERE a.login = '%u' AND ad.name = '%d'
                 AND (aa.mail_forward != '' OR p.id IS NOT NULL)
@@ -2109,19 +2109,19 @@ password = hasło
 hosts = localhost
 dbname = lms
 # MySQL
-#query = SELECT mail_bcc FROM passwd, domains
-#       WHERE domainid = domains.id
-#               AND login = '%u' AND domains.name = '%d'
-#               AND type & 2 = 2
-#               AND mail_bcc != ''
-#               AND (expdate = 0 OR expdate > UNIX_TIMESTAMP())
+#query = SELECT p.mail_bcc FROM passwd p, domains d
+#       WHERE p.domainid = d.id
+#           AND p.login = '%u' AND d.name = '%d'
+#               AND p.type & 2 = 2
+#               AND p.mail_bcc != ''
+#               AND (p.expdate = 0 OR p.expdate > UNIX_TIMESTAMP())
 # PostgreSQL
-query = SELECT mail_bcc FROM passwd, domains
-        WHERE domainid = domains.id
-                AND login = '%u' AND domains.name = '%d'
-                AND type & 2 = 2
-                AND mail_bcc != ''
-                AND (expdate = 0 OR expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
+query = SELECT p.mail_bcc FROM passwd p, domains d
+        WHERE p.domainid = d.id
+                AND p.login = '%u' AND d.name = '%d'
+                AND p.type & 2 = 2
+                AND p.mail_bcc != ''
+                AND (p.expdate = 0 OR p.expdate > EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0)))
 
    Następny przykład podesłany przez bart'a przedstawia instalację i
    konfigurację serwera pure-ftpd w dystrybucji Gentoo z wykorzystaniem
@@ -3114,8 +3114,10 @@ http://www.naszasiec.pl/
        Pozwala na ustalenie terminu płatności w dniach. Domyślnie: 14
        Przykład: deadline = 7
      * paytype (opcjonalny)
-       Określa rodzaj płatności. Domyślnie: 'TRANSFER'
-       Przykład: paytype = 'PRZELEW'
+       Identyfikator rodzaju płatności (1-gotówka, 2-przelew,
+       3-przelew/gotówka, 4-karta, 5-kompensata, 6-barter, 7-umowa).
+       Domyślnie: 2 (przelew)
+       Przykład: paytype = 1
      * comment (opcjonalny)
        Opis pozycji na fakturze za naliczane zobowiązanie
        Domyślnie: 'Tariff %tariff subscription for period %period'
@@ -4456,8 +4458,9 @@ Rozdział 6. LMS Daemon
        Termin płatności podany w dniach. Domyślnie: 14.
        Przykład: deadline = 21
      * paytype
-       Rodzaj płatności. Domyślnie: 'TRANSFER'.
-       Przykład: paytype = 'GOTÓWKA'
+       Rodzaj płatności (1-gotówka, 2-przelew, 3-przelew/gotówka, 4-karta,
+       5-kompensata, 6-barter, 7-umowa). Domyślnie: 2 (przelew).
+       Przykład: paytype = 1
      * numberplan
        ID planu numeracyjnego faktur. Domyślnie: 0 (plan domyślny).
        Przykład: numberplan = 0
@@ -4756,7 +4759,8 @@ Rozdział 6. LMS Daemon
    %i - adres IP,
    %ipub - publiczny adres IP,
    %id - ID komputera,
-   %m - mac adres,
+   %m - adres MAC,
+   %ms - lista adresów MAC hosta (oddzielonych przecinkiem),
    %n - nazwa komputera,
    %p - hasło,
    %port - nr portu w urządzeniu, do którego jest podłączony komputer,
@@ -4884,6 +4888,12 @@ Rozdział 6. LMS Daemon
        komputerów. Uwaga: włączenie obu opcji 'skip_*_ips' spowoduje ich
        zignorowanie. Domyślnie: nie
        Przykład: skip_host_ips = tak
+     * multi_mac
+       Jeśli ustawiona na tak (yes, true) utworzony zostanie osobny rekord
+       dla każdego adresu MAC. Tzn. jeśli komputer ma przypisanych kilka
+       adresów MAC, będzie utworzone tyle wpisów ile tych adresów.
+       Domyślnie: nie
+       Przykład: multi_mac = tak
      * share_netdev_pubip
        Włączenie tej opcji (yes, true, 1) spowoduje, że wszystkim adresom
        urządzenia sieciowego, które nie posiadają zdefiniowanego adresu
@@ -5171,8 +5181,9 @@ $TC qdisc add dev $LAN parent 1:%h esfq perturb 10 hash dst
      * filter_up
        Definicja filtrów dla ruchu w kierunku od hosta. Dozwolone zmienne:
        %n - nazwa hosta, %if - nazwa interfejsu sieci, %i16 - ostatni
-       oktet adresu szesnastkowo, %i - adres, %m - mac, %o1, %o2, %o3, %o4
-       - oktety adresu dziesiętnie, %h - uchwyt klasy, %x - uchwyt filtra
+       oktet adresu szesnastkowo, %i - adres, %m - mac, %ms - lista
+       adresów MAC hosta (oddzielonych przecinkiem), %o1, %o2, %o3, %o4 -
+       oktety adresu dziesiętnie, %h - uchwyt klasy, %x - uchwyt filtra
        (unikalny numer reguły). Domyślnie:
 # %n
 $IPT -t mangle -A LIMITS -s %i -j MARK --set-mark %x
@@ -5182,8 +5193,9 @@ $TC filter add dev $WAN parent 2:0 protocol ip prio 5 handle %x fw flowid 2:%h
      * filter_down
        Definicja filtrów dla ruchu w kierunku do hosta. Dozwolone zmienne:
        %n - nazwa hosta, %if - nazwa interfejsu sieci, %i16 - ostatni
-       oktet adresu szesnastkowo, %i - adres, %m - mac, %o1, %o2, %o3, %o4
-       - oktety adresu dziesiętnie, %h - uchwyt klasy, %x - uchwyt filtra
+       oktet adresu szesnastkowo, %i - adres, %m - mac, %ms - lista
+       adresów MAC hosta (oddzielonych przecinkiem), %o1, %o2, %o3, %o4 -
+       oktety adresu dziesiętnie, %h - uchwyt klasy, %x - uchwyt filtra
        (unikalny numer reguły). Domyślnie:
 $IPT -t mangle -A LIMITS -d %i -j MARK --set-mark %x
 $TC filter add dev $LAN parent 1:0 protocol ip prio 5 handle %x fw flowid 1:%h
@@ -5192,16 +5204,18 @@ $TC filter add dev $LAN parent 1:0 protocol ip prio 5 handle %x fw flowid 1:%h
      * climit
        Definicja reguły dla limitu połączeń hosta. Dozwolone zmienne: %n -
        nazwa hosta, %if - nazwa interfejsu sieci, %i16 - ostatni oktet
-       adresu szesnastkowo, %i - adres, %m - mac, %o1, %o2, %o3, %o4 -
-       oktety adresu dziesiętnie, %climit - limit połączeń. Domyślnie:
+       adresu szesnastkowo, %i - adres, %m - mac, %ms - lista adresów MAC
+       hosta (oddzielonych przecinkiem), %o1, %o2, %o3, %o4 - oktety
+       adresu dziesiętnie, %climit - limit połączeń. Domyślnie:
 $IPT -t filter -I FORWARD -p tcp -s %i -m connlimit --connlimit-above %climit -j REJECT
 
        Przykład: climit = ""
      * plimit
        Definicja reguły dla limitu pakietów dla hosta. Dozwolone zmienne:
        %n - nazwa hosta, %if - nazwa interfejsu sieci, %i16 - ostatni
-       oktet adresu szesnastkowo, %i - adres, %m - mac, %o1, %o2, %o3, %o4
-       - oktety adresu dziesiętnie, %plimit - limit pakietów. Domyślnie:
+       oktet adresu szesnastkowo, %i - adres, %m - mac, %ms - lista
+       adresów MAC hosta (oddzielonych przecinkiem), %o1, %o2, %o3, %o4 -
+       oktety adresu dziesiętnie, %plimit - limit pakietów. Domyślnie:
 $IPT -t filter -I FORWARD -d %i -m limit --limit %plimit/s -j ACCEPT
 $IPT -t filter -I FORWARD -s %i -m limit --limit %plimit/s -j ACCEPT
 
@@ -5231,6 +5245,12 @@ $IPT -t filter -I FORWARD -s %i -m limit --limit %plimit/s -j ACCEPT
        zostanie potraktowana jako przeterminowana. Opcja działa w
        połączeniu z 'night_no_debtors'. Domyślnie: 0.
        Przykład: night_deadline = 7
+     * multi_mac
+       Jeśli ustawiona na tak (yes, true) utworzony zostanie osobny rekord
+       dla każdego adresu MAC. Tzn. jeśli komputer ma przypisanych kilka
+       adresów MAC, będzie utworzone tyle wpisów ile tych adresów.
+       Domyślnie: nie
+       Przykład: multi_mac = tak
      __________________________________________________________________
 
 6.2.12. Dns
@@ -5294,9 +5314,9 @@ $IPT -t filter -I FORWARD -s %i -m limit --limit %plimit/s -j ACCEPT
      * conf-reverse-entry
        Wpis dla każdej strefy odwr. w głównym pliku konfiguracyjnym.
        Domyślnie: 'zone "%c.in-addr.arpa" { \ntype master; \nfile
-       "reverse/%i"; \nnotify yes; \n}; \n'.
+       "reverse/%c"; \nnotify yes; \n}; \n'.
        Przykład: conf-revers-entry = 'zone "%c.in-addr.arpa" { \n\ttype
-       master; \n\tfile "reverse/%i"; \n\tnotify yes; \n}; \n'
+       master; \n\tfile "reverse/%c"; \n\tnotify yes; \n}; \n'
      * command
        Polecenie wykonywane po utworzeniu plików konf. Domyślnie: puste.
        Przykład: command = ""
@@ -6239,6 +6259,10 @@ Rozdział 7. Dla dociekliwych
    zip - kod pocztowy
    city - nazwa miasta
    countryid - identyfikator kraju
+   post_address - adres korespondencyjny (ulica, nr domu, nr lokalu)
+   post_zip - adres korespondencyjny - kod pocztowy
+   post_city - adres korespondencyjny - nazwa miasta
+   post_countryid - adres korespondencyjny - identyfikator kraju
    ten - numer identyfikacji podatkowej NIP
    ssn - numer PESEL
    regon - numer REGON
@@ -6246,7 +6270,6 @@ Rozdział 7. Dla dociekliwych
    icn - numer dowodu osobistego
    info - dodatkowe informacje
    notes - notatki
-   serviceaddr - adres do doręczeń (np. na faktury)
    creationdate - czas utworzenia wpisu
    moddate - czas modyfikacji
    creatorid - identyfikator użytkownika tworzącego wpis
@@ -6256,7 +6279,11 @@ Rozdział 7. Dla dociekliwych
    cutoffstop - data, do której blokowanie klientów zadłużonych jest
    wyłączone
    paytime - termin płatności faktur
-   paytype - typ płatności faktur
+   paytype - typ płatności faktur (zobacz tabela documents)
+   einvoice - zezwolenie na faktury elektroniczne
+   invoicenotice - zezwolenie na dostarczanie faktur pocztą elektroniczną
+   mailingnotice - zezwolenie na dostarczanie informacji pocztą
+   elektroniczną lub smsem
      __________________________________________________________________
 
 7.2.3. Grupy klientów ('customergroups')
@@ -6316,6 +6343,7 @@ Rozdział 7. Dla dociekliwych
    clients - liczba klientów (radius)
    secret - hasło (radius)
    community - community SNMP
+   channelid - identyfikator kanału STM (tabela ewx_channels)
      __________________________________________________________________
 
 7.2.8. Połączenia sieciowe ('netlinks')
@@ -6332,7 +6360,6 @@ Rozdział 7. Dla dociekliwych
 
    id - identyfikator
    name - nazwa
-   mac - adres MAC
    ipaddr - adres IP
    passwd - hasło np. pppoe
    ownerid - identyfikator właściciela ('0' - dla adresu urządzenia)
@@ -6350,11 +6377,20 @@ Rozdział 7. Dla dociekliwych
    warning - ostrzegaj/nie ostrzegaj (1/0)
    lastonline - znacznik czasu ostatniej obecności w sieci
    info - informacje dodatkowe
-   location - lokalizacja (adres)
+   location_address - adres lokalizacji - ulica, nr domu, nr lokalu
+   location_zip - adres lokalizacji - kod pocztowy
+   location_city - adres lokalizacji - miasto
    nas - flaga NAS (0/1)
      __________________________________________________________________
 
-7.2.10. Grupy komputerów ('nodegroups')
+7.2.10. Adresy MAC ('macs')
+
+   id - identyfikator
+   mac - adres MAC
+   nodeid - identyfikator adresu IP (tabela nodes)
+     __________________________________________________________________
+
+7.2.11. Grupy komputerów ('nodegroups')
 
    id - identyfikator
    name - nazwa
@@ -6362,20 +6398,20 @@ Rozdział 7. Dla dociekliwych
    description - opis
      __________________________________________________________________
 
-7.2.11. Grupy komputerów - powiązania ('nodegroupassignments')
+7.2.12. Grupy komputerów - powiązania ('nodegroupassignments')
 
    id - identyfikator rekordu
    nodegroupid - identyfikator grupy
    nodeid - identyfikator komputera
      __________________________________________________________________
 
-7.2.12. Typy NAS ('nastypes')
+7.2.13. Typy NAS ('nastypes')
 
    id - identyfikator rekordu
    name - nazwa typu urządzenia
      __________________________________________________________________
 
-7.2.13. Operacje finansowe ('cash')
+7.2.14. Operacje finansowe ('cash')
 
    id - identyfikator
    time - znacznik czasu zaksięgowania operacji
@@ -6392,7 +6428,7 @@ Rozdział 7. Dla dociekliwych
    comment - opis operacji
      __________________________________________________________________
 
-7.2.14. Import operacji finansowych ('cashimport')
+7.2.15. Import operacji finansowych ('cashimport')
 
    id - identyfikator
    date - znacznik czasu operacji
@@ -6402,17 +6438,26 @@ Rozdział 7. Dla dociekliwych
    customerid - identyfikator klienta
    hash - unikalny skrót danych operacji
    sourceid - identyfikator źródła importu
+   sourcefileid - identyfikator pliku importu
    closed - status operacji
      __________________________________________________________________
 
-7.2.15. Żródła importu ('cashsources')
+7.2.16. Żródła importu ('cashsources')
 
    id - identyfikator
    name - nazwa
    description - opis
      __________________________________________________________________
 
-7.2.16. Stawki podatkowe ('taxes')
+7.2.17. Paczki importu ('sourcefiles')
+
+   id - identyfikator
+   name - nazwa pliku
+   idate - data/czas importu
+   userid - identyfikator użytkownika
+     __________________________________________________________________
+
+7.2.18. Stawki podatkowe ('taxes')
 
    id - identyfikator
    value - wartość procentowa stawki
@@ -6422,13 +6467,14 @@ Rozdział 7. Dla dociekliwych
    taxed - status opodatkowania (1-tak, 0-nie)
      __________________________________________________________________
 
-7.2.17. Taryfy ('tariffs')
+7.2.19. Taryfy ('tariffs')
 
    id - identyfikator
    name - nazwa taryfy
    type - typ taryfy (zobacz lib/definitions.php)
    value - kwota
    taxid - identyfikator stawki podatkowej
+   period - okres płatności (dla podanej kwoty taryfy)
    prodid - numer PKWiU
    uprate - gwarantowany upload
    upceil - maksymalny upload
@@ -6458,7 +6504,7 @@ Rozdział 7. Dla dociekliwych
    description - opis
      __________________________________________________________________
 
-7.2.18. Zobowiązania ('liabilities')
+7.2.20. Zobowiązania ('liabilities')
 
    id - identyfikator
    name - nazwa (opis) zobowiązania
@@ -6467,7 +6513,7 @@ Rozdział 7. Dla dociekliwych
    prodid - numer PKWiU
      __________________________________________________________________
 
-7.2.19. Opłaty stałe ('payments')
+7.2.21. Opłaty stałe ('payments')
 
    id - identyfikator
    name - nazwa
@@ -6479,7 +6525,7 @@ Rozdział 7. Dla dociekliwych
    description - opis
      __________________________________________________________________
 
-7.2.20. Powiązania ('assignments')
+7.2.22. Powiązania ('assignments')
 
    id - identyfikator
    tariffid - identyfikator taryfy
@@ -6494,16 +6540,18 @@ Rozdział 7. Dla dociekliwych
    discount - wartość procentowa rabatu
    suspended - zawieszenie płatności (1 - tak, 0 - nie)
    settlement - rozliczenie okresu niepełnego (1 - tak, 0 - nie)
+   paytype - identyfikator typu płatności faktury
+   numberplanid - identyfikator planu numeracyjnego
      __________________________________________________________________
 
-7.2.21. Powiązania komputer-taryfa ('nodeassignments')
+7.2.23. Powiązania komputer-taryfa ('nodeassignments')
 
    id - identyfikator
    assignmentid - identyfikator zobowiązania
    nodeid - identyfikator komputera
      __________________________________________________________________
 
-7.2.22. Plany (szablony) numeracyjne dokumentów ('numberplans')
+7.2.24. Plany (szablony) numeracyjne dokumentów ('numberplans')
 
    id - identyfikator
    template - szablon (wzorzec) numeru
@@ -6513,14 +6561,14 @@ Rozdział 7. Dla dociekliwych
    dokumentów, '0' - jeśli nie
      __________________________________________________________________
 
-7.2.23. Powiązania planów num. z firmami ('numberplanassignments')
+7.2.25. Powiązania planów num. z firmami ('numberplanassignments')
 
    id - identyfikator
    planid - identyfikator planu
    divisionid - identyfikator firmy
      __________________________________________________________________
 
-7.2.24. Rejestry kasowe ('cashregs')
+7.2.26. Rejestry kasowe ('cashregs')
 
    id - identyfikator
    name - nazwa rejestru
@@ -6531,7 +6579,7 @@ Rozdział 7. Dla dociekliwych
    disabled - wyłączenie sumowania (0/1)
      __________________________________________________________________
 
-7.2.25. Rejestry kasowe - uprawnienia ('cashrights')
+7.2.27. Rejestry kasowe - uprawnienia ('cashrights')
 
    id - identyfikator
    regid - identyfikator rejestru
@@ -6539,7 +6587,7 @@ Rozdział 7. Dla dociekliwych
    rights - (1-odczyt, 2-zapis, 3-zaawansowane)
      __________________________________________________________________
 
-7.2.26. Cash registries - cash history ('cashreglog')
+7.2.28. Cash registries - cash history ('cashreglog')
 
    id - identyfikator
    regid - identyfikator rejestru
@@ -6550,7 +6598,7 @@ Rozdział 7. Dla dociekliwych
    description - dodatkowe informacje
      __________________________________________________________________
 
-7.2.27. Dokumenty: faktury, KP, umowy, etc. ('documents')
+7.2.29. Dokumenty: faktury, KP, umowy, etc. ('documents')
 
    id - identyfikator
    number - numer dokumentu (%N)
@@ -6559,7 +6607,8 @@ Rozdział 7. Dla dociekliwych
    type - typ dokumentu (1-faktura, 2-KP)
    cdate - data wystawienia
    paytime - termin płatności (ilość dni)
-   paytype - rodzaj płatności (przelew/gotówka/etc.)
+   paytype - rodzaj płatności (1-gotówka, 2-przelew, 3-przelew/gotówka,
+   4-karta, 5-kompensata, 6-barter, 7-umowa)
    customerid - identyfikator klienta-nabywcy
    userid - identyfikator użytkownika wystawiającego dokument
    divisionid - identyfikator firmy (oddziału)
@@ -6575,7 +6624,7 @@ Rozdział 7. Dla dociekliwych
    reason - np. powód korekty faktury
      __________________________________________________________________
 
-7.2.28. Dokumenty niefinansowe ('documentcontents')
+7.2.30. Dokumenty niefinansowe ('documentcontents')
 
    docid - identyfikator dokumentu
    title - tytuł dokumentu
@@ -6587,7 +6636,7 @@ Rozdział 7. Dla dociekliwych
    description - dodatkowy opis
      __________________________________________________________________
 
-7.2.29. Faktury ('invoicecontents')
+7.2.31. Faktury ('invoicecontents')
 
    docid - identyfikator faktury
    itemid - nr pozycji
@@ -6601,7 +6650,7 @@ Rozdział 7. Dla dociekliwych
    tariffid - identyfikator taryfy
      __________________________________________________________________
 
-7.2.30. Noty obciążeniowe ('debitnotecontents')
+7.2.32. Noty obciążeniowe ('debitnotecontents')
 
    docid - identyfikator noty
    itemid - nr pozycji
@@ -6609,7 +6658,7 @@ Rozdział 7. Dla dociekliwych
    description - opis
      __________________________________________________________________
 
-7.2.31. Potwierdzenia wpłaty - KP ('receiptcontents')
+7.2.33. Potwierdzenia wpłaty - KP ('receiptcontents')
 
    docid - identyfikator faktury
    itemid - nr pozycji
@@ -6618,7 +6667,7 @@ Rozdział 7. Dla dociekliwych
    description - opis pozycji
      __________________________________________________________________
 
-7.2.32. Dokumenty - uprawnienia ('docrights')
+7.2.34. Dokumenty - uprawnienia ('docrights')
 
    userid - identyfikator użytkownika
    doctype - id typu dokumentu (zobacz lib/definitions.php)
@@ -6626,7 +6675,7 @@ Rozdział 7. Dla dociekliwych
    5-usuwanie)
      __________________________________________________________________
 
-7.2.33. Identyfikatory internetowe ('imessengers')
+7.2.35. Identyfikatory internetowe ('imessengers')
 
    id - identyfikator rekordu
    customerid - identyfikator klienta
@@ -6634,15 +6683,16 @@ Rozdział 7. Dla dociekliwych
    type - typ komunikatora (0-gadu-gadu, 1-yahoo, 2-skype)
      __________________________________________________________________
 
-7.2.34. Kontakty ('customercontacts')
+7.2.36. Kontakty ('customercontacts')
 
    id - identyfikator rekordu
    customerid - identyfikator klienta
    phone - numer telefoniczny
    name - nazwa/opis kontaktu
+   type - typ kontaktu (suma flag: 1-komórka, 2-fax)
      __________________________________________________________________
 
-7.2.35. Domeny ('domains')
+7.2.37. Domeny ('domains')
 
    id - identyfikator rekordu
    name - nazwa domeny
@@ -6653,7 +6703,7 @@ Rozdział 7. Dla dociekliwych
    notified_serial - znacznik czasu
      __________________________________________________________________
 
-7.2.36. Rekordy DNS ('records')
+7.2.38. Rekordy DNS ('records')
 
    id - identyfikator rekordu
    domain_id - identyfikator domeny
@@ -6665,7 +6715,7 @@ Rozdział 7. Dla dociekliwych
    change_date - znacznik czasu ostatniej zmiany
      __________________________________________________________________
 
-7.2.37. Konta ('passwd')
+7.2.39. Konta ('passwd')
 
    id - identyfikator rekordu
    ownerid - identyfikator klienta (0 - konto "systemowe")
@@ -6689,14 +6739,14 @@ Rozdział 7. Dla dociekliwych
    description - dodatkowe informacje
      __________________________________________________________________
 
-7.2.38. Aliasy ('aliases')
+7.2.40. Aliasy ('aliases')
 
    id - identyfikator rekordu
    login - nazwa konta (bez domeny)
    domainid - identyfikator domeny
      __________________________________________________________________
 
-7.2.39. Powiązania aliasów z kontami ('aliasassignments')
+7.2.41. Powiązania aliasów z kontami ('aliasassignments')
 
    id - identyfikator rekordu
    aliasid - indentyfikator aliasu
@@ -6704,7 +6754,7 @@ Rozdział 7. Dla dociekliwych
    mail_forward - adres przekierowania
      __________________________________________________________________
 
-7.2.40. Konta VoIP ('voipaccounts')
+7.2.42. Konta VoIP ('voipaccounts')
 
    id - identyfikator rekordu
    ownerid - identyfikator właściciela (klienta)
@@ -6717,7 +6767,7 @@ Rozdział 7. Dla dociekliwych
    modid - identyfikator użytkownika
      __________________________________________________________________
 
-7.2.41. Statystyki wykorzystania łącza ('stats')
+7.2.43. Statystyki wykorzystania łącza ('stats')
 
    nodeid - numer komputera
    dt - znacznik czasu
@@ -6725,7 +6775,7 @@ Rozdział 7. Dla dociekliwych
    download - ilość danych odebranych, w bajtach
      __________________________________________________________________
 
-7.2.42. Helpdesk - kolejki ('rtqueues')
+7.2.44. Helpdesk - kolejki ('rtqueues')
 
    id - identyfikator
    name - nazwa
@@ -6733,7 +6783,7 @@ Rozdział 7. Dla dociekliwych
    description - opis dodatkowy
      __________________________________________________________________
 
-7.2.43. Helpdesk - zgłoszenia ('rttickets')
+7.2.45. Helpdesk - zgłoszenia ('rttickets')
 
    id - identyfikator
    queueid - identyfikator kolejki
@@ -6747,7 +6797,7 @@ Rozdział 7. Dla dociekliwych
    createtime - data zgłoszenia
      __________________________________________________________________
 
-7.2.44. Helpdesk - wiadomości ('rtmessages')
+7.2.46. Helpdesk - wiadomości ('rtmessages')
 
    id - identyfikator
    ticketid - identyfikator zgłoszenia
@@ -6763,14 +6813,14 @@ Rozdział 7. Dla dociekliwych
    createtime - data utworzenia/wysłania/odebrania
      __________________________________________________________________
 
-7.2.45. Helpdesk - załączniki ('rtattachments')
+7.2.47. Helpdesk - załączniki ('rtattachments')
 
    messageid - identyfikator wiadomości
    filename - nazwa pliku
    contenttype - typ pliku
      __________________________________________________________________
 
-7.2.46. Helpdesk - notatki ('rtnotes')
+7.2.48. Helpdesk - notatki ('rtnotes')
 
    id - identyfikator
    ticketid - identyfikator zgłoszenia
@@ -6779,7 +6829,7 @@ Rozdział 7. Dla dociekliwych
    createtime - data utworzenia
      __________________________________________________________________
 
-7.2.47. Helpdesk - uprawnienia ('rtrights')
+7.2.49. Helpdesk - uprawnienia ('rtrights')
 
    id - identyfikator
    queueid - identyfikator kolejki
@@ -6787,7 +6837,7 @@ Rozdział 7. Dla dociekliwych
    rights - (1-odczyt, 2-zapis, 3-powiadomienia)
      __________________________________________________________________
 
-7.2.48. Konfiguracja LMS-UI ('uiconfig')
+7.2.50. Konfiguracja LMS-UI ('uiconfig')
 
    id - identyfikator
    section - nazwa sekcji
@@ -6797,7 +6847,7 @@ Rozdział 7. Dla dociekliwych
    disabled - wyłączenie opcji (0-wł., 1-wył.)
      __________________________________________________________________
 
-7.2.49. Terminarz - zdarzenia ('events')
+7.2.51. Terminarz - zdarzenia ('events')
 
    id - identyfikator
    title - tytuł
@@ -6812,13 +6862,13 @@ Rozdział 7. Dla dociekliwych
    closed - status zamknięcia
      __________________________________________________________________
 
-7.2.50. Terminarz - powiązania ('eventassignments')
+7.2.52. Terminarz - powiązania ('eventassignments')
 
    eventid - identyfikator zdarzenia
    userid - identyfikator użytkownika
      __________________________________________________________________
 
-7.2.51. Hosty ('hosts')
+7.2.53. Hosty ('hosts')
 
    id - identyfikator
    name - nazwa hosta
@@ -6827,7 +6877,7 @@ Rozdział 7. Dla dociekliwych
    reload - żądanie przeładowania
      __________________________________________________________________
 
-7.2.52. Konfiguracja demona - instancje ('daemoninstances')
+7.2.54. Konfiguracja demona - instancje ('daemoninstances')
 
    id - identyfikator
    name - nazwa instancji
@@ -6839,7 +6889,7 @@ Rozdział 7. Dla dociekliwych
    disabled - status (włączona/wyłączona)
      __________________________________________________________________
 
-7.2.53. Konfiguracja demona - opcje ('daemonconfig')
+7.2.55. Konfiguracja demona - opcje ('daemonconfig')
 
    id - identyfikator
    instanceid - identyfikator instancji
@@ -6849,7 +6899,7 @@ Rozdział 7. Dla dociekliwych
    disabled - status (włączona/wyłączona)
      __________________________________________________________________
 
-7.2.54. Sesje ('sessions')
+7.2.56. Sesje ('sessions')
 
    id - identyfikator sesji
    ctime - czas utworzenia
@@ -6859,27 +6909,27 @@ Rozdział 7. Dla dociekliwych
    content - dane
      __________________________________________________________________
 
-7.2.55. Województwa ('states')
+7.2.57. Województwa ('states')
 
    id - identyfikator
    name - nazwa województwa
    description - informacje dodatkowe
      __________________________________________________________________
 
-7.2.56. Kody pocztowe ('zipcodes')
+7.2.58. Kody pocztowe ('zipcodes')
 
    id - identyfikator
    zip - kod pocztowy
    stateid - identyfikator województwa
      __________________________________________________________________
 
-7.2.57. Kraje ('countries')
+7.2.59. Kraje ('countries')
 
    id - identyfikator
    name - nazwa kraju
      __________________________________________________________________
 
-7.2.58. Firmy/Oddziały ('divisions')
+7.2.60. Firmy/Oddziały ('divisions')
 
    id - identyfikator
    shortname - nazwa skrócona firmy
@@ -6898,10 +6948,10 @@ Rozdział 7. Dla dociekliwych
    inv_author - wystawca faktury
    inv_cplace - miejsce wystawienia faktury
    inv_paytime - termin płatności faktury
-   inv_paytype - sposób płatności faktury
+   inv_paytype - sposób płatności faktury (zobacz tabela documents)
      __________________________________________________________________
 
-7.2.59. Wiadomości - lista ('messages')
+7.2.61. Wiadomości - lista ('messages')
 
    id - identyfikator
    subject - temat wiadomości
@@ -6912,7 +6962,7 @@ Rozdział 7. Dla dociekliwych
    sender - nagłówek 'From' wiadomości e-mail
      __________________________________________________________________
 
-7.2.60. Wiadomości - szczegóły ('messageitems')
+7.2.62. Wiadomości - szczegóły ('messageitems')
 
    id - identyfikator
    messageid - identyfikator wiadomości
@@ -6923,7 +6973,7 @@ Rozdział 7. Dla dociekliwych
    error - komunikat błędu
      __________________________________________________________________
 
-7.2.61. Informacje o bazie danych ('dbinfo')
+7.2.63. Informacje o bazie danych ('dbinfo')
 
    keytype - typ
    keyvalue - wartość

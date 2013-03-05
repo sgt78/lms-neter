@@ -35,9 +35,11 @@ if(!$LMS->NodeExists($_GET['id']))
 switch($action)
 {
 	case 'link':
-		$netdev = $LMS->GetNetDev($_GET['devid']); 
-
-		if($netdev['ports'] > $netdev['takenports']) 
+		if (empty($_GET['devid']) || !($netdev = $LMS->GetNetDev($_GET['devid'])))
+		{
+			$SESSION->redirect('?m=nodeinfo&id='.$_GET['id']);
+		}
+		else if($netdev['ports'] > $netdev['takenports'])
 		{
 			$LMS->NetDevLinkNode($_GET['id'],$_GET['devid'],
 				empty($_GET['linktype']) ? 0 : 1, intval($_GET['port']));
@@ -62,25 +64,32 @@ $nodeid = intval($_GET['id']);
 $customerid = $LMS->GetNodeOwner($nodeid);
 $nodeinfo = $LMS->GetNode($nodeid);
 
+$macs = array();
+foreach($nodeinfo['macs'] as $key => $value)
+	$macs[] = $nodeinfo['macs'][$key]['mac'];
+$nodeinfo['macs'] = $macs;
+
 if(!isset($_GET['ownerid']))
 	$SESSION->save('backto', $SESSION->get('backto') . '&ownerid='.$customerid);
 else
 	$SESSION->save('backto', $_SERVER['QUERY_STRING']);
-							
+
 $layout['pagetitle'] = trans('Node Edit: $0', $nodeinfo['name']);
 
-if(isset($_POST['nodeedit']))
+if(isset($_POST['nodeedit']) && !isset($_GET['newmac']))
 {
 	$nodeedit = $_POST['nodeedit'];
-	
+
 	$nodeedit['ipaddr'] = $_POST['nodeeditipaddr'];
 	$nodeedit['ipaddr_pub'] = $_POST['nodeeditipaddrpub'];
-	$nodeedit['mac'] = $_POST['nodeeditmac'];
-	$nodeedit['mac'] = str_replace('-',':',$nodeedit['mac']);
+	foreach($nodeedit['macs'] as $key => $value)
+		$nodeedit['macs'][$key] = str_replace('-',':',$value);
+
 	foreach($nodeedit as $key => $value)
-		$nodeedit[$key] = trim($value);
-	
-	if($nodeedit['ipaddr']=='' && $nodeedit['ipaddr_pub']=='' && $nodeedit['mac']=='' && $nodeedit['name']=='' && $nodeedit['info']=='' && $nodeedit['passwd']=='')
+		if($key != 'macs')
+			$nodeedit[$key] = trim($value);
+
+	if($nodeedit['ipaddr']=='' && $nodeedit['ipaddr_pub']=='' && empty($nodeedit['macs']) && $nodeedit['name']=='' && $nodeedit['info']=='' && $nodeedit['passwd']=='')
 	{
 		$SESSION->redirect('?m=nodeinfo&id='.$nodeedit['id']);
 	}
@@ -122,16 +131,22 @@ if(isset($_POST['nodeedit']))
 	else
 		$nodeedit['ipaddr_pub'] = '0.0.0.0';
 
-	if(check_mac($nodeedit['mac']))
-	{
-		if($nodeedit['mac']!='00:00:00:00:00:00' && (!isset($CONFIG['phpui']['allow_mac_sharing']) || !chkconfig($CONFIG['phpui']['allow_mac_sharing'])))
+	$macs = array();
+	foreach($nodeedit['macs'] as $key => $value)
+		if(check_mac($value))
 		{
-			if($nodeinfo['mac'] != $nodeedit['mac'] && $LMS->GetNodeIDByMAC($nodeedit['mac']))
-				$error['mac'] = trans('Specified MAC address is in use!');
+			if($value!='00:00:00:00:00:00' && (!isset($CONFIG['phpui']['allow_mac_sharing']) || !chkconfig($CONFIG['phpui']['allow_mac_sharing'])))
+			{
+				if(($nodeid = $LMS->GetNodeIDByMAC($value)) != NULL && $nodeid != $nodeinfo['id'])
+					$error['mac'.$key] = trans('Specified MAC address is in use!');
+			}
+			$macs[] = $value;
 		}
-	}
-	else
-		$error['mac'] = trans('Incorrect MAC address!');
+		elseif($value!='')
+			$error['mac'.$key] = trans('Incorrect MAC address!');
+	if(empty($macs))
+		$error['mac0'] = trans('MAC address is required!');
+	$nodeedit['macs'] = $macs;
 
 	if($nodeedit['name']=='')
 		$error['name'] = trans('Node name is required!');
@@ -146,7 +161,7 @@ if(isset($_POST['nodeedit']))
 		$error['passwd'] = trans('Password is too long (max.32 characters)!');
 
 	if(!isset($nodeedit['access']))	$nodeedit['access'] = 0;
-        if(!isset($nodeedit['warning'])) $nodeedit['warning'] = 0;	
+    if(!isset($nodeedit['warning'])) $nodeedit['warning'] = 0;
 	if(!isset($nodeedit['chkmac']))	$nodeedit['chkmac'] = 0;
 	if(!isset($nodeedit['halfduplex'])) $nodeedit['halfduplex'] = 0;
 
@@ -166,7 +181,7 @@ if(isset($_POST['nodeedit']))
 		{
 			if(!isset($ports))
 				$ports = $DB->GetOne('SELECT ports FROM netdevices WHERE id = ?', array($nodeedit['netdev']));
-		
+
 		        if(!preg_match('/^[0-9]+$/', $nodeedit['port']) || $nodeedit['port'] > $ports)
 		        {
 		                $error['port'] = trans('Incorrect port number!');
@@ -181,19 +196,26 @@ if(isset($_POST['nodeedit']))
 			}
 		}
 	}
-	
-	if($nodeedit['access'] && $LMS->GetCustomerStatus($nodeedit['ownerid']) < 3)
+
+    if (!$nodeedit['ownerid'])
+        $error['ownerid'] = trans('Customer not selected!');
+	else if($nodeedit['access'] && $LMS->GetCustomerStatus($nodeedit['ownerid']) < 3)
 		$error['access'] = trans('Node owner is not connected!');
+
+    if($nodeedit['location_zip'] !='' && !check_zip($nodeedit['location_zip']) && !isset($nodeedit['zipwarning']))
+    {
+        $error['location_zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
+        $zipwarning = 1;
+    }
 
 	if(!$error)
 	{
 		$LMS->NodeUpdate($nodeedit, ($customerid != $nodeedit['ownerid']));
 		$SESSION->redirect('?m=nodeinfo&id='.$nodeedit['id']);
-		die;
 	}
 
 	$nodeinfo['name'] = $nodeedit['name'];
-	$nodeinfo['mac'] = $nodeedit['mac'];
+	$nodeinfo['macs'] = $nodeedit['macs'];
 	$nodeinfo['ip'] = $nodeedit['ipaddr'];
 	$nodeinfo['ip_pub'] = $nodeedit['ipaddr_pub'];
 	$nodeinfo['passwd'] = $nodeedit['passwd'];
@@ -202,17 +224,39 @@ if(isset($_POST['nodeedit']))
 	$nodeinfo['chkmac'] = $nodeedit['chkmac'];
 	$nodeinfo['halfduplex'] = $nodeedit['halfduplex'];
 	$nodeinfo['port'] = $nodeedit['port'];
+	$nodeinfo['zipwarning'] = empty($zipwarning) ? 0 : 1;
+	$nodeinfo['location_zip'] = $nodeedit['location_zip'];
+	$nodeinfo['location_address'] = $nodeedit['location_address'];
+	$nodeinfo['location_city'] = $nodeedit['location_city'];
+	$nodeinfo['stateid'] = $nodeedit['stateid'];
 
 	if($nodeedit['ipaddr_pub']=='0.0.0.0')
 		$nodeinfo['ipaddr_pub'] = '';
 }
+else
+{
+	if(isset($_POST['nodeedit']) && isset($_GET['newmac']))
+	{
+		$nodeedit = $_POST['nodeedit'];
+		$nodeedit['macs'][] = '';
+		$nodeinfo = array_merge($nodeinfo, $nodeedit);
+	}
+}
+
+if(empty($nodeinfo['macs']))
+	$nodeinfo['macs'][] = '';
 
 include(MODULES_DIR.'/customer.inc.php');
 
+if(!isset($CONFIG['phpui']['big_networks']) || !chkconfig($CONFIG['phpui']['big_networks']))
+{
+    $SMARTY->assign('customers', $LMS->GetCustomerNames());
+}
+
+$SMARTY->assign('cstateslist',$LMS->GetCountryStates());
 $SMARTY->assign('netdevices', $LMS->GetNetDevNames());
 $SMARTY->assign('nodegroups', $LMS->GetNodeGroupNamesByNode($nodeid));
 $SMARTY->assign('othernodegroups', $LMS->GetNodeGroupNamesWithoutNode($nodeid));
-$SMARTY->assign('customers', $LMS->GetCustomerNames());
 $SMARTY->assign('error',$error);
 $SMARTY->assign('nodeinfo',$nodeinfo);
 $SMARTY->display('nodeedit.html');

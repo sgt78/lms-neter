@@ -24,6 +24,53 @@
  *  $Id$
  */
 
+if(isset($_GET['ajax'])) 
+{
+	header('Content-type: text/plain');
+	$search = urldecode(trim($_GET['what']));
+
+	switch($_GET['mode'])
+	{
+	        case 'address':
+			$mode='location_address';
+			if ($CONFIG['database']['type'] == 'mysql' || $CONFIG['database']['type'] == 'mysqli') 
+				$mode = 'substring(location_address from 1 for length(location_address)-locate(\' \',reverse(location_address))+1)';
+			elseif($CONFIG['database']['type'] == 'postgres')
+				$mode = 'substring(location_address from \'^.* \')';
+		break;
+	        case 'zip':
+			$mode='location_zip';
+		break;
+	        case 'city':
+			$mode='location_city';
+		break;
+	}
+
+	if (!isset($mode)) { print 'false;'; exit; }
+
+	$candidates = $DB->GetAll('SELECT '.$mode.' as item, count(id) as entries
+	    FROM nodes
+	    WHERE '.$mode.' != \'\' AND lower('.$mode.') ?LIKE? lower(\'%'.$search.'%\')
+	    GROUP BY item
+	    ORDER BY entries desc, item asc
+	    LIMIT 15');
+
+	$eglible=array(); $descriptions=array();
+	if ($candidates)
+	foreach($candidates as $idx => $row) {
+		$eglible[$row['item']] = escape_js($row['item']);
+		$descriptions[$row['item']] = escape_js($row['entries'].' '.trans('entries'));
+	}
+	if ($eglible) {
+		print preg_replace('/$/',"\");\n","this.eligible = new Array(\"".implode('","',$eglible));
+		print preg_replace('/$/',"\");\n","this.descriptions = new Array(\"".implode('","',$descriptions));
+	} else {
+		print "false;\n";
+	}
+	exit;
+}
+
+
 $nodedata['access'] = 1;
 $nodedata['ownerid'] = 0;
 
@@ -43,22 +90,23 @@ if(isset($_GET['preip']))
 	$nodedata['ipaddr'] = $_GET['preip'];
 
 if(isset($_GET['premac']))
-	$nodedata['mac'] = $_GET['premac'];
+	$nodedata['macs'][] = $_GET['premac'];
 
 if(isset($_GET['prename']))
 	$nodedata['name'] = $_GET['prename'];
 
-if(isset($_POST['nodedata']))
+if(isset($_POST['nodedata']) && !isset($_GET['newmac']))
 {
 	$nodedata = $_POST['nodedata'];
 
 	$nodedata['ipaddr'] = $_POST['nodedataipaddr'];
 	$nodedata['ipaddr_pub'] = $_POST['nodedataipaddr_pub'];
-	$nodedata['mac'] = $_POST['nodedatamac'];
-	$nodedata['mac'] = str_replace('-',':',$nodedata['mac']);
+	foreach($nodedata['macs'] as $key => $value)
+		$nodedata['macs'][$key] = str_replace('-',':',$value);
 
 	foreach($nodedata as $key => $value)
-		$nodedata[$key] = trim($value);
+		if($key != 'macs')
+			$nodedata[$key] = trim($value);
 
 	if($nodedata['ipaddr']=='' && $nodedata['ipaddr_pub'] && $nodedata['mac']=='' && $nodedata['name']=='')
 		if($_GET['ownerid'])
@@ -73,7 +121,7 @@ if(isset($_POST['nodedata']))
 	elseif(strlen($nodedata['name']) > 32)
 		$error['name'] = trans('Node name is too long (max.32 characters)!');
 	elseif(!preg_match('/^[_a-z0-9-]+$/i', $nodedata['name']))
-		$error['name'] = trans('Specified name contains forbidden characters!');		
+		$error['name'] = trans('Specified name contains forbidden characters!');
 	elseif($LMS->GetNodeIDByName($nodedata['name']))
 		$error['name'] = trans('Specified name is in use!');
 
@@ -102,24 +150,35 @@ if(isset($_POST['nodedata']))
 	else
     		$nodedata['ipaddr_pub'] = '0.0.0.0';
 
-	if(!$nodedata['mac'])
+	$macs = array();
+	foreach($nodedata['macs'] as $key => $value)
+		if(check_mac($value))
+		{
+			if($value!='00:00:00:00:00:00' && (!isset($CONFIG['phpui']['allow_mac_sharing']) || !chkconfig($CONFIG['phpui']['allow_mac_sharing'])))
+			{
+				if($LMS->GetNodeIDByMAC($value))
+					$error['mac'.$key] = trans('Specified MAC address is in use!');
+			}
+			$macs[] = $value;
+		}
+		elseif($value!='')
+			$error['mac'.$key] = trans('Incorrect MAC address!');
+	if(empty($macs))
 		$error['mac'] = trans('MAC address is required!');
-	elseif(!check_mac($nodedata['mac']))
-		$error['mac'] = trans('Incorrect MAC address!');
-	elseif($nodedata['mac']!='00:00:00:00:00:00' && (!isset($CONFIG['phpui']['allow_mac_sharing']) || !chkconfig($CONFIG['phpui']['allow_mac_sharing'])))
-		if($LMS->GetNodeIDByMAC($nodedata['mac']))
-			$error['mac'] = trans('Specified MAC address is in use!');
+	$nodedata['macs'] = $macs;
 
 	if(strlen($nodedata['passwd']) > 32)
 		$error['passwd'] = trans('Password is too long (max.32 characters)!');
 
+    if (!$nodedata['ownerid'])
+        $error['ownerid'] = trans('Customer not selected!');
 	if(! $LMS->CustomerExists($nodedata['ownerid']))
-		$error['customer'] = trans('You have to select owner!');
+		$error['ownerid'] = trans('You have to select owner!');
 	else
 	{
 		$status = $LMS->GetCustomerStatus($nodedata['ownerid']);
 		if($status == 1) // unknown (interested)
-			$error['customer'] = trans('Selected customer is not connected!');
+			$error['ownerid'] = trans('Selected customer is not connected!');
 		elseif($status == 2 && $nodedata['access']) // awaiting
 	                $error['access'] = trans('Node owner is not connected!');
 	}
@@ -150,6 +209,11 @@ if(isset($_POST['nodedata']))
 	else
 		$nodedata['netdev'] = 0;
 
+    if($nodedata['location_zip'] !='' && !check_zip($nodedata['location_zip']) && !isset($nodedata['zipwarning']))
+    {
+        $error['location_zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
+        $nodedata['zipwarning'] = 1;
+    }
 
 	if(!isset($nodedata['chkmac']))	$nodedata['chkmac'] = 0;
 	if(!isset($nodedata['halfduplex'])) $nodedata['halfduplex'] = 0;
@@ -168,10 +232,10 @@ if(isset($_POST['nodedata']))
 		{
 			$SESSION->redirect('?m=nodeinfo&id='.$nodeid);
 		}
-		
+
 		$ownerid = $nodedata['ownerid'];
 		unset($nodedata);
-		
+
 		$nodedata['ownerid'] = $ownerid;
 		$nodedata['reuse'] = '1';
 	}
@@ -179,6 +243,19 @@ if(isset($_POST['nodedata']))
 		if($nodedata['ipaddr_pub']=='0.0.0.0')
 			$nodedata['ipaddr_pub'] = '';
 }
+else
+{
+	if(isset($_POST['nodedata']) && isset($_GET['newmac']))
+	{
+		$nodedata = $_POST['nodedata'];
+		$nodedata['ipaddr'] = $_POST['nodedataipaddr'];
+		$nodedata['ipaddr_pub'] = $_POST['nodedataipaddr_pub'];
+		$nodedata['macs'][] = '';
+	}
+}
+
+if(empty($nodedata['macs']))
+    $nodedata['macs'][] = '';
 
 $layout['pagetitle'] = trans('New Node');
 
@@ -189,10 +266,16 @@ if($customerid = $nodedata['ownerid'])
 else
 	$SMARTY->assign('allnodegroups', $LMS->GetNodeGroupNames());
 
+if(!isset($CONFIG['phpui']['big_networks']) || !chkconfig($CONFIG['phpui']['big_networks']))
+{
+    $SMARTY->assign('customers', $LMS->GetCustomerNames());
+}
+
+$SMARTY->assign('cstateslist',$LMS->GetCountryStates());
 $SMARTY->assign('netdevices', $LMS->GetNetDevNames());
-$SMARTY->assign('customers', $LMS->GetCustomerNames());
 $SMARTY->assign('error', $error);
 $SMARTY->assign('nodedata', $nodedata);
 $SMARTY->display('nodeadd.html');
 
 ?>
+

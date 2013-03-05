@@ -135,6 +135,7 @@ require_once(LIB_DIR.'/Session.class.php');
 $SESSION = new Session($DB, $CONFIG['phpui']['timeout']);
 $AUTH = new Auth($DB, $SESSION);
 $LMS = new LMS($DB, $AUTH, $CONFIG);
+$LMS->ui_lang = $_ui_language;
 $LMS->lang = $_language;
 
 // Set some template and layout variables
@@ -156,6 +157,7 @@ $layout['popup'] = isset($_GET['popup']) ? true : false;
 $SMARTY->assign_by_ref('layout', $layout);
 $SMARTY->assign_by_ref('_LANG', $_LANG);
 $SMARTY->assign_by_ref('LANGDEFS', $LANGDEFS);
+$SMARTY->assign_by_ref('_ui_language', $LMS->ui_lang);
 $SMARTY->assign_by_ref('_language', $LMS->lang);
 $SMARTY->assign_by_ref('_config',$CONFIG);
 
@@ -181,9 +183,8 @@ if($AUTH->islogged)
 	if($module == '')
 	{
 		$module = $CONFIG['phpui']['default_module'];
-		$SMARTY->assign('warning', isset($CONFIG['phpui']['disable_devel_warning']) ? !chkconfig($CONFIG['phpui']['disable_devel_warning']) : true);
 	}
-	
+
 	if(file_exists(MODULES_DIR.'/'.$module.'.php'))
 	{
 		$allow = !$AUTH->id || (!empty($access['allow']) && preg_match('/'.$access['allow'].'/i', $module));
@@ -199,8 +200,8 @@ if($AUTH->islogged)
 						$allow = (bool) preg_match('/'.$access['table'][$level]['allow_reg'].'/i', $module);
 				}
 
-				if(isset($access['table'][$level]['privillege']))
-					$CONFIG['phpui'][$access['table'][$level]['privillege']] = TRUE;
+				if(isset($access['table'][$level]['privilege']))
+					$CONFIG['phpui'][$access['table'][$level]['privilege']] = TRUE;
 			}
 
 		if($allow && ! $deny)

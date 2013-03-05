@@ -138,7 +138,7 @@ function check_ipv6($ip)
 		$lastcolon = strrpos($ip, ':');
 		if (!($lastcolon && check_ip(substr($ip, $lastcolon + 1))))
 		        return false;
-							    
+
 		// replace IPv4 part with dummy
 		$ip = substr($ip, 0, $lastcolon) . ':0:0';
 	}
@@ -200,7 +200,7 @@ function getnetaddr($ip,$mask)
 	{
 		$ip = ip2long($ip);
 		$mask = ip2long($mask);
-		
+
 		return long2ip($ip & $mask);
 	}
 	else
@@ -361,6 +361,7 @@ function writesyslog($message,$type)
 	return TRUE;
 }
 
+// Creates directories tree
 function rmkdir($dir)
 {
 	if($dir[0]!='/')
@@ -382,6 +383,20 @@ function rmkdir($dir)
 		return $result;
 	else
 		return $makedirs;
+}
+
+// Deletes directory and all subdirs and files in it
+function rrmdir($dir)
+{
+    $files = glob($dir . '/*', GLOB_MARK);
+    foreach ($files as $file) {
+        if (is_dir($file))
+            rrmdir($file);
+        else
+            unlink($file);
+    }
+    if (is_dir($dir))
+        rmdir($dir);
 }
 
 function striphtml($text)
@@ -449,6 +464,10 @@ function check_email( $email )
 function get_producer($mac)
 {
 	$mac = strtoupper(str_replace(':','-',substr($mac,0,8)));
+
+	if (!$mac)
+	    return '';
+
 	if($macfile = fopen(LIB_DIR.'/ethercodes.txt','r'))
 		while(!feof($macfile))
 		{
@@ -630,10 +649,50 @@ function clear_utf($str)
 	return $r;
 }
 
+function lastonline_date($timestamp)
+{
+    global $CONFIG;
+
+    if (!$timestamp)
+        return null;
+
+    $delta = time()-$timestamp;
+    if ($delta > $CONFIG['phpui']['lastonline_limit']) {
+        if($delta>59)
+            return trans('$0 ago ($1)', uptimef($delta), date('Y/m/d, H:i', $timestamp));
+        else
+            return date('(Y/m/d, H:i)', $timestamp);
+    }
+
+    return trans('online');
+}
+
+function is_leap_year($year)
+{
+    if ($year % 4) return false;
+    if ($year % 100) return true;
+    if ($year % 400) return false;
+    return true;
+}
+
+function truncate_str($string, $length, $etc='...')
+{
+    if ($length == 0)
+        return '';
+
+    if (mb_strlen($string) > $length) {
+        $length -= min($length, mb_strlen($etc));
+        return mb_substr($string, 0, $length) . $etc;
+    } else {
+        return $string;
+    }
+}
+
+/* Functions for modularized LMS */
 function plugin_handle($name)
 {
-        global $PLUGINS;
-	
+    global $PLUGINS;
+
 	if(isset($PLUGINS[$name]))
 		foreach($PLUGINS[$name] as $plugin)
 			include($plugin);
@@ -641,8 +700,8 @@ function plugin_handle($name)
 
 function clearheader()
 {
-        global $ExecStack, $layout;
-	
+    global $ExecStack, $layout;
+
 	$ExecStack->replaceTemplate('core', 'header', 'core', 'clearheader');
 	//$ExecStack->dropTemplate('core', 'menu');
 }
@@ -651,13 +710,13 @@ function clearheader()
 	Registering "plugin" function is for use in actions.
 	$handle - handle name
 	$plugin - template or action for including in handle. Example of use:
-	    
+
 	register_plugin('nodeinfobox-end', '/path/sometemplate.html');
 */
 function register_plugin($handle, $plugin)
 {
         global $PLUGINS;
-	
+
         $PLUGINS[$handle][] = $plugin;
 }
 

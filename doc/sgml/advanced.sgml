@@ -106,7 +106,11 @@
                     <member>address - street address (street, apartment, flat, etc)</member>
                     <member>zip - zip code</member>
                     <member>city - location (city)</member>
-		    <member>countryid - country identifier</member>
+                    <member>countryid - country identifier</member>
+                    <member>post_address - correspondence address - street, apartment, flat, etc</member>
+                    <member>post_zip - correspondence address - zip code</member>
+                    <member>post_city - correspondence address - location (city)</member>
+                    <member>post_countryid - correspondence address - country identifier</member>
                     <member>ten - tax exempt number</member>
                     <member>ssn - social security number</member>
 		    <member>regon - business registration number</member>
@@ -114,7 +118,6 @@
 		    <member>icn - identity card number</member>
                     <member>info - additional information</member>
 		    <member>notes - notes</member>
-                    <member>serviceaddr - correspondence address</member>
                     <member>creationdate - record creation date</member>
                     <member>moddate - record modification date</member>
                     <member>creatorid - serial of LMS user who created this record</member>
@@ -123,7 +126,10 @@
                     <member>message - message to be displayed if warnings enabled</member>
                     <member>cutoffstop - date to which customers cutting off is disabled</member>
                     <member>paytime - invoices deadline in days</member>
-                    <member>paytype - invoices payment type</member>
+                    <member>paytype - invoices payment type identifier (see documents table)</member>
+                    <member>einvoice - enables e-invoices</member>
+                    <member>invoicenotice - enables invoices delivery via e-mail</member>
+                    <member>mailingnotice - enables messages delivery via e-mail or sms</member>
                </simplelist>
           </sect2>
           <sect2 id="customergroups">
@@ -187,6 +193,7 @@
 		    <member>clients - max. number of clients (radius)</member>
 		    <member>secret - password (radius)</member>
 		    <member>community - SNMP community</member>
+		    <member>channelid - STM channel identifier (ewx_channels table)</member>
                </simplelist>
           </sect2>
           <sect2 id="netlinks">
@@ -205,7 +212,6 @@
                <simplelist>
                     <member>id - serial number</member>
                     <member>name - device name</member>
-                    <member>mac - MAC address</member>
                     <member>ipaddr - IP address</member>
                     <member>passwd - computer password for radius/pppoe login</member>
                     <member>ownerid - serial number of the owner ('0' if network device)</member>
@@ -222,8 +228,18 @@
                     <member>halfduplex - half/full duplex mode (0/1)</member>
                     <member>lastonline - last network activity timestamp</member>
                     <member>info - additional information</member>
-		    <member>location - location (address)</member>
-		    <member>nas - NAS flag (1/0)</member>
+                    <member>location_address - address - street, apartment, flat, etc</member>
+                    <member>location_zip - address - zip code</member>
+                    <member>location_city - address - location (city)</member>
+                    <member>nas - NAS flag (1/0)</member>
+               </simplelist>
+          </sect2>
+          <sect2 id="macs">
+               <title>MAC addresses ('macs')</title>
+               <simplelist>
+                    <member>id - serial number</member>
+                    <member>mac - MAC address</member>
+                    <member>nodeid - IP address identifier (nodes table)</member>
                </simplelist>
           </sect2>
           <sect2 id="nodegroups">
@@ -278,18 +294,28 @@
                     <member>customerid - customer's serial number</member>
                     <member>description - operation description</member>
                     <member>hash - unique operation identifier</member>
-		    <member>sourceid - import source identifier</member>
+		            <member>sourceid - import source identifier</member>
+		            <member>sourcefileid - import file identifier</member>
                     <member>closed - yes (1), if operation was moved to cash table</member>
                </simplelist>
           </sect2>
-	  <sect2 id="cashsources">
-               <title>Cash import sources ('cashsources')</title>
-               <simplelist>
-                    <member>id - serial number</member>
-                    <member>name - name</member>
-                    <member>description - additional information</member>
-               </simplelist>
-          </sect2>
+	    <sect2 id="cashsources">
+            <title>Cash import sources ('cashsources')</title>
+            <simplelist>
+                <member>id - serial number</member>
+                <member>name - name</member>
+                <member>description - additional information</member>
+           </simplelist>
+        </sect2>
+	    <sect2 id="sourcefiles">
+            <title>Cash import packages ('sourcefiles')</title>
+            <simplelist>
+                <member>id - serial number</member>
+                <member>name - filename</member>
+                <member>idate - date/time of import</member>
+                <member>userid - user identifier</member>
+           </simplelist>
+        </sect2>
           <sect2 id="tariffs">
                <title>Subscription fees ('tariffs')</title>
                <simplelist>
@@ -298,6 +324,7 @@
                     <member>type - subscription type (see lib/definitions.php)</member>
                     <member>value - amount</member>
                     <member>taxid - tax rate identifier</member>
+                    <member>period - payment period (for specified tariff value)</member>
                     <member>prodid - product/service classification number</member>
                     <member>uprate - upload warranty</member>
                     <member>upceil - upload boundary</member>
@@ -354,7 +381,7 @@
                   <simplelist>
                     <member>id - serial number</member>
                     <member>tariffid - subscription serial number</member>
-		    <member>liabilityid - liability serial number</member>
+		            <member>liabilityid - liability serial number</member>
                     <member>customerid - customer serial number</member>
                     <member>period - interval of operation: daily/weekly/monthly/quarterly/annually (1/2/3/4/5)</member>
                     <member>at - pay day</member>
@@ -363,7 +390,9 @@
                     <member>invoice - invoice writeout? (1 - yes, 0 - no)</member>
                     <member>discount - discount percentage</member>
                     <member>suspended - is this payment suspended? (1 - yes, 0 - no)</member>
-		    <member>settlement - do deficient period settlement? (1 - yes, 0 - no)</member>
+		            <member>settlement - do deficient period settlement? (1 - yes, 0 - no)</member>
+		            <member>paytype - invoice payment type identifier</member>
+		            <member>numberplanid - numbering plan identifier</member>
                </simplelist>
           </sect2>
           <sect2 id="nodeassignments">
@@ -384,7 +413,7 @@
                     <member>validfrom - binding period start</member>
 		    <member>validto - binding period end</member>
 		  </simplelist>
-	  </sect2>    
+	  </sect2>
 	  <sect2 id="numberplans">
                <title>Documents numbering plans ('numberplans')</title>
                   <simplelist>
@@ -445,7 +474,7 @@
 		    <member>type - document type (1 - invoice, 2 - cash receipt)</member>
                     <member>cdate - date of write out</member>
                     <member>paytime - deadline in days</member>
-                    <member>paytype - payment method (cash/transfer/etc.)</member>
+                    <member>paytype - payment type (1-cash, 2-transfer, 3-transfer/cash, 4-card, 5-compensation, 6-barter, 7-contract)</member>
                     <member>customerid - customer (buyer) serial number</member>
 		    <member>userid - user serial number</member>
                     <member>divisionid - identifier of company/division</member>
@@ -532,6 +561,7 @@
                     <member>customerid - customer serial number</member>
                     <member>phone - phone number</member>
                     <member>name - contact name/description</member>
+                    <member>type - contact type (sum of: 1-mobile, 2-fax)</member>
                </simplelist>
           </sect2>
           <sect2 id="domains">
@@ -815,7 +845,7 @@
                     <member>inv_author - invoice default author</member>
                     <member>inv_cplace - invoice creation place</member>
                     <member>inv_paytime - invoice deadline</member>
-                    <member>inv_paytype - invoice type of payment</member>
+                    <member>inv_paytype - invoice payment type (see documents table)</member>
                </simplelist>
           </sect2>
           <sect2 id="messages">

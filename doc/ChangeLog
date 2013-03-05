@@ -1,5 +1,70 @@
 $Id$
 
+version 1.11.11 Bray (2011-01-17)
+
+  - fixed SQL queries in postfix configuration manual (alec)
+  - BTS#0000832: fixed stats compacting (alec)
+  - we can bind many macs to one node (chilan)
+  - show all accounts and mail forwards in aliaslist (chilan)
+  - added vnodes sql view for simpler nodes mac processing (chilan)
+  - xajaxResponse object can be used in document plugins (alec)
+  - separated setting for validating functions locales (chilan)
+  - fixed displaying of assignments with 'HALFYEARLY' period (ceho)
+  - re-designed customer assignments forms (alec)
+  - invoices payment type field replaced with selection list (alec)
+    -----------------------------------------------------------------
+    WARNING: Database upgrade procedure may eat your data.
+        Make sure you have no unsupported payment types in
+        database with SQL query:
+        SELECT LOWER(paytype) FROM documents GROUP BY LOWER(paytype);
+
+        Supported values are: cash, transfer, transfer/cash, card,
+        compensation, barter, contract (and its Polish translations)
+        or empty string.
+    -----------------------------------------------------------------
+  - Per-assignment payment type and numbering plan (alec)
+  - fixed removal of helpdesk attachments + added foreign keys (alec)
+  - fixed array_agg definition for Postgresql 8.1 (alec)
+  - fixed accounting and period description of quarterly payments (alec)
+  - lmsd/ewx-stm-channels: include node's MAC in syslog messages (alec)
+  - lmsd/ewx-stm-channels: added MAC duplicate prevention (alec)
+  - lmsd/ewx-stm-channels: added "empty" IP/MAC pair prevention (alec)
+  - lmsd/ewx-stm-channels: added warnings about channel limits exceeding (alec)
+  - lmsd/ewx-stm-channels: improved performance of default channel handling (alec)
+  - support big_networks with owner popup selector in nodeadd, nodeedit and
+    documentlist templates (alec/W.Dymkiewicz)
+  - added period moving links in node's traffic graph (alec)
+  - BTS#0000837: fixed values on traffic graphs (alec)
+  - added info about default channel and about nodes on channels list (alec)
+  - added devices and nodes lists (popups) on channels list (alec)
+  - traffic stats: increased daily graph precision (alec)
+  - traffic stats: fixed zero values on utter bars (alec)
+  - traffic stats: added option phpui/stat_freq for better hourly graph precision (alec)
+  - lmsd/dns: fix for situation when database contains subnetworks of a network,
+    so reverse entries in named.conf are not duplicated and hosts entries are
+    placed in one file for all subnetworks (alec)
+  - allow setting assignment period for disposable liabilities (alec)
+  - improved performance of traffic database compacting procedure (alec)
+  - added "consent to e-invoices" switch in customer data (alec)
+  - added "consent to invoices delivery via e-mail" switch in customer data (alec)
+  - added "consent to messages delivery via e-mail or sms" switch in customer data (alec)
+  - added possibility to set type (mobile/fax) of customer contact (alec)
+  - customer service address split into separate fields: address, zip, city, country (alec)
+  - node location address split into separate fields: address, zip, city (alec)
+  - added cash import packages/files handling (alec)
+  - added more foreign key constraints in DB structure (alec)
+  - improved style of popups (alec)
+  - calendar popups doesn't use a new window (alec)
+  - choose(ip|mac|customer) popups doesn't use a new window (alec)
+  - added payment period setting for tariffs, so now when mmonthly tariff is assigned
+    to a customer with yearly period, payment will be accounted once a year with tariff
+    value multiplied by 12 (alec)
+  - BTS#0000844: fixed traffic graph when using customer filter (alec)
+  - Added device nodes count on devices list in channel info (alec)
+  - Added channel limits on customer nodes list (alec)
+  - lmsd/hostfile: added 'multi_mac' option and %ms variable (alec)
+  - lmsd/tc-new: added 'multi_mac' option and %ms variable (alec)
+
 version 1.11.10 Kri (2010-04-19)
 
   - contrib/daemon/gentoo-init: small fixes (Mariusz Szulerecki)
@@ -154,9 +219,9 @@ version 1.11.8 Belus (2009-05-19):
     option, added *_template and *_subject options (alec)
   - added creation date filter on documents list (alec)
   - fixed networks selection in customergroup forms (chilan)
-  - added user privilleges framework: you can define privilleges in access table
+  - added user privileges framework: you can define privileges in access table
     and then use them as $_config.phpui.* in templates (chilan)
-  - hide_summaries privillege introduced. For now it lets us show/hide
+  - hide_summaries privilege introduced. For now it lets us show/hide
     customer and node summaries (chilan)
   - added possibility to print many (text/html) documents from documents list (alec)
   - added access rights for (non-financial) documents (alec)

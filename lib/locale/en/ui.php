@@ -24,24 +24,6 @@
  *  $Id$
  */
 
-function bankaccount($id, $account=NULL)
-{
-	global $DB;
-	
-	if($account === NULL)
-		$account = $DB->GetOne('SELECT account FROM divisions WHERE id IN (SELECT divisionid
-			FROM customers WHERE id = ?)', array($id));
-
-	// This function is for demonstration only, coz US don't support IBAN
-	if(!empty($account) && strlen($account) < 21 && strlen($account) >= 8) // mass-payments IBAN
-	{
-	        $cc = '3028';	// Country code - US
-		$account = 'US'.sprintf('%02d',98-bcmod($account.sprintf('%012d',$id).$cc.'00',97)).$account.sprintf('%012d', $id);
-	} 
-
-	return $account;
-}
-
 function uptimef($ts)
 {
 	if($ts==0)
@@ -78,51 +60,6 @@ function uptimef($ts)
 			$result .= ' minutes ';
 	}
 	return trim($result);
-}
-
-function check_ten($ten)
-{
-	return TRUE;
-}
-
-function check_ssn($ssn)
-{
-	$ssn = str_replace(array('-','/',' ',"\t","\n"), '', $ssn);
-	
-	if(!is_numeric($ssn) || strlen($ssn) != 9)
-		return FALSE;
-	
-	return TRUE;
-}
-
-function check_zip($zip)
-{
-	return preg_match('/^[0-9]{5}$|^[0-9]{5}-[0-9]{4}$/', $zip);
-}
-
-function check_gg($im)
-{
-	return preg_match('/^[0-9]{0,32}$/', $im);
-}
-
-function check_skype($im)
-{
-	return preg_match('/^[-_.a-z0-9]{0,32}$/i', $im);
-}
-
-function check_yahoo($im)
-{
-	return preg_match('/^[-_.a-z0-9]{0,32}$/i', $im);
-}
-
-function check_regon($regon) // business registration number
-{
-	return true;
-}
-
-function check_icn($icn) // identity card number
-{
-	return true;
 }
 
 function to_words($num, $power = 0, $powsuffix = '', $short_version = 0)

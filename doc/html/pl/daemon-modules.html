@@ -452,11 +452,12 @@ CLASS="PROMPT"
 ><P
 >paytype</P
 ><P
->Rodzaj płatności. Domyślnie: 'TRANSFER'.</P
+>Rodzaj płatności (1-gotówka, 2-przelew, 3-przelew/gotówka,
+            4-karta, 5-kompensata, 6-barter, 7-umowa). Domyślnie: 2 (przelew).</P
 ><P
 >Przykład: <SAMP
 CLASS="PROMPT"
->paytype = 'GOTÓWKA'</SAMP
+>paytype = 1</SAMP
 ></P
 ></LI
 ><LI
@@ -1256,7 +1257,11 @@ BORDER="0"
 ></TR
 ><TR
 ><TD
->%m - mac adres,</TD
+>%m - adres MAC,</TD
+></TR
+><TR
+><TD
+>%ms - lista adresów MAC hosta (oddzielonych przecinkiem),</TD
 ></TR
 ><TR
 ><TD
@@ -1635,6 +1640,20 @@ CLASS="PROMPT"
 >Przykład: <SAMP
 CLASS="PROMPT"
 >skip_host_ips = tak</SAMP
+></P
+></LI
+><LI
+><P
+>multi_mac</P
+><P
+>Jeśli ustawiona na tak (yes, true) utworzony zostanie osobny rekord
+				dla każdego adresu MAC. Tzn. jeśli komputer ma przypisanych
+				kilka adresów MAC, będzie utworzone tyle wpisów ile tych adresów.
+				Domyślnie: nie</P
+><P
+>Przykład: <SAMP
+CLASS="PROMPT"
+>multi_mac = tak</SAMP
 ></P
 ></LI
 ><LI
@@ -2213,7 +2232,8 @@ CLASS="PROMPT"
 ><P
 >Definicja filtrów dla ruchu w kierunku od hosta. Dozwolone zmienne:
 					%n - nazwa hosta, %if - nazwa interfejsu sieci, %i16 - ostatni oktet adresu szesnastkowo, 
-					%i - adres, %m - mac, %o1, %o2, %o3, %o4 - oktety adresu dziesiętnie, %h - uchwyt klasy, %x - uchwyt filtra (unikalny numer reguły). Domyślnie: 
+					%i - adres, %m - mac, %ms - lista adresów MAC hosta (oddzielonych przecinkiem),
+					%o1, %o2, %o3, %o4 - oktety adresu dziesiętnie, %h - uchwyt klasy, %x - uchwyt filtra (unikalny numer reguły). Domyślnie: 
 					<PRE
 CLASS="SCREEN"
 ># %n
@@ -2232,7 +2252,8 @@ CLASS="PROMPT"
 ><P
 >Definicja filtrów dla ruchu w kierunku do hosta. Dozwolone zmienne:
 					%n - nazwa hosta, %if - nazwa interfejsu sieci, %i16 - ostatni 
-					oktet adresu szesnastkowo, %i - adres, %m - mac, %o1, %o2, %o3, 
+					oktet adresu szesnastkowo, %i - adres, %m - mac, 
+					%ms - lista adresów MAC hosta (oddzielonych przecinkiem), %o1, %o2, %o3, 
 					%o4 - oktety adresu dziesiętnie, %h - uchwyt klasy, %x - uchwyt
 					filtra (unikalny numer reguły). Domyślnie: 
 					<PRE
@@ -2252,9 +2273,10 @@ CLASS="PROMPT"
 ><P
 >Definicja reguły dla limitu połączeń hosta. Dozwolone 
 					zmienne: %n - nazwa hosta, %if - nazwa interfejsu sieci, 
-					%i16 - ostatni oktet adresu szesnastkowo, %i - adres, %m - mac, 
+					%i16 - ostatni oktet adresu szesnastkowo, %i - adres, %m - mac,
+					%ms - lista adresów MAC hosta (oddzielonych przecinkiem),
 					%o1, %o2, %o3, %o4 - oktety adresu dziesiętnie, %climit - limit
-					połączeń. Domyślnie: 
+					połączeń. Domyślnie:
 					<PRE
 CLASS="SCREEN"
 >$IPT -t filter -I FORWARD -p tcp -s %i -m connlimit --connlimit-above %climit -j REJECT
@@ -2272,9 +2294,10 @@ CLASS="PROMPT"
 ><P
 >Definicja reguły dla limitu pakietów dla hosta. Dozwolone 
 					zmienne: %n - nazwa hosta, %if - nazwa interfejsu sieci, 
-					%i16 - ostatni oktet adresu szesnastkowo, %i - adres, %m - mac, 
+					%i16 - ostatni oktet adresu szesnastkowo, %i - adres, %m - mac,
+					%ms - lista adresów MAC hosta (oddzielonych przecinkiem),
 					%o1, %o2, %o3, %o4 - oktety adresu dziesiętnie, %plimit - limit
-					pakietów. Domyślnie: 
+					pakietów. Domyślnie:
 					<PRE
 CLASS="SCREEN"
 >$IPT -t filter -I FORWARD -d %i -m limit --limit %plimit/s -j ACCEPT
@@ -2350,6 +2373,20 @@ CLASS="PROMPT"
 >Przykład: <SAMP
 CLASS="PROMPT"
 >night_deadline = 7</SAMP
+></P
+></LI
+><LI
+><P
+>multi_mac</P
+><P
+>Jeśli ustawiona na tak (yes, true) utworzony zostanie osobny rekord
+				    dla każdego adresu MAC. Tzn. jeśli komputer ma przypisanych
+				    kilka adresów MAC, będzie utworzone tyle wpisów ile tych adresów.
+				    Domyślnie: nie</P
+><P
+>Przykład: <SAMP
+CLASS="PROMPT"
+>multi_mac = tak</SAMP
 ></P
 ></LI
 ></UL
@@ -2528,11 +2565,11 @@ CLASS="PROMPT"
 >conf-reverse-entry</P
 ><P
 >Wpis dla każdej strefy odwr. w głównym pliku konfiguracyjnym.
-			    Domyślnie: 'zone "%c.in-addr.arpa" { \ntype master; \nfile "reverse/%i"; \nnotify yes; \n}; \n'.</P
+			    Domyślnie: 'zone "%c.in-addr.arpa" { \ntype master; \nfile "reverse/%c"; \nnotify yes; \n}; \n'.</P
 ><P
 >Przykład: <SAMP
 CLASS="PROMPT"
->conf-revers-entry = 'zone "%c.in-addr.arpa" { \n\ttype master; \n\tfile "reverse/%i"; \n\tnotify yes; \n}; \n'</SAMP
+>conf-revers-entry = 'zone "%c.in-addr.arpa" { \n\ttype master; \n\tfile "reverse/%c"; \n\tnotify yes; \n}; \n'</SAMP
 ></P
 ></LI
 ><LI

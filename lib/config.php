@@ -108,6 +108,7 @@ $DEFAULTS = array(
 		'note_check_payment' => false,
 		'radius' => 1,
 		'public_ip' => 1,
+		'default_assignment_period' => 3,
 	),
 	'invoices' => array(
 		'template_file' => 'invoice.html',
@@ -119,7 +120,7 @@ $DEFAULTS = array(
 		'type' => 'html',
 		'attachment_name' => '',
 		'paytime' => 14,
-		'paytype' => 'CASH',
+		'paytype' => 1, // cash
 	),
 	'finances' => array(
 		'suspension_percentage' => 0,

@@ -50,7 +50,7 @@ $LANGDEFS = array(
 			'charset' => 'UTF-8',
 			'html' => 'pl',
 			'money_format' => '%01.2f zł',
-			'mobile' => '(88[0-9]|5[01][0-9]|6[069][0-9]|7[2789][0-9])[0-9]{6}',
+//			'mobile' => '(88[0-9]|5[01][0-9]|6[069][0-9]|7[2789][0-9])[0-9]{6}',
 			),
 		'lt' => array(
 			'name' => 'Lithuanian',
@@ -59,7 +59,7 @@ $LANGDEFS = array(
 			'charset' => 'UTF-8',
 			'html' => 'lt',
 			'money_format' => '%01.2f LT',
-			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
+//			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
 			),
 		'en' => array(
 			'name' => 'English',
@@ -68,7 +68,7 @@ $LANGDEFS = array(
 			'charset' => 'UTF-8',
 			'html' => 'en',
 			'money_format' => '$ %01.2f',
-			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
+//			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
 			),
 		'sk' => array(
 			'name' => 'Slovak',
@@ -77,7 +77,7 @@ $LANGDEFS = array(
 			'charset' => 'UTF-8',
 			'html' => 'sk',
 			'money_format' => '%01.2f EUR',
-			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
+//			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
 			),
 		'ro' => array(
 			'name' => 'Romanian',
@@ -86,15 +86,13 @@ $LANGDEFS = array(
 			'charset' => 'UTF-8',
 			'html' => 'ro',
 			'money_format' => '%01.2f RON',
-			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
+//			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
 			),
 		);
 
-$_language = 'en'; // default language
+$_ui_language = 'en'; // default language
 
-if(!empty($CONFIG['phpui']['lang']))
-	$langs = $CONFIG['phpui']['lang'];
-elseif(!empty($_SERVER['HTTP_ACCEPT_LANGUAGE']))
+if(!empty($_SERVER['HTTP_ACCEPT_LANGUAGE']))
 	$langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
 else
 	$langs = '';
@@ -106,29 +104,36 @@ foreach ($langs as $val)
 	switch (substr($val, 0, 2))
 	{
 		case 'pl':
-			$_language = 'pl';
+			$_ui_language = 'pl';
     			break 2;
 		case 'lt':
-			$_language = 'lt';
+			$_ui_language = 'lt';
     			break 2;
 		case 'sk':
-			$_language = 'sk';
+			$_ui_language = 'sk';
 			break 2;
 		case 'ro':
-			$_language = 'ro';
+			$_ui_language = 'ro';
 			break 2;
 		case 'en':
-			$_language = 'en';
+			$_ui_language = 'en';
 			break 2;
 	}
 }
 
+if(!empty($CONFIG['phpui']['lang']))
+	$_language = $CONFIG['phpui']['lang'];
+else
+	$_language = $_ui_language;
+
 $_LANG = array();
 
-if (@is_readable(LIB_DIR.'/locale/'.$_language.'/strings.php'))
-	include(LIB_DIR.'/locale/'.$_language.'/strings.php');
-if (@is_readable(LIB_DIR.'/locale/'.$_language.'/functions.php'))
-	include(LIB_DIR.'/locale/'.$_language.'/functions.php');
+if (@is_readable(LIB_DIR.'/locale/'.$_ui_language.'/strings.php'))
+	include(LIB_DIR.'/locale/'.$_ui_language.'/strings.php');
+if (@is_readable(LIB_DIR.'/locale/'.$_ui_language.'/ui.php'))
+	include(LIB_DIR.'/locale/'.$_ui_language.'/ui.php');
+if (@is_readable(LIB_DIR.'/locale/'.$_language.'/system.php'))
+	include(LIB_DIR.'/locale/'.$_language.'/system.php');
 
 setlocale(LC_COLLATE, $LANGDEFS[$_language]['locale']);
 setlocale(LC_CTYPE, $LANGDEFS[$_language]['locale']);

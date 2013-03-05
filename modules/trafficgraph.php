@@ -30,7 +30,7 @@ if(!function_exists('imagecreate'))
 define('GRAPH_HEIGHT', 180);
 define('GRAPH_WIDTH', 500);
 
-function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=NULL, $todate=NULL)
+function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=NULL, $todate=NULL, $add=NULL)
 {
 	global $LMS;
 
@@ -45,12 +45,17 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 	$graph_width = 400;
 
 	$todate = $todate ? $todate : time();
-	
+
 	switch($bar)
 	{
 		case 'hour':
 			$quantum = 60*60;
-			$divisor = 5;
+			$divisor = $LMS->CONFIG['phpui']['stat_freq'] ? (int) (60/$LMS->CONFIG['phpui']['stat_freq']) : 5;
+			$fromdate = $todate - $quantum;
+		break;
+		case 'day':
+			$quantum = 60*60*24;
+			$divisor = 100;
 			$fromdate = $todate - $quantum;
 		break;
 		case 'week':
@@ -68,11 +73,6 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 			$divisor = 400;
 			$fromdate = $todate - $quantum;
 		break;
-		case 'day':
-			$quantum = 60*60*24;
-			$divisor = 50;
-			$fromdate = $todate - $quantum;
-		break;
 		default: 
 			$fromdate = $fromdate ? $fromdate : $todate - 60*60*24*30;
 			$quantum = $todate - $fromdate;
@@ -86,9 +86,14 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 				$divisor = 200;
 			else
 				$divisor = 400;
-		break;	
+		break;
 	}
-	
+
+    if ($add) {
+        $fromdate += $add;
+        $todate += $add;
+    }
+
 	$div = 10;
 	$qdivisor = (int) ($quantum/$divisor);
 
@@ -99,10 +104,10 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 
 		$stats = $LMS->DB->GetAll('SELECT SUM(upload) AS upload,
 				SUM(download) AS download,
-				CEIL(dt/?) AS dts, COUNT(*) AS cnt
+				CEIL(dt/?) AS dts
 			FROM stats WHERE nodeid = ? AND dt >= ? AND dt <= ?
 			GROUP BY CEIL(dt/?) ORDER BY dts ASC',
-			array($qdivisor, $nodeid, $fromdate, $todate, $qdivisor));
+			array($qdivisor, $nodeid, $fromdate-$qdivisor, $todate+$qdivisor, $qdivisor));
 	}
 	else
 	{
@@ -121,39 +126,47 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 		}
 		else
 			$net = '';
-	
+
 		$stats = $LMS->DB->GetAll('SELECT SUM(upload) AS upload,
-			SUM(download) AS download,
-			CEIL(dt/?) AS dts, COUNT(*) AS cnt
-			FROM stats '
-			.($customer || $net ? 'JOIN nodes ON stats.nodeid = nodes.id ' : '')
-			.'WHERE dt >= ? AND dt <= ? '
-			.($customer ? ' AND ownerid = '.intval($customer) : '')
-			.$net
-			.'GROUP BY CEIL(dt/?) ORDER BY dts ASC',
-			array($qdivisor, $fromdate, $todate, $qdivisor));
+			SUM(download) AS download, dts
+			FROM (
+			    SELECT SUM(upload) AS upload, SUM(download) AS download,
+			    CEIL(dt/?) AS dts
+			    FROM stats '
+			    .($customer || $net ? 'JOIN nodes ON stats.nodeid = nodes.id ' : '')
+			    .'WHERE dt >= ? AND dt <= ? '
+			    .($customer ? ' AND ownerid = '.intval($customer).' ' : '')
+			    .$net
+			    .'GROUP BY CEIL(dt/?), nodeid) x
+			GROUP BY dts ORDER BY dts',
+			array($qdivisor, $fromdate-$qdivisor, $todate+$qdivisor, $qdivisor));
 	}
-	
+
 	$down_max = $up_max = 0;
 	$last_up = $last_down = 0;
 	$avg_up = $avg_down = 0;
 	$sum_up = $sum_down = 0;
-	$dstart = ceil($fromdate/$qdivisor);
+	$dstart = (int) ($fromdate/$qdivisor);
 
 	if ($stats) foreach($stats as $idx => $row)
 	{
 		$i = $row['dts'] - $dstart;
-		$vstats[$i]['download'] = $row['download']/$row['cnt'];
-		$vstats[$i]['upload'] = $row['upload']/$row['cnt'];
+		$vstats[$i]['download'] = $row['download']*8/($quantum/$divisor);
+		$vstats[$i]['upload'] = $row['upload']*8/($quantum/$divisor);
 
 		if($vstats[$i]['download'] > $down_max)
 			$down_max = $vstats[$i]['download'];
 		if($vstats[$i]['upload'] > $up_max)
 			$up_max = $vstats[$i]['upload'];
 
+   		$sum_down += $row['download']*8;
+    	$sum_up += $row['upload']*8;
+
 		unset($stats[$idx]);
 	}
 
+	$avg_down = $sum_down/$quantum;
+	$avg_up = $sum_up/$quantum;
 	$stats_max = max($down_max, $up_max);
 
 	// create image
@@ -168,13 +181,13 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 
 	imagesetthickness($img, 1);
 
-	// image borders    
+	// image borders
 	imageline($img,0,0,$xmax,0,$textcolor);
 	imageline($img,0,$ymax-1,$xmax,$ymax-1,$textcolor);
 	imageline($img,0,0,0,$ymax,$textcolor);
 	imageline($img,$xmax-1,0,$xmax-1,$ymax,$textcolor);
 
-	$styleline = array($textcolor,IMG_COLOR_TRANSPARENT,IMG_COLOR_TRANSPARENT);	
+	$styleline = array($textcolor,IMG_COLOR_TRANSPARENT,IMG_COLOR_TRANSPARENT);
 	imagesetstyle($img, $styleline);
 
 	$downx = $upx = $movx;
@@ -190,10 +203,10 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 			$upload = round($graph_height*($up/$stats_max));
 		}
 		else
-		{	
+		{
 			$down = $up = $download = $upload = 0;
 		}
-		
+
 		$posx = ceil($x * $graph_width/$divisor);
 
 		// download
@@ -204,21 +217,16 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 		$downx = $upx = $movx+$posx;
 		$downy = $movy-$download;
 		$upy = $movy-$upload;
-		
+
 		$last_down = $down;
 		$last_up = $up;
-		$sum_down += $last_down;
-		$sum_up += $last_up;
 	}
-	
-	$avg_down = $sum_down/$divisor;
-	$avg_up = $sum_up/$divisor;
 
 	// horizontal scale
 	for($i=0; $i<$div+1; $i++)
 	{
 		$posx = ceil($i * $graph_width/$div);
-		
+
 		switch($bar)
 		{
 			case 'week':
@@ -240,7 +248,7 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 
 		imageline($img,$movx+$posx,$movy-$graph_height,$movx+$posx,$movy, IMG_COLOR_STYLED);
 		imageline($img,$movx+$posx,$movy-1,$movx+$posx,$movy+2,$textcolor);
-		$posx -= ceil(imagefontwidth(1) * strlen($str)/2); 
+		$posx -= ceil(imagefontwidth(1) * strlen($str)/2);
 		imagestring($img, 1, $movx+$posx+1, $movy+5, iconv('UTF-8','ISO-8859-2//TRANSLIT', $str), $textcolor);
 	}
 
@@ -252,15 +260,15 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 //	imageline($img,$movx-2,$movy+1,$movx+$graph_width+3,$movy+1,$textcolor);
 //	imageline($img,$movx-2,10,$movx+$graph_width+3,10,$textcolor);
 
-	if ($stats_max/1024>1)
+	if ($stats_max/(1000*1000) > 10)
 	{
-		$vdiv = 1024;
-		$suffix = 'kbit/s';
-	}
-	elseif ($stats_max/(1024*1024)>1)
-	{
-		$vdiv = 1024*1024;
+		$vdiv = 1000*1000;
 		$suffix = 'Mbit/s';
+	}
+	else if ($stats_max/1000 > 1)
+	{
+		$vdiv = 1000;
+		$suffix = 'kbit/s';
 	}
 	else
 	{
@@ -294,16 +302,22 @@ function TrafficGraph ($nodeid, $net=NULL, $customer=NULL, $bar=NULL, $fromdate=
 			$title = iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('unknown')).' (ID: '.$nodeid.')';
 	} else
 		$title =  iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('Network Statistics'));
-		
-	$center = ceil((imagesx($img) - (imagefontwidth(3) * strlen($title)))/2); 
+
+	$center = ceil((imagesx($img) - (imagefontwidth(3) * strlen($title)))/2);
 	imagestring($img, 3, $center, 8, $title, $textcolor);
+
+    // time period title
+    $title = date('Y/m/d H:i', $fromdate).' - '.date('Y/m/d H:i', $todate);
+	$center = ceil((imagesx($img) - (imagefontwidth(1) * strlen($title)))/2);
+	imagestring($img, 1, $center, 23, $title, $textcolor);
+
 	// summaries
 	imagestring($img, 2, 10, $ymax-30, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('DOWNLOAD')), $downloadcolor);
 	imagestring($img, 2, 10, $ymax-18, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('UPLOAD')), $uploadcolor);
 	imagestring($img, 2, 70, $ymax-30, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('MAX:')).' '.str_pad(round($down_max/$vdiv),7,' ',STR_PAD_LEFT).' '.$suffix, $downloadcolor);
 	imagestring($img, 2, 70, $ymax-18, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('MAX:')).' '.str_pad(round($up_max/$vdiv),7,' ',STR_PAD_LEFT).' '.$suffix, $uploadcolor);
-	imagestring($img, 2, 195, $ymax-30, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('AVG:')).' '.str_pad(round($avg_down/$vdiv),7,' ',STR_PAD_LEFT).' '.$suffix, $downloadcolor);
-	imagestring($img, 2, 195, $ymax-18, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('AVG:')).' '.str_pad(round($avg_up/$vdiv),7,' ',STR_PAD_LEFT).' '.$suffix, $uploadcolor);
+	imagestring($img, 2, 195, $ymax-30, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('AVG:')).' '.str_pad(floor($avg_down/$vdiv),7,' ',STR_PAD_LEFT).' '.$suffix, $downloadcolor);
+	imagestring($img, 2, 195, $ymax-18, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('AVG:')).' '.str_pad(floor($avg_up/$vdiv),7,' ',STR_PAD_LEFT).' '.$suffix, $uploadcolor);
 	imagestring($img, 2, 345, $ymax-30, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('LAST:')).' '.str_pad(round($last_down/$vdiv),7,' ',STR_PAD_LEFT).' '.$suffix, $downloadcolor);
 	imagestring($img, 2, 345, $ymax-18, iconv('UTF-8','ISO-8859-2//TRANSLIT', trans('LAST:')).' '.str_pad(round($last_up/$vdiv),7,' ',STR_PAD_LEFT).' '.$suffix, $uploadcolor);
 
@@ -315,13 +329,14 @@ $nodeid = isset($_GET['nodeid']) ? $_GET['nodeid'] : 0;
 $bar = isset($_GET['bar']) ? $_GET['bar'] : NULL;
 $from = isset($_GET['from']) ? $_GET['from'] : NULL;
 $to = isset($_GET['to']) ? $_GET['to'] : NULL;
-$customer = isset($_GET['customer']) ? $_GET['customer'] : NULL;
-$net = isset($_GET['net']) ? $_GET['net'] : NULL;
+$customer = !empty($_GET['customer']) ? $_GET['customer'] : NULL;
+$net = !empty($_GET['net']) ? $_GET['net'] : NULL;
+$add = !empty($_GET['add']) ? $_GET['add'] : NULL;
 
 if(empty($_GET['popup']))
 {
 	header('Content-type: image/png');
-	TrafficGraph($nodeid, $net, $customer, $bar, $from, $to);
+	TrafficGraph($nodeid, $net, $customer, $bar, $from, $to, $add);
 	die;
 }
 
@@ -329,6 +344,7 @@ $SMARTY->assign('nodeid', $nodeid);
 $SMARTY->assign('bar', $bar);
 $SMARTY->assign('to', $to);
 $SMARTY->assign('from', $from);
+$SMARTY->assign('add', $add);
 $SMARTY->assign('customer', $customer);
 $SMARTY->assign('net', $net);
 $SMARTY->display('trafficgraph.html');
