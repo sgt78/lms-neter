@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -229,7 +229,7 @@ elseif(isset($_GET['type']) && $_GET['type'] == 'invoices')
 		if(is_array($inv_record))
 			foreach($inv_record as $r)
 				$record .= $r;
-		
+
 		foreach($items as $idx => $row)
 		{
 			$docid = $row['docid'];
@@ -256,24 +256,24 @@ elseif(isset($_GET['type']) && $_GET['type'] == 'invoices')
 				$rectax[$item['taxid']]['val'] -= $refitemval;
 				$rec['brutto'] -= $refitemsum;
 			}
-		
+
 			$sum = $row['value'] * $row['count'];
 			$val = round($row['value'] / ($taxes[$taxid]['value']+100) * 100, 2) * $row['count'];
 			$tax = $sum - $val;
-			
+
 			$rectax[$taxid]['tax'] += $tax;
-            		$rectax[$taxid]['val'] += $val;
+            $rectax[$taxid]['val'] += $val;
 			$rec['brutto'] += $sum;
 
 			if($row['docid'] != $items[$idx+1]['docid'])
 			{
 				$line = $record ? $record : $inv_record;
 				$i++;
-			
+
 				$clariondate = intval($doc['cdate']/86400)+61731;
 				$date = date($date_format, $doc['cdate']);
 				$number = docnumber($doc['number'], $doc['template'], $doc['cdate'], $doc['extnumber']);
-				
+
 				$line = str_replace('%CLARION_DATE', $clariondate, $line);
 				$line = str_replace('%NUMBER', $number, $line);
 				$line = str_replace('%DATE', $date, $line);
@@ -293,6 +293,9 @@ elseif(isset($_GET['type']) && $_GET['type'] == 'invoices')
 				$line = str_replace('%ABSVALUE', str_replace('-','',form_num($rec['brutto'])), $line);
 
 				$v = 0;
+				$netto_v = 0;
+				$tax_v = 0;
+
 				foreach($rectax as $id => $tax)
 				{
 					$v++;
@@ -300,10 +303,11 @@ elseif(isset($_GET['type']) && $_GET['type'] == 'invoices')
 					$line = str_replace('%TAXED'.$v, form_num($taxes[$id]['taxed']), $line);
 					$line = str_replace('%VAT'.$v, form_num($tax['tax']), $line);
 					$line = str_replace('%NETTO'.$v, form_num($tax['val']), $line);
-					
-					$netto_v += $tax['tax'];
-					$tax_v += $tax['val'];
+
+					$netto_v += $tax['val'];
+					$tax_v += $tax['tax'];
 				}
+
 				for($x=$v+1; $x<=8; $x++)
 				{
 					$line = str_replace('%VATP'.$x, '0.00', $line);
@@ -311,7 +315,7 @@ elseif(isset($_GET['type']) && $_GET['type'] == 'invoices')
 					$line = str_replace('%NETTO'.$x, '0.00', $line);
 					$line = str_replace('%TAXED'.$x, '0.00', $line);
 				}
-				
+
 				$line = str_replace('%VAT', form_num($tax_v), $line);
 				$line = str_replace('%NETTO', form_num($netto_v), $line);
 
@@ -327,14 +331,14 @@ elseif(isset($_GET['type']) && $_GET['type'] == 'invoices')
 					else
 						$line = str_replace('%SUFFIX', '', $line);
 				}
-	
+
 				if(strpos($line,'%TYPE')!==FALSE)
 				{
 					if($doc['reference'])
 						$type = $cnote_type;
 					else
 						$type = $invoice_type;
-					
+
 					$line = str_replace('%TYPE', $type, $line);
 				}
 
@@ -353,9 +357,9 @@ elseif(isset($_GET['type']) && $_GET['type'] == 'invoices')
 
 				$line = str_replace('%N', $doc['number'], $line);
 				$line = str_replace('%I', $i, $line);
-		    	
+
 				print $line.$endln;
-				
+
 				unset($rec);
 				unset($rectax);
 			}

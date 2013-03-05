@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -39,14 +39,18 @@ if(isset($_POST['tariff']))
 
 	$tariff['value'] = str_replace(',','.',$tariff['value']);
 
-	if(!preg_match('/^[-]?[0-9.,]+$/', $tariff['value']))
+	if (!preg_match('/^[-]?[0-9.,]+$/', $tariff['value']))
 		$error['value'] = trans('Incorrect subscription value!');
 
-	if($tariff['name'] == '')
+	if ($tariff['name'] == '')
 		$error['name'] = trans('Subscription name required!');
-	else
-		if($LMS->GetTariffIDByName($tariff['name']))
-			$error['name'] = trans('Subscription $0 already exists!',$tariff['name']);
+	else if (!$error) {
+		if ($DB->GetOne('SELECT id FROM tariffs WHERE name = ? AND value = ? AND period = ?',
+            array($tariff['name'], str_replace(',', '.', $tariff['value']), $tariff['period']))
+        ) {
+			$error['name'] = trans('Subscription with specified name and value already exists!');
+        }
+    }
 
 	$items = array('uprate', 'downrate', 'upceil', 'downceil', 'climit', 'plimit', 'dlimit');
 

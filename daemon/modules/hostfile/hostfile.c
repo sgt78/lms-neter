@@ -1,7 +1,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -34,8 +34,8 @@
 
 char * itoha(int i)
 {
-        static char string[8];
-	sprintf(string, "%x", i);
+    static char string[8];
+	sprintf(string, "%02X", i);
 	return string;
 }
 

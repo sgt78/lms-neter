@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -429,7 +429,7 @@ $_LANG['Enter alias name'] = 'Wprowadź alias';
 $_LANG['Enter beginning of DHCP range (optional)'] = 'Wprowadź początek zakresu DHCP (opcjonalnie)';
 $_LANG['Enter/change your registration info'] = 'Wprowadź/zmień swoje dane rejestracyjne';
 $_LANG['Enter city'] = 'Wprowadź nazwę miasta';
-$_LANG['Enter coma separated list of hosts or networks'] = 'Wprowadź listę hostów lub sieci oddzielonych przecinkami';
+$_LANG['Enter comma-separated list of hosts or networks (optional)'] = 'Wprowadź listę hostów lub sieci oddzielonych przecinkami (opcjonalnie)';
 $_LANG['Enter comment'] = 'Wprowadź komentarz';
 $_LANG['Enter contact phone'] = 'Wprowadź telefon kontaktowy';
 $_LANG['Enter country'] = 'Wprowadź kraj';
@@ -1243,7 +1243,6 @@ $_LANG['SYSTEM ACCOUNT'] = 'KONTO SYSTEMOWE';
 $_LANG['System information and management'] = 'Informacje o systemie i administracja';
 $_LANG['System version:'] = 'Wersja systemu:';
 $_LANG['Table of financial operations'] = 'Tabela operacji finansowych';
-$_LANG['Subscription $0 already exists!'] = 'Taryfa $0 już istnieje!';
 $_LANG['Subscription Edit: $0'] = 'Edycja taryfy: $0';
 $_LANG['Subscription Info: $0'] = 'Informacje o taryfie: $0';
 $_LANG['Subscription List'] = 'Lista taryf';
@@ -1251,7 +1250,7 @@ $_LANG['Subscription name required!'] = 'Nazwa taryfy jest wymagana!';
 $_LANG['Subscriptions and Network Finances Management'] = 'Taryfy i zarządzanie finansami sieci';
 $_LANG['Subscriptions List'] = 'Lista taryf';
 $_LANG['Subscription with assigned customers cannot be deleted!'] = 'Taryfa z przypisanymi klientami nie może zostać usunięta!';
-$_LANG['Subscription with specified name already exists!'] = 'Taryfa o określonej nazwie już istnieje!';
+$_LANG['Subscription with specified name and value already exists!'] = 'Taryfa o określonej nazwie i kwocie już istnieje!';
 $_LANG['summaries hiding'] = 'ukrywanie zestawień';
 $_LANG['Tax:'] = 'PTU:';
 $_LANG['Tax Rate:'] = 'St. PTU:';
@@ -1357,7 +1356,6 @@ $_LANG['Value:'] = 'Wartość:';
 $_LANG['Value and description:'] = 'Wartość i opis:';
 $_LANG['Value of tax rate which will be selected by default on tax rates lists. Default: 22.0'] = 'Wartość stawki procentowej, która ma być domyślnie zaznaczona na listach wyboru stawki. Domyślnie: 22.0';
 $_LANG['Value of option "$0" must be a number grater than zero!'] = 'Wartość opcji "$0" musi być większa od zera!';
-$_LANG['Value required!'] = 'Wartość wymagana!';
 $_LANG['View'] = 'Podgląd';
 $_LANG['waiting'] = 'oczekujący';
 $_LANG['Waiting:'] = 'Oczekujący:';
@@ -2249,7 +2247,6 @@ $_LANG['Domain type:'] = 'Typ domeny:';
 $_LANG['Records number:'] = 'Liczba rekordów:';
 $_LANG['Domain admin e-mail address.'] = 'Adres e-mail administratora domeny.';
 $_LANG['Are you sure you want to delete this record?'] = 'Jesteś pewien, że chcesz usunąć ten rekord?';
-$_LANG['You can\'t add PTR record to this domain!'] = 'Nie możesz dodać rekordu PTR do tej domeny!';
 $_LANG['Enter IP address of mailserver'] = 'Wprowadź adres IP serwera pocztowego';
 $_LANG['Enter IP address of master NS'] = 'Wprowadź adres IP głównego serwera nazw';
 $_LANG['Enter IP address of webserver'] = 'wprowadź adres IP serwera www';
@@ -2393,5 +2390,64 @@ $_LANG['There are no packages in database.'] = 'Brak paczek w bazie danych.';
 $_LANG['period undefined'] = 'okres niezdefiniowany';
 $_LANG['Select time period of tariff accounting'] = 'Wybierz okres naliczania taryfy';
 $_LANG['undefined'] = 'niezdefiniowany';
+$_LANG['Activation'] = 'Aktywacja';
+$_LANG['Add assignment'] = 'Dodaj powiązanie';
+$_LANG['Add promotion'] = 'Dodaj promocję';
+$_LANG['Are you sure, you want to delete this assignment?'] = 'Czy na pewno chcesz usunąć to powiązanie?';
+$_LANG['Are you sure, you want to delete this promotion?'] = 'Czy na pewno chcesz usunąć tą promocję?';
+$_LANG['Are you sure, you want to delete this schema?'] = 'Czy na pewno chcesz usunąć ten schemat?';
+$_LANG['Are you sure, you want to remove promotion \\\'$0\\\'?'] = 'Czy na pewno chcesz usunąć promocję \\\'$0\\\'?';
+$_LANG['Are you sure, you want to remove schema \\\'$0\\\'?'] = 'Czy na pewno chcesz usunąć schemat \\\'$0\\\'?';
+$_LANG['Display this form again, when this promotion is saved'] = 'Wyświetl formularz ponownie po dodaniu tej promocji';
+$_LANG['Display this form again, when this schema is saved'] = 'Wyświetl formularz ponownie po dodaniu tego schematu';
+$_LANG['Edit assignment'] = 'Edytuj powiązanie';
+$_LANG['Enter activation value'] = 'Wprowadź kwotę opłaty aktywacyjnej';
+$_LANG['Enter promotion name'] = 'Wprowadź nazwę promocji';
+$_LANG['Enter schema name'] = 'Wprowadź nazwę schematu';
+$_LANG['Enter subscription value for specified period'] = 'Wprowadź kwotę abonamentu w wybranym okresie';
+$_LANG['List of promotions'] = 'Lista promocji';
+$_LANG['Months $0-$1'] = 'M-ce $0-$1';
+$_LANG['Month $0'] = 'M-c $0';
+$_LANG['New Promotion'] = 'Nowa promocja';
+$_LANG['New Schema'] = 'Nowy schemat';
+$_LANG['Periods:'] = 'Okresy:';
+$_LANG['Promotion:'] = 'Promocja:';
+$_LANG['Promotions'] = 'Promocje';
+$_LANG['Promotions List'] = 'Lista promocji';
+$_LANG['Promotion\'s Schemas ($0):'] = 'Schematy promocji ($0)';
+$_LANG['Promotion\'s Tariffs ($0):'] = 'Taryfy promocji ($0)';
+$_LANG['Promotion Edit: $0'] = 'Edycja promocji: $0';
+$_LANG['Promotion Info: $0'] = 'Informacje o promocji: $0';
+$_LANG['Promotion name is required!'] = 'Nazwa promocji jest wymagana!';
+$_LANG['Schemas:'] = 'Schematy:';
+$_LANG['Schema\'s Tariffs ($0):'] = 'Taryfy schematu ($0)';
+$_LANG['Schema Edit: $0'] = 'Edycja schematu: $0';
+$_LANG['Schema Info: $0'] = 'Informacje o schemacie: $0';
+$_LANG['Schema name is required!'] = 'Nazwa schematu jest wymagana!';
+$_LANG['Select length of the period (in months)'] = 'Wybierz długość okresu (w miesiącach)';
+$_LANG['Select subscription'] = 'Wybierz taryfę';
+$_LANG['Tariffs:'] = 'Taryfy:';
+$_LANG['There are no promotions in database.'] = 'Brak promocji w bazie danych.';
+$_LANG['This promotion hasn\'t got any schemas.'] = 'Ta promocja nie posiada żadnych schematów.';
+$_LANG['This promotion has no assigned tariffs.'] = 'Ta promocja nie posiada przypisanych taryf.';
+$_LANG['This schema has no assigned tariffs.'] = 'Ten schemat nie posiada przypisanych taryf.';
+$_LANG['Unable to edit two rows at once!'] = 'Nie można edytować dwóch rekordów jednocześnie!';
+$_LANG['unlimited'] = 'nieokreślony';
+$_LANG['Activation payment'] = 'Opłata aktywacyjna';
+$_LANG['Not possible to use this period here!'] = 'Nie można zastosować wybranego okresu!';
+$_LANG['Promotion start date is required!'] = 'Wymagana jest data początku promocji!';
+$_LANG['Schema'] = 'Schemat';
+$_LANG['Select accounting period (optional) - overwrites customer liability\'s period'] = 'Wybierz okres rozliczeniowy (opcjonalnie) - zastępuje okres zobowiązania klienta';
+$_LANG['Select promotion schema'] = 'Wybierz schemat promocji';
+$_LANG['per promotion schema'] = 'wg schematu promocji';
+$_LANG['Additional subscription after promotion period:'] = 'Dodatkowa taryfa po okresie promocji:';
+$_LANG['Additional subscription is useless when contract prolongation is not set!'] = 'Dodatkowa taryfa nie ma sensu gdy nie zaznaczono przedłużenia umowy!';
+$_LANG['Contract prolongation after promotion period:'] = 'Przedłużenie umowy po okresie promocji:';
+$_LANG['Enter phone number for SMS notification (optional)'] = 'Wprowadź numer telefonu dla powiadomień SMS';
+$_LANG['Enter user login'] = 'Wprowadź login użytkownika';
+$_LANG['Enter user name'] = 'Wprowadź nazwisko i imię użytkownika';
+$_LANG['Enter user position (optional)'] = 'Wprowadź stanowisko użytkownika (optional)';
+$_LANG['Notification:'] = 'Powiadomienia:';
+$_LANG['SMS message is empty!'] = 'Wiadomość SMS jest pusta!';
 
 ?>

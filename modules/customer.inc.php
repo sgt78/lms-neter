@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -27,7 +27,14 @@
 if($layout['module'] != 'customeredit')
 {
 	$customerinfo = $LMS->GetCustomer($customerid);
+
+    if(!$customerinfo || $customerinfo['deleted'])
+    {
+        $SESSION->redirect('?m=customerlist');
+    }
+
 	$SMARTY->assign_by_ref('customerinfo', $customerinfo);
+
 }
 
 $expired = !empty($_GET['expired']) ? true : false;

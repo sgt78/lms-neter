@@ -3,7 +3,7 @@
 /*
  *  LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -30,8 +30,6 @@ $_LANG['Cancel'] = 'Anuluj';
 $_LANG['Click icon on the left to see request details'] = 'Kliknij ikonę po lewej stronie aby zobaczyć szczegóły zgłoszenia';
 $_LANG['Date:'] = 'Data:';
 $_LANG['dead'] = 'martwy';
-$_LANG['Debug email:'] = 'Testowy e-mail:';
-$_LANG['Debug email for new tickets notifications.'] = 'Testowy adres e-mail, pod który będą wysyłane powiadomienia o nowych zgłoszeniach.';
 $_LANG['Default queue:'] = 'Domyślna kolejka:';
 $_LANG['Default user:'] = 'Domyślny użytkownik:';
 $_LANG['Details'] = 'Szczegóły';

@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -105,7 +105,7 @@ switch($mode)
 				    $descriptions[$row['id']] = escape_js(trans('Address:').' '.$row['address']);
 				    continue;
 				}
-				else if (preg_match("~$search~i",$row['Post_address'])) {
+				else if (preg_match("~$search~i",$row['post_address'])) {
 				    $descriptions[$row['id']] = escape_js(trans('Address:').' '.$row['post_address']);
 				    continue;
 				}
@@ -117,9 +117,9 @@ switch($mode)
 			}
 			header('Content-type: text/plain');
 			if ($eglible) {
-				print preg_replace('/$/',"\");\n","this.eligible = new Array(\"".implode('","',$eglible));
-				print preg_replace('/$/',"\");\n","this.descriptions = new Array(\"".implode('","',$descriptions));
-				print preg_replace('/$/',"\");\n","this.actions = new Array(\"".implode('","',$actions));
+				print "this.eligible = [\"".implode('","',$eglible)."\"];\n";
+				print "this.descriptions = [\"".implode('","',$descriptions)."\"];\n";
+				print "this.actions = [\"".implode('","',$actions)."\"];\n";
 			} else {
 				print "false;\n";
 			}
@@ -176,18 +176,42 @@ switch($mode)
 			foreach($candidates as $idx => $row) {
 				$actions[$row['id']] = '?m=nodeinfo&id='.$row['id'];
 				$eglible[$row['id']] = escape_js($row['name']);
-				if (preg_match("~^$search\$~i",$row['id'])) 	{ $descriptions[$row['id']] = escape_js(trans('Id').': '.$row['id']); continue; }
-//				if (preg_match("~$search~i",$row['name'])) 	{ $descriptions[$row['id']] = escape_js(trans('Name').': '.$row['name']); continue; }
-				if (preg_match("~$search~i",$row['ip'])) 	{ $descriptions[$row['id']] = trans('IP').': '.$row['ip']; continue; }
-				if (preg_match("~$search~i",$row['ip_pub'])) 	{ $descriptions[$row['id']] = trans('IP').': '.$row['ip_pub']; continue; }
-				if (preg_match("~".macformat($search)."~i",$row['mac'])) { $descriptions[$row['id']] = trans('MAC').': '.$row['mac']; continue; }
+
+				if (preg_match("~^$search\$~i", $row['id'])) {
+				    $descriptions[$row['id']] = escape_js(trans('Id').': '.$row['id']);
+				    continue;
+				}
+				if (preg_match("~$search~i", $row['name'])) {
+				    $descriptions[$row['id']] = escape_js(trans('Name').': '.$row['name']);
+				    continue;
+				}
+				if (preg_match("~$search~i", $row['ip'])) {
+				    $descriptions[$row['id']] = trans('IP').': '.$row['ip'];
+				    continue;
+				}
+				if (preg_match("~$search~i", $row['ip_pub'])) {
+				    $descriptions[$row['id']] = trans('IP').': '.$row['ip_pub'];
+				    continue;
+				}
+				if (preg_match("~".macformat($search)."~i", $row['mac'])) {
+				    $macs = explode(',', $row['mac']);
+				    foreach ($macs as $mac) {
+    				    if (preg_match("~".macformat($search)."~i", $mac)) {
+        				    $descriptions[$row['id']] = trans('MAC').': '.$mac;
+	                    }
+			        }
+			        if (count($macs) > 1) {
+			            $descriptions[$row['id']] .= ',...';
+			        }
+				    continue;
+				}
 				$descriptions[$row['id']] = '';
 			}
 			header('Content-type: text/plain');
 			if ($eglible) {
-				print preg_replace('/$/',"\");\n","this.eligible = new Array(\"".implode('","',$eglible));
-				print preg_replace('/$/',"\");\n","this.descriptions = new Array(\"".implode('","',$descriptions));
-				print preg_replace('/$/',"\");\n","this.actions = new Array(\"".implode('","',$actions));
+				print "this.eligible = [\"".implode('","',$eglible)."\"];\n";
+				print "this.descriptions = [\"".implode('","',$descriptions)."\"];\n";
+				print "this.actions = [\"".implode('","',$actions)."\"];\n";
 			} else {
 				print "false;\n";
 			}
@@ -244,9 +268,9 @@ switch($mode)
 			}
 			header('Content-type: text/plain');
 			if ($eglible) {
-				print preg_replace('/$/',"\");\n","this.eligible = new Array(\"".implode('","',$eglible));
-				print preg_replace('/$/',"\");\n","this.descriptions = new Array(\"".implode('","',$descriptions));
-				print preg_replace('/$/',"\");\n","this.actions = new Array(\"".implode('","',$actions));
+				print "this.eligible = [\"".implode('","',$eglible)."\"];\n";
+				print "this.descriptions = [\"".implode('","',$descriptions)."\"];\n";
+				print "this.actions = [\"".implode('","',$actions)."\"];\n";
 			} else {
 				print "false;\n";
 			}
@@ -298,9 +322,9 @@ switch($mode)
 			}
 			header('Content-type: text/plain');
 			if ($eglible) {
-				print preg_replace('/$/',"\");\n","this.eligible = new Array(\"".implode('","',$eglible));
-				print preg_replace('/$/',"\");\n","this.descriptions = new Array(\"".implode('","',$descriptions));
-				print preg_replace('/$/',"\");\n","this.actions = new Array(\"".implode('","',$actions));
+				print "this.eligible = [\"".implode('","',$eglible)."\"];\n";
+				print "this.descriptions = [\"".implode('","',$descriptions)."\"];\n";
+				print "this.actions = [\"".implode('","',$actions)."\"];\n";
 			} else {
 				print "false;\n";
 			}

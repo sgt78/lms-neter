@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -116,7 +116,7 @@ if($customerid = $voipaccountdata['ownerid'])
 {
 	include(MODULES_DIR.'/customer.inc.php');
 }
-																				
+
 $SMARTY->assign('customers', $customers);
 $SMARTY->assign('error', $error);
 $SMARTY->assign('voipaccountdata', $voipaccountdata);

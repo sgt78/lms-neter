@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -28,8 +28,8 @@ $id = intval($_GET['id']);
 
 if($id && $_GET['is_sure']=="1" && $LMS->TariffExists($id))
 {
-	if(!$DB->GetOne('SELECT COUNT(customerid) FROM assignments WHERE tariffid = ?', array($id)))
-		$LMS->TariffDelete($id);	
+	if(!$DB->GetOne('SELECT 1 FROM assignments WHERE tariffid = ? LIMIT 1', array($id)))
+		$LMS->TariffDelete($id);
 }
 
 $SESSION->redirect('?m=tarifflist');

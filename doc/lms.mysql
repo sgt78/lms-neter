@@ -44,6 +44,9 @@ DROP TABLE IF EXISTS rttickets;
 DROP TABLE IF EXISTS rtrights;
 DROP TABLE IF EXISTS stats;
 DROP TABLE IF EXISTS tariffs;
+DROP TABLE IF EXISTS promotions;
+DROP TABLE IF EXISTS promotionschemas;
+DROP TABLE IF EXISTS promotionassignments;
 DROP TABLE IF EXISTS liabilities;
 DROP TABLE IF EXISTS customergroups;
 DROP TABLE IF EXISTS customerassignments;
@@ -90,19 +93,21 @@ DROP TABLE IF EXISTS supermasters;
 #
 
 CREATE TABLE users (
-  id int(11) NOT NULL auto_increment,
-  login varchar(32) NOT NULL DEFAULT '',
-  name varchar(64) NOT NULL DEFAULT '',
-  email varchar(255) NOT NULL DEFAULT '',
+  id int(11)            NOT NULL auto_increment,
+  login varchar(32)     NOT NULL DEFAULT '',
+  name varchar(64)      NOT NULL DEFAULT '',
+  email varchar(255)    NOT NULL DEFAULT '',
+  phone varchar(32)     DEFAULT NULL,
   position varchar(255) NOT NULL DEFAULT '',
-  rights varchar(64) NOT NULL DEFAULT '',
-  hosts varchar(255) NOT NULL DEFAULT '',
-  passwd varchar(255) NOT NULL DEFAULT '',
+  rights varchar(64)    NOT NULL DEFAULT '',
+  hosts varchar(255)    NOT NULL DEFAULT '',
+  passwd varchar(255)   NOT NULL DEFAULT '',
+  ntype smallint        DEFAULT NULL,
   lastlogindate int(11) NOT NULL DEFAULT '0',
   lastloginip varchar(16) NOT NULL DEFAULT '',
   failedlogindate int(11) NOT NULL DEFAULT '0',
   failedloginip varchar(16) NOT NULL DEFAULT '',
-  deleted tinyint(1) NOT NULL DEFAULT '0',
+  deleted tinyint(1)    NOT NULL DEFAULT '0',
   PRIMARY KEY  (id),
   UNIQUE KEY login (login)
 ) ENGINE=InnoDB;
@@ -728,8 +733,57 @@ CREATE TABLE tariffs (
   quota_sql_limit int(11) 	DEFAULT NULL,
   description text 	NOT NULL,
   PRIMARY KEY  (id),
-  UNIQUE KEY name (name),
+  UNIQUE KEY name (name, value, period),
   INDEX type (type)
+) ENGINE=InnoDB;
+
+# --------------------------------------------------------
+#
+# Structure of table promotions
+#
+CREATE TABLE promotions (
+    id int(11)          NOT NULL auto_increment,
+    name varchar(255)   NOT NULL,
+    description text    DEFAULT NULL,
+    disabled tinyint(1) DEFAULT '0' NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY name (name)
+) ENGINE=InnoDB;
+
+# --------------------------------------------------------
+#
+# Structure of table promotionschemas
+#
+CREATE TABLE promotionschemas (
+    id int(11)          NOT NULL auto_increment,
+    name varchar(255)   NOT NULL,
+    description text    DEFAULT NULL,
+    data text           DEFAULT NULL,
+    promotionid int(11) DEFAULT NULL
+        REFERENCES promotions (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    disabled tinyint(1) DEFAULT '0' NOT NULL,
+    continuation tinyint(1) DEFAULT NULL,
+    ctariffid int(11) DEFAULT NULL
+        REFERENCES tariffs (id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    PRIMARY KEY (id),
+    UNIQUE KEY promotionid (promotionid, name),
+    INDEX ctariffid (ctariffid)
+) ENGINE=InnoDB;
+
+# --------------------------------------------------------
+#
+# Structure of table promotionassignments
+#
+CREATE TABLE promotionassignments (
+    id int(11)          NOT NULL auto_increment,
+    promotionschemaid int(11) DEFAULT NULL
+        REFERENCES promotionschemas (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    tariffid int(11)    DEFAULT NULL
+        REFERENCES tariffs (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    data text           DEFAULT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY promotionschemaid (promotionschemaid, tariffid),
+    INDEX tariffid (tariffid)
 ) ENGINE=InnoDB;
 
 # --------------------------------------------------------
@@ -1425,4 +1479,4 @@ CREATE TABLE supermasters (
 
 
 # --------------------------------------------------------
-INSERT INTO dbinfo (keytype, keyvalue) VALUES ('dbversion', '2010122700');
+INSERT INTO dbinfo (keytype, keyvalue) VALUES ('dbversion', '2011031000');

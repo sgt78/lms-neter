@@ -81,10 +81,12 @@
                     <member>login - login</member>
                     <member>name - first and last name</member>
                     <member>email - user's email address</member>
+                    <member>phone - user's phone number</member>
                     <member>position - user's position name</member>
                     <member>rights - binary access rights</member>
                     <member>hosts - list of hosts allowed to login</member>
                     <member>passwd - password to login</member>
+                    <member>ntype - supported notofication types</member>
                     <member>lastlogindate - date of last login</member>
                     <member>lastloginip - IP of last login</member>
                     <member>failedlogindate - date of last failed login attempt</member>
@@ -352,6 +354,37 @@
                     <member>quota_ftp_limit - quota limit of ftp account</member>
                     <member>quota_sql_limit - quota limit of sql account</member>
                     <member>description - description for subscription</member>
+               </simplelist>
+          </sect2>
+          <sect2 id="promotions">
+               <title>Promotions ('promotions')</title>
+               <simplelist>
+                    <member>id - serial number</member>
+                    <member>name - promotion name</member>
+                    <member>description - additional information</member>
+                    <member>disabled - status</member>
+               </simplelist>
+          </sect2>
+          <sect2 id="promotionschemas">
+               <title>Promotion Schemas ('promotionschemas')</title>
+               <simplelist>
+                    <member>id - serial number</member>
+                    <member>name - schema name</member>
+                    <member>description - additional information</member>
+                    <member>promotionid - promotion identifier</member>
+                    <member>data - schema periods definition</member>
+                    <member>disabled - status</member>
+                    <member>continuation - contract continuation option</member>
+                    <member>ctariffid - additional continuation tariff identifier</member>
+               </simplelist>
+          </sect2>
+          <sect2 id="promotionassignments">
+               <title>Schema-To-Tariff assignments ('promotionassignments')</title>
+               <simplelist>
+                    <member>id - serial number</member>
+                    <member>promotionschemaid - schema identifier</member>
+                    <member>tariffid - subscription identifier</member>
+                    <member>data - schema values definition</member>
                </simplelist>
           </sect2>
           <sect2 id="liabilities">

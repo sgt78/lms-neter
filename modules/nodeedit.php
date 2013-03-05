@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -161,9 +161,10 @@ if(isset($_POST['nodeedit']) && !isset($_GET['newmac']))
 		$error['passwd'] = trans('Password is too long (max.32 characters)!');
 
 	if(!isset($nodeedit['access']))	$nodeedit['access'] = 0;
-    if(!isset($nodeedit['warning'])) $nodeedit['warning'] = 0;
+	if(!isset($nodeedit['warning'])) $nodeedit['warning'] = 0;
 	if(!isset($nodeedit['chkmac']))	$nodeedit['chkmac'] = 0;
 	if(!isset($nodeedit['halfduplex'])) $nodeedit['halfduplex'] = 0;
+	if(!isset($nodeedit['netdev'])) $nodeedit['netdev'] = 0;
 
 	if($nodeinfo['netdev'] != $nodeedit['netdev'] && $nodeedit['netdev'] != 0)
 	{
@@ -210,7 +211,12 @@ if(isset($_POST['nodeedit']) && !isset($_GET['newmac']))
 
 	if(!$error)
 	{
+        $nodeedit = $LMS->ExecHook('node_edit_before', $nodeedit);
+
 		$LMS->NodeUpdate($nodeedit, ($customerid != $nodeedit['ownerid']));
+
+        $nodeedit = $LMS->ExecHook('node_edit_after', $nodeedit);
+
 		$SESSION->redirect('?m=nodeinfo&id='.$nodeedit['id']);
 	}
 
@@ -252,6 +258,8 @@ if(!isset($CONFIG['phpui']['big_networks']) || !chkconfig($CONFIG['phpui']['big_
 {
     $SMARTY->assign('customers', $LMS->GetCustomerNames());
 }
+
+$nodeinfo = $LMS->ExecHook('node_edit_init', $nodeinfo);
 
 $SMARTY->assign('cstateslist',$LMS->GetCountryStates());
 $SMARTY->assign('netdevices', $LMS->GetNetDevNames());

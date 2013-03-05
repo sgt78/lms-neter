@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -62,8 +62,8 @@ if(isset($_GET['ajax']))
 		$descriptions[$row['item']] = escape_js($row['entries'].' '.trans('entries'));
 	}
 	if ($eglible) {
-		print preg_replace('/$/',"\");\n","this.eligible = new Array(\"".implode('","',$eglible));
-		print preg_replace('/$/',"\");\n","this.descriptions = new Array(\"".implode('","',$descriptions));
+		print "this.eligible = [\"".implode('","',$eglible)."\"];\n";
+		print "this.descriptions = [\"".implode('","',$descriptions)."\"];\n";
 	} else {
 		print "false;\n";
 	}

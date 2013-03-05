@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -40,8 +40,8 @@ if(!$LMS->VoipAccountExists($_GET['id']))
 	}
 
 $voipaccountid = $_GET['id'];
-$customerid = $LMS->GetVoipAccountOwner($voipaccountid);
 $voipaccountinfo = $LMS->GetVoipAccount($voipaccountid);
+$customerid = $voipaccountinfo['ownerid'];
 
 include(MODULES_DIR.'/customer.inc.php');
 

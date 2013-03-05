@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -24,17 +24,7 @@
  *  $Id$
  */
 
-if(!preg_match('/^[0-9]+$/', $_GET['id']))
-{
-	$SESSION->redirect('?m=customerlist');
-}
-
-if($LMS->CustomerExists($_GET['id']) == 0)
-{
-	$SESSION->redirect('?m=customerlist');
-}
-
-$customerid = $_GET['id'];
+$customerid = intval($_GET['id']);
 
 include(MODULES_DIR.'/customer.inc.php');
 

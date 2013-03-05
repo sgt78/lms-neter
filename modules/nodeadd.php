@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -62,8 +62,8 @@ if(isset($_GET['ajax']))
 		$descriptions[$row['item']] = escape_js($row['entries'].' '.trans('entries'));
 	}
 	if ($eglible) {
-		print preg_replace('/$/',"\");\n","this.eligible = new Array(\"".implode('","',$eglible));
-		print preg_replace('/$/',"\");\n","this.descriptions = new Array(\"".implode('","',$descriptions));
+		print "this.eligible = [\"".implode('","',$eglible)."\"];\n";
+		print "this.descriptions = [\"".implode('","',$descriptions)."\"];\n";
 	} else {
 		print "false;\n";
 	}
@@ -220,6 +220,8 @@ if(isset($_POST['nodedata']) && !isset($_GET['newmac']))
 
 	if(!$error)
 	{
+        $nodedata = $LMS->ExecHook('node_add_before', $nodedata);
+
 		$nodeid = $LMS->NodeAdd($nodedata);
 
 		if($nodedata['nodegroup'] != '0')
@@ -227,6 +229,9 @@ if(isset($_POST['nodedata']) && !isset($_GET['newmac']))
 			$DB->Execute('INSERT INTO nodegroupassignments (nodeid, nodegroupid)
 				VALUES (?, ?)', array($nodeid, intval($nodedata['nodegroup'])));
 		}
+
+        $nodedata['id'] = $nodeid;
+        $nodedata = $LMS->ExecHook('node_add_after', $nodedata);
 
 		if(!isset($nodedata['reuse']))
 		{
@@ -239,9 +244,10 @@ if(isset($_POST['nodedata']) && !isset($_GET['newmac']))
 		$nodedata['ownerid'] = $ownerid;
 		$nodedata['reuse'] = '1';
 	}
-	else
+	else {
 		if($nodedata['ipaddr_pub']=='0.0.0.0')
 			$nodedata['ipaddr_pub'] = '';
+    }
 }
 else
 {
@@ -271,6 +277,8 @@ if(!isset($CONFIG['phpui']['big_networks']) || !chkconfig($CONFIG['phpui']['big_
     $SMARTY->assign('customers', $LMS->GetCustomerNames());
 }
 
+$nodedata = $LMS->ExecHook('node_add_init', $nodedata);
+
 $SMARTY->assign('cstateslist',$LMS->GetCountryStates());
 $SMARTY->assign('netdevices', $LMS->GetNetDevNames());
 $SMARTY->assign('error', $error);
@@ -278,4 +286,3 @@ $SMARTY->assign('nodedata', $nodedata);
 $SMARTY->display('nodeadd.html');
 
 ?>
-

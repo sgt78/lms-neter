@@ -2,7 +2,7 @@
 #
 #  LMS version 1.11-cvs
 #
-#  Copyright (C) 2001-2010 LMS Developers
+#  Copyright (C) 2001-2011 LMS Developers
 #
 #  Please, see the doc/AUTHORS for more information about authors!
 #
@@ -101,7 +101,7 @@ if($help)
 {
 	print STDERR <<EOF;
 lms-makewarnings, version $_version
-(C) 2001-2010 LMS Developers
+(C) 2001-2011 LMS Developers
 
 -C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
 -h, --help			print this help and exit;
@@ -116,7 +116,7 @@ if($version)
 {
 	print STDERR <<EOF;
 lms-makewarnings, version $_version
-(C) 2001-2010 LMS Developers
+(C) 2001-2011 LMS Developers
 EOF
 	exit 0;
 }
@@ -129,7 +129,7 @@ if(!$configfile)
 if(!$quiet)
 {
 	print STDOUT "lms-makewarnings, version $_version\n";
-	print STDOUT "(C) 2001-2010 LMS Developers\n";
+	print STDOUT "(C) 2001-2011 LMS Developers\n";
 	print STDOUT "Using file $configfile as config.\n";
 }
 
@@ -283,7 +283,15 @@ while (my $row = $dbq->fetchrow_hashref())
 	if($customergroupscount || !$inicustomergroups)
 	{
 		my $balance = $row->{'balance'};
-		my $sdbq = $dbase->prepare("SELECT MAX(at) AS at, SUM((value * (100 - discount)) / 100) AS value FROM assignments, tariffs WHERE tariffid = tariffs.id AND period = ".MONTH." AND (datefrom <= $currtime OR datefrom = 0) AND (dateto >= $currtime OR dateto = 0) AND customerid = $row->{'id'} GROUP BY customerid HAVING SUM(value * ((100 - discount) / 100)) > 0");
+		my $sdbq = $dbase->prepare("SELECT MAX(a.at) AS at, SUM((t.value * (100 - a.discount)) / 100) AS value
+		    FROM assignments a, tariffs t
+		    WHERE a.tariffid = t.id
+		        AND a.customerid = $row->{'id'}
+		        AND a.period = ".MONTH."
+		        AND (a.datefrom <= $currtime OR a.datefrom = 0)
+		        AND (a.dateto >= $currtime OR a.dateto = 0)
+		        GROUP BY a.customerid
+		        HAVING SUM(t.value * ((100 - a.discount) / 100)) > 0");
 		$sdbq->execute();
 		$srow = $sdbq->fetchrow_hashref();
 		$sdbq->finish();

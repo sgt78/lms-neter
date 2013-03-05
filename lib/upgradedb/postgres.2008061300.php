@@ -3,7 +3,7 @@
 /*
  *  LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -50,7 +50,7 @@ if (!in_array('up_rights_assignments', $tables)) $DB->Execute("
 	customerid integer DEFAULT 0 NOT NULL,
         rightid integer DEFAULT 0 NOT NULL,
 	PRIMARY KEY (id),
-	UNIQUE (customerid, rightid)
+	CONSTRAINT up_rights_assignments_customerid_key UNIQUE (customerid, rightid)
     )
 ");	  
 

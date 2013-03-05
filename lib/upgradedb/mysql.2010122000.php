@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License Version 2 as
@@ -38,8 +38,7 @@ $DB->Execute("
 $DB->Execute("ALTER TABLE cashimport ADD sourcefileid integer DEFAULT NULL
         REFERENCES sourcefiles (id) ON DELETE SET NULL ON UPDATE CASCADE");
 
-$DB->Execute("ALTER TABLE cashimport ALTER customerid DROP NOT NULL");
-$DB->Execute("ALTER TABLE cashimport ALTER customerid SET DEFAULT NULL");
+$DB->Execute("ALTER TABLE cashimport MODIFY customerid int(11) DEFAULT NULL");
 $DB->Execute("UPDATE cashimport SET customerid = NULL WHERE customerid NOT IN (SELECT id FROM customers)");
 $DB->Execute("ALTER TABLE cashimport ADD FOREIGN KEY (customerid)
         REFERENCES customers (id) ON DELETE SET NULL ON UPDATE CASCADE");

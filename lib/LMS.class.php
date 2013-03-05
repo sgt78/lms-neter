@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -33,6 +33,7 @@ class LMS
 	var $AUTH;			// object from Session.class.php (session management)
 	var $CONFIG;			// table including lms.ini options
 	var $cache = array();		// internal cache
+	var $hooks = array();       // registered plugin hooks
 	var $_version = '1.11-cvs';	// class version
 	var $_revision = '$Revision$';
 
@@ -65,7 +66,7 @@ class LMS
                                 $this->DB->Execute('SET @lms_current_user=?', array($this->AUTH->id));
                         break;
                 }
-        }                    
+        }
 
 	/*
 	 *  Logging
@@ -85,32 +86,82 @@ class LMS
 		}
 	}
 */
+
+    /*
+     * Plugins
+     */
+
+    function RegisterHook($hook_name, $callback)
+    {
+        $this->hooks[] = array(
+            'name'     => $hook_name,
+            'callback' => $callback,
+        );
+    }
+
+    function ExecHook($hook_name, $vars=null)
+    {
+        foreach ($this->hooks as $hook) {
+            if ($hook['name'] == $hook_name) {
+                $vars = call_user_func($hook['callback'], $vars);
+            }
+        }
+
+        return $vars;
+    }
+
+
 	/*
 	 *  Database functions (backups)
 	 */
 
 	function DBDump($filename=NULL, $gzipped=FALSE, $stats=FALSE) // dump database to file
 	{
-		if(! $filename)
+		if (!$filename)
 			return FALSE;
-		if (($gzipped)&&(extension_loaded('zlib')))
+
+		if ($gzipped && extension_loaded('zlib'))
 			$dumpfile = gzopen($filename,'w');
 		else
 			$dumpfile = fopen($filename,'w');
 
 		if($dumpfile)
 		{
-			foreach($this->DB->ListTables() as $tablename)
+		    $tables = $this->DB->ListTables();
+
+			foreach ($tables as $tablename)
 			{
-				// skip sessions table for security 
+				// skip sessions table for security
 				if($tablename == 'sessions' || ($tablename == 'stats' && $stats == FALSE))
 					continue;
-					
-				fputs($dumpfile,"DELETE FROM $tablename;\n");
+
+				fputs($dumpfile, "DELETE FROM $tablename;\n");
+            }
+
+            // Since we're using foreign keys, order of tables is important
+            // Note: add all referenced tables to the list
+            $order = array('users', 'customers', 'customergroups', 'nodes', 'numberplans',
+                'assignments', 'rtqueues', 'rttickets', 'rtmessages', 'domains',
+                'cashsources', 'sourcefiles', 'ewx_channels');
+
+            foreach ($tables as $idx => $table) {
+                if (in_array($table, $order)) {
+                    unset($tables[$idx]);
+                }
+            }
+
+            $tables = array_merge($order, $tables);
+
+			foreach ($tables as $tablename)
+			{
+				// skip sessions table for security
+				if($tablename == 'sessions' || ($tablename == 'stats' && $stats == FALSE))
+					continue;
+
 				$this->DB->Execute('SELECT * FROM '.$tablename);
 				while($row = $this->DB->_driver_fetchrow_assoc())
 				{
-					fputs($dumpfile,"INSERT INTO $tablename (");
+					fputs($dumpfile, "INSERT INTO $tablename (");
 					foreach($row as $field => $value)
 					{
 						$fields[] = $field;
@@ -127,7 +178,8 @@ class LMS
 					unset($values);
 				}
 			}
-			if (($gzipped)&&(extension_loaded('zlib')))
+
+			if ($gzipped && extension_loaded('zlib'))
 				gzclose($dumpfile);
 			else
 				fclose($dumpfile);
@@ -230,34 +282,40 @@ class LMS
 		return $userslist;
 	}
 
-	function GetUserIDByLogin($login) 
+	function GetUserIDByLogin($login)
 	{
 		return $this->DB->GetOne('SELECT id FROM users WHERE login=?', array($login));
 	}
 
-	function UserAdd($useradd) 
+	function UserAdd($user)
 	{
-		if($this->DB->Execute('INSERT INTO users (login, name, email, passwd, rights, 
-				hosts, position) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-				array($useradd['login'], 
-					$useradd['name'], 
-					$useradd['email'], 
-					crypt($useradd['password']),
-					$useradd['rights'], 
-					$useradd['hosts'],
-					$useradd['position']
+		if($this->DB->Execute('INSERT INTO users (login, name, email, passwd, rights,
+				hosts, position, ntype, phone)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+				array($user['login'],
+					$user['name'],
+					$user['email'],
+					crypt($user['password']),
+					$user['rights'],
+					$user['hosts'],
+					$user['position'],
+					!empty($user['ntype']) ? $user['ntype'] : null,
+					!empty($user['phone']) ? $user['phone'] : null,
 		)))
-			return $this->DB->GetOne('SELECT id FROM users WHERE login=?', array($useradd['login']));
+			return $this->DB->GetOne('SELECT id FROM users WHERE login=?', array($user['login']));
 		else
 			return FALSE;
 	}
 
-	function UserDelete($id) 
+	function UserDelete($id)
 	{
-		return $this->DB->Execute('UPDATE users SET deleted=1 WHERE id=?', array($id));
+	    if ($this->DB->Execute('UPDATE users SET deleted=1 WHERE id=?', array($id))) {
+	        $this->cache['users'][$id]['deleted'] = 1;
+		    return true;
+	    }
 	}
 
-	function UserExists($id) 
+	function UserExists($id)
 	{
 		switch($this->DB->GetOne('SELECT deleted FROM users WHERE id=?', array($id)))
 		{
@@ -274,12 +332,12 @@ class LMS
 		}
 	}
 
-	function GetUserInfo($id) // zwraca pe�ne info o podanym userie
+	function GetUserInfo($id)
 	{
-		if($userinfo = $this->DB->GetRow('SELECT id, login, name, email, hosts, lastlogindate, 
-				lastloginip, failedlogindate, failedloginip, deleted, position 
-				FROM users WHERE id=?', array($id)))
+		if($userinfo = $this->DB->GetRow('SELECT * FROM users WHERE id = ?', array($id)))
 		{
+			$this->cache['users'][$id] = $userinfo;
+
 			if($userinfo['id']==$this->AUTH->id)
 			{
 				$userinfo['lastlogindate'] = $this->AUTH->last;
@@ -315,23 +373,27 @@ class LMS
 		return $userinfo;
 	}
 
-	function UserUpdate($userinfo) 
+	function UserUpdate($user)
 	{
-		return $this->DB->Execute('UPDATE users SET login=?, name=?, email=?, rights=?, 
-				hosts=?, position=? WHERE id=?', 
-				array($userinfo['login'],
-					$userinfo['name'],
-					$userinfo['email'],
-					$userinfo['rights'],
-					$userinfo['hosts'],
-					$userinfo['position'],
-					$userinfo['id']
+		return $this->DB->Execute('UPDATE users SET login=?, name=?, email=?, rights=?,
+				hosts=?, position=?, ntype=?, phone=? WHERE id=?',
+				array($user['login'],
+					$user['name'],
+					$user['email'],
+					$user['rights'],
+					$user['hosts'],
+					$user['position'],
+					!empty($user['ntype']) ? $user['ntype'] : null,
+					!empty($user['phone']) ? $user['phone'] : null,
+					$user['id']
 				));
 	}
 
 	function GetUserRights($id)
 	{
-		$mask = $this->DB->GetOne('SELECT rights FROM users WHERE id = ?', array($id));
+		if (!($mask = $this->GetCache('users', $id, 'rights'))) {
+    		$mask = $this->DB->GetOne('SELECT rights FROM users WHERE id = ?', array($id));
+        }
 
 		$len = strlen($mask);
 		$bin = '';
@@ -671,28 +733,28 @@ class LMS
 			break;
 		}
 
-		if($state == 4) {
-			$deleted = 1;
-			// don't use customergroup and network filtering
-			// when customer is deleted because we drop group assignments and nodes
-			// in DeleteCustomer()
-			$network=NULL;
-			$customergroup=NULL;
-		}
-		else
-			$deleted = 0;
+		switch ($state) {
+		    case 4:
+    			// When customer is deleted we have no assigned groups or nodes, see DeleteCustomer().
+	    		// Return empty list in this case
+		    	if (!empty($network) || !empty($customergroup) || !empty($nodegroup)) {
+        	    	$customerlist['total'] = 0;
+		            $customerlist['state'] = 0;
+            		$customerlist['order'] = $order;
+	    	        $customerlist['direction'] = $direction;
+    		        return $customerlist;
+                }
+		    	$deleted = 1;
+                break;
+            case 5:  $disabled   = 1; break;
+		    case 6:  $indebted   = 1; break;
+		    case 7:  $online     = 1; break;
+		    case 8:  $groupless  = 1; break;
+		    case 9:  $tariffless = 1; break;
+		    case 10: $suspended  = 1; break;
+        }
 
-		$disabled = ($state == 5) ? 1 : 0;
-		$indebted = ($state == 6) ? 1 : 0;
-		$online = ($state == 7) ? 1 : 0;
-		$groupless = ($state == 8) ? 1 : 0;
-		$tariffless = ($state == 9) ? 1 : 0;
-		$suspended = ($state == 10) ? 1 : 0;
-
-		if($state>3)
-			$state = 0;
-
-		if($network)
+		if ($network)
 			$net = $this->GetNetworkParams($network);
 
 		$over = 0; $below = 0;
@@ -832,8 +894,8 @@ class LMS
 					WHERE ownerid > 0
 					GROUP BY ownerid
 				) s ON (s.ownerid = c.id)
-				WHERE deleted = '.$deleted
-				.($state ? ' AND c.status = '.intval($state) : '')
+				WHERE c.deleted = '.intval($deleted)
+				.($state <= 3 && $state > 0 ? ' AND c.status = '.intval($state) : '')
 				.($division ? ' AND c.divisionid = '.intval($division) : '')
 				.($online ? ' AND s.online = 1' : '')
 				.($indebted ? ' AND b.value < 0' : '')
@@ -1805,32 +1867,175 @@ class LMS
 	function DeleteAssignment($id)
 	{
 		$this->DB->BeginTrans();
-		
+
 		if($lid = $this->DB->GetOne('SELECT liabilityid FROM assignments WHERE id=?', array($id)))
 		{
 			$this->DB->Execute('DELETE FROM liabilities WHERE id=?', array($lid));
 		}
 		$this->DB->Execute('DELETE FROM assignments WHERE id=?', array($id));
-		
+
 		$this->DB->CommitTrans();
 	}
 
 	function AddAssignment($data)
 	{
-		if(!empty($data['value']))
-		{
-			$this->DB->Execute('INSERT INTO liabilities (name, value, taxid, prodid) 
+	    $result = array();
+
+        // Create assignments according to promotion schema
+        if (!empty($data['promotiontariffid']) && !empty($data['schemaid'])) {
+            $data['tariffid'] = $data['promotiontariffid'];
+            $tariff = $this->DB->GetRow('SELECT a.data, s.data AS schema,
+                    t.name, t.value, t.period, t.id, t.prodid, t.taxid,
+                    s.continuation, s.ctariffid
+                    FROM promotionassignments a
+                    JOIN promotionschemas s ON (s.id = a.promotionschemaid)
+                    JOIN tariffs t ON (t.id = a.tariffid)
+                    WHERE a.promotionschemaid = ? AND a.tariffid = ?',
+                    array($data['schemaid'], $data['promotiontariffid']));
+            $data_schema = explode(';', $tariff['schema']);
+            $data_tariff = explode(';', $tariff['data']);
+            $datefrom = $data['datefrom'];
+
+            foreach ($data_tariff as $idx => $dt) {
+                list($value, $period) = explode(':', $dt);
+                // Activation
+                if (!$idx) {
+                    // if activation value specified, create disposable liability
+                    if (f_round($value)) {
+                        $start_day = date('d', $data['datefrom']);
+                        $start_month = date('n', $data['datefrom']);
+                        $start_year = date('Y', $data['datefrom']);
+                        // payday is before the start of the period
+                        // set activation payday to next month's payday
+                        if ($start_day > $data['at']) {
+                            $_datefrom = $data['datefrom'];
+                            $datefrom  = mktime(0,0,0, $start_month+1, $data['at'], $start_year);
+                        }
+
+        	    		$this->DB->Execute('INSERT INTO liabilities (name, value, taxid, prodid)
+		    			    VALUES (?, ?, ?, ?)', 
+			    		    array(trans('Activation payment'),
+				    		    str_replace(',', '.', $value),
+					    	    intval($tariff['taxid']),
+						        $tariff['prodid']
+					        ));
+		    	        $lid = $this->DB->GetLastInsertID('liabilities');
+		    	        $tariffid = 0;
+		    	        $period = DISPOSABLE;
+		    	        $at = $datefrom;
+                    } else {
+                        continue;
+                    }
+                }
+                // promotion period
+                else {
+                    $lid = 0;
+                    if (!$period)
+                        $period = $data['period'];
+                    $datefrom = $_datefrom ? $_datefrom : $datefrom;
+                    $_datefrom = 0;
+                    $at = $this->CalcAt($period, $datefrom);
+                    $length = $data_schema[$idx-1];
+                    $month = date('n', $datefrom);
+                    $year = date('Y', $datefrom);
+                    // assume $data['at'] == 1, set last day of the specified month
+                    $dateto = mktime(23,59,59, $month+$length, 0, $year);
+
+                    // Find tariff with specified name+value+period...
+                    $tariffid = $this->DB->GetOne('SELECT id FROM tariffs
+                        WHERE name = ? AND value = ? AND period = ?
+                        LIMIT 1', array(
+                            $tariff['name'],
+                            str_replace(',', '.', $value),
+                            $tariff['period'],
+                    ));
+
+                    // ... if not found clone tariff
+                    if (!$tariffid) {
+                        $this->DB->Execute('INSERT INTO tariffs (name, value, period,
+                            taxid, type, upceil, downceil, uprate, downrate,
+                            prodid, plimit, climit, dlimit, upceil_n, downceil_n, uprate_n, downrate_n,
+                            domain_limit, alias_limit, sh_limit, www_limit, ftp_limit, mail_limit, sql_limit,
+                            quota_sh_limit, quota_www_limit, quota_ftp_limit, quota_mail_limit, quota_sql_limit)
+                            SELECT ?, ?, ?, taxid, type, upceil, downceil, uprate, downrate,
+                            prodid, plimit, climit, dlimit, upceil_n, downceil_n, uprate_n, downrate_n,
+                            domain_limit, alias_limit, sh_limit, www_limit, ftp_limit, mail_limit, sql_limit,
+                            quota_sh_limit, quota_www_limit, quota_ftp_limit, quota_mail_limit, quota_sql_limit
+                            FROM tariffs WHERE id = ?',
+                            array(
+                                $tariff['name'],
+                                str_replace(',', '.', $value),
+                                $tariff['period'],
+                                $tariff['id'],
+                        ));
+                        $tariffid = $this->DB->GetLastInsertId('tariffs');
+                    }
+                }
+
+                // Create assignment
+    		    $this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice,
+					    settlement, numberplanid, paytype, datefrom, dateto, discount, liabilityid)
+					    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+					    array($tariffid,
+						    $data['customerid'],
+						    $period,
+						    $at,
+						    !empty($data['invoice']) ? 1 : 0,
+						    !empty($data['settlement']) ? 1 : 0,
+						    !empty($data['numberplanid']) ? $data['numberplanid'] : NULL,
+						    !empty($data['paytype']) ? $data['paytype'] : NULL,
+						    $idx ? $datefrom : 0,
+						    $idx ? $dateto : 0,
+						    0,
+						    $lid,
+						    ));
+
+		        $result[] = $this->DB->GetLastInsertID('assignments');
+		        if ($idx) {
+		            $datefrom = $dateto+1;
+                }
+            }
+
+            // add "after promotion" tariff(s)
+            if ($tariff['continuation'] || !$data_schema[0]) {
+                $tariffs[] = $tariff['id'];
+                if ($tariff['ctariffid'] && $data_schema[0] != 0) {
+                    $tariffs[] = $tariff['ctariffid'];
+                }
+
+                // Create assignments
+                foreach ($tariffs as $t) {
+    		        $this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice,
+					    settlement, numberplanid, paytype, datefrom, dateto, discount, liabilityid)
+					    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+					    array($t,
+						    $data['customerid'],
+						    $data['period'],
+						    $this->CalcAt($data['period'], $datefrom),
+						    !empty($data['invoice']) ? 1 : 0,
+						    !empty($data['settlement']) ? 1 : 0,
+						    !empty($data['numberplanid']) ? $data['numberplanid'] : NULL,
+						    !empty($data['paytype']) ? $data['paytype'] : NULL,
+						    $datefrom, 0, 0, 0,
+						    ));
+                }
+            }
+        }
+        // Create one assignment record
+        else {
+    		if(!empty($data['value'])) {
+	    		$this->DB->Execute('INSERT INTO liabilities (name, value, taxid, prodid)
 					    VALUES (?, ?, ?, ?)', 
 					    array($data['name'],
 						    str_replace(',', '.', $data['value']),
 						    intval($data['taxid']),
 						    $data['prodid']
 					    ));
-			$lid = $this->DB->GetLastInsertID('liabilities');
-		}
+		    	$lid = $this->DB->GetLastInsertID('liabilities');
+		    }
 
-		$this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice, 
-					    settlement, numberplanid, paytype, datefrom, dateto, discount, liabilityid) 
+    		$this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice,
+					    settlement, numberplanid, paytype, datefrom, dateto, discount, liabilityid)
 					    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 					    array(intval($data['tariffid']),
 						    $data['customerid'],
@@ -1846,12 +2051,21 @@ class LMS
 						    isset($lid) ? $lid : 0,
 						    ));
 
-		$result = $this->DB->GetLastInsertID('assignments');
+		    $result[] = $this->DB->GetLastInsertID('assignments');
+        }
 
-		if(!empty($data['nodes']))
-			foreach((array)$data['nodes'] as $node)
-				$this->DB->Execute('INSERT INTO nodeassignments (nodeid, assignmentid) VALUES (?,?)',
-					array($node, $result));
+		if (!empty($data['nodes']) && !empty($result)) {
+		    // Use multi-value INSERT query
+		    $values = array();
+			foreach ((array)$data['nodes'] as $nodeid) {
+			    foreach ($result as $aid) {
+			        $values[] = sprintf('(%d, %d)', $nodeid, $aid);
+			    }
+			}
+
+			$this->DB->Execute('INSERT INTO nodeassignments (nodeid, assignmentid)
+			    VALUES ' . implode(', ', $values));
+        }
 
 		return $result;
 	}
@@ -2220,11 +2434,6 @@ class LMS
 		}
 		else
 			return FALSE;
-	}
-
-	function GetTariffIDByName($name)
-	{
-		return $this->DB->GetOne('SELECT id FROM tariffs WHERE name=?', array($name));
 	}
 
 	function TariffAdd($tariff)
@@ -3888,6 +4097,11 @@ class LMS
 		$headers['Mime-Version'] = '1.0';
 		$headers['Subject'] = qp_encode($headers['Subject']);
 
+        if (!empty($this->CONFIG['mail']['debug_email'])) {
+            $recipients = $this->CONFIG['mail']['debug_email'];
+            $headers['To'] = '<'.$recipients.'>';
+        }
+
 		if (empty($headers['Date']))
 			$headers['Date'] = date('r');
 
@@ -3929,19 +4143,47 @@ class LMS
 
 	function SendSMS($number, $message, $messageid=0)
 	{
+        $msg_len = mb_strlen($message);
+
+        if (!$msg_len) {
+            return trans('SMS message is empty!');
+        }
+
+        if (!empty($this->CONFIG['sms']['debug_phone'])) {
+            $number = $this->CONFIG['sms']['debug_phone'];
+        }
+
+		$prefix = !empty($this->CONFIG['sms']['prefix']) ? $this->CONFIG['sms']['prefix'] : '';
+		$number = preg_replace('/[^0-9]/', '', $number);
+		$number = preg_replace('/^0+/', '', $number);
+
+        // add prefix to the number if needed
+		if ($prefix && substr($number, 0, strlen($prefix)) != $prefix)
+			$number = $prefix . $number;
+
+        // message ID must be unique
+        if (!$messageid) {
+            $messageid = '0.'.time();
+        }
+
+        $data = array(
+            'number'    => $number,
+            'message'   => $message,
+            'messageid' => $messageid
+        );
+
+        // call external SMS handler(s)
+        $data = $this->ExecHook('send_sms_before', $data);
+
+        if ($data['abort']) {
+            return $data['result'];
+        }
+
 		if(empty($this->CONFIG['sms']['service']))
 			return trans('SMS "service" not set!');
 		else
 			$service = $this->CONFIG['sms']['service'];
 
-		$prefix = !empty($this->CONFIG['sms']['prefix']) ? $this->CONFIG['sms']['prefix'] : '';
-
-		$number = preg_replace('/[^0-9]/', '', $number);
-		$number = preg_replace('/^0+/', '', $number);
-
-		if ($prefix && substr($number, 0, strlen($prefix)) != $prefix)
-			$number = $prefix . $number;
-		
 		switch($service)
 		{
 			case 'smscenter':
@@ -3956,23 +4198,28 @@ class LMS
 				else
 					$from = $this->CONFIG['sms']['from'];
 
-				if(strlen($message) > 159 || strlen($message) == 0)
+				if ($msg_len < 160)
+                    $type_sms = 'sms';
+                else if ($msg_len <= 459)
+                    $type_sms = 'concat';
+                else
 					return trans('SMS Message too long!');
+
 				if(strlen($number) > 16 || strlen($number) < 4)
 					return trans('Wrong phone number format!');
-				
+
 				$type = !empty($this->CONFIG['sms']['smscenter_type']) ? $this->CONFIG['sms']['smscenter_type'] : 'dynamic';
 				$message .= ($type == 'static') ? "\n\n" . $from : '';
 
 				$args = array (
 					'user'      => $this->CONFIG['sms']['username'],
 					'pass'      => $this->CONFIG['sms']['password'],
-					'type'      => 'sms',
+					'type'      => $type_sms,
 					'number'    => $number,
 					'text'      => $message,
 					'from'      => $from
 				);
-			    		
+
 				$encodedargs = array();
 				foreach (array_keys($args) as $thiskey)
 		    			array_push($encodedargs, urlencode($thiskey) ."=". urlencode($args[$thiskey]));
@@ -3984,7 +4231,7 @@ class LMS
 				curl_setopt($curl, CURLOPT_POST, 1);
 				curl_setopt($curl, CURLOPT_POSTFIELDS, $encodedargs);
 				curl_setopt($curl, CURLOPT_TIMEOUT, 10);
-			    
+
 				$page = curl_exec($curl);
 				if(curl_error($curl))
 					return 'SMS communication error. ' . curl_error($curl);
@@ -4036,11 +4283,11 @@ class LMS
 					return trans('SMSTools outgoing directory not exists ($0)!', $dir);
 				if(!is_writable($dir))
 					return trans('Unable to write to SMSTools outgoing directory ($0)!', $dir);
-				
+
 				$filename = $dir.'/lms-'.$messageid.'-'.$number;
 				$message = clear_utf($message);
 				$file = sprintf("To: %s\n\n%s", $number, $message);
-				
+
 				if($fp = fopen($filename, 'w'))
 				{
 					fwrite($fp, $file);
@@ -4048,14 +4295,14 @@ class LMS
 				}
 				else
 					return trans('Unable to create file $0!', $filename);
-		
+
 				return MSG_NEW;
 			break;
 			default:
 				return trans('Unknown SMS service!');
 		}
 	}
-	
+
 	function GetMessages($customerid, $limit=NULL)
 	{
 		return $this->DB->GetAll('SELECT i.messageid AS id, i.status, i.error,
@@ -4402,8 +4649,40 @@ class LMS
 	{
 		return $this->DB->GetAllByKey('SELECT id, name FROM nastypes ORDER BY name', 'id');
 	}
-	
-	//VoIP functions
+
+    function CalcAt($period, $date)
+    {
+        $m = date('n', $date);
+
+        if ($period == YEARLY) {
+            if ($m) {
+                $ttime = mktime(12,0,0,$m,1,1990);
+                return date('z', $ttime) + 1;
+            }
+            else {
+                return 1;
+            }
+        } else if ($period == HALFYEARLY) {
+            if ($m > 6)
+                $m -= 6;
+            return ($m-1) * 100 + 1;
+        } else if ($period == QUARTERLY) {
+            if ($m > 9)
+                $m -= 9;
+            else if ($m > 6)
+                $m -= 6;
+            else if ($m > 3)
+                $m -= 3;
+            return ($m-1) * 100 + 1;
+        } else {
+            return 1;
+        }
+    }
+
+	/**
+	 * VoIP functions
+	 */
+
 	function GetVoipAccountList($order='login,asc', $search=NULL, $sqlskey='AND')
 	{
 		if($order=='')
@@ -4571,6 +4850,7 @@ class LMS
 		}
 		return $result;
 	}
+
 }
 
 ?>

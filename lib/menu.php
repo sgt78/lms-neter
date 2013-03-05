@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- * (C) Copyright 2001-2010 LMS Developers
+ * (C) Copyright 2001-2011 LMS Developers
  *
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -232,7 +232,7 @@ $menu = array(
 					'tip' => trans('Network map display'),
 					'prio' => 40,
 				),
-			),				
+			),
 		),
 
 		'networks' => array(
@@ -456,7 +456,7 @@ $menu = array(
 					'tip' => trans('Allows you to search for account, alias, domain'),
 					'prio' => 70,
 				),
-			),					       
+			),
 		),
 
 		'messages' => array(
@@ -582,7 +582,7 @@ $menu = array(
 					'tip' => trans('Lists and reports printing'),
 					'prio' => 50,
 				),
-			),				     
+			),
 		),
 
 		'timetable' => array(
@@ -611,7 +611,7 @@ $menu = array(
 					'tip' => trans('Searching of Events in Timetable'),
 					'prio' => 30,
 				),
-			),				
+			),
 		),
 
 		'password' => array(
@@ -679,6 +679,12 @@ $menu = array(
 					'tip' => trans('List of Cash Import Sources'),
 					'prio' => 80,
 				),
+				array(
+					'name' => trans('Promotions'),
+					'link' => '?m=promotionlist',
+					'tip' => trans('List of promotions'),
+					'prio' => 90,
+				),
 			),
 		),
 
@@ -735,14 +741,14 @@ if(!empty($CONFIG['phpui']['custom_menu']))
 
 if(!function_exists('menu_cmp'))
 {
-        function menu_cmp($a, $b)
+    function menu_cmp($a, $b)
 	{
 		if(!isset($a['prio'])) $a['prio'] = 0;
 		if(!isset($b['prio'])) $b['prio'] = 9999;
-		
-	        if($a['prio'] == $b['prio'])
-	                return 0;
-	        return ($a['prio'] < $b['prio']) ? -1 : 1;
+
+	    if($a['prio'] == $b['prio'])
+	        return 0;
+	    return ($a['prio'] < $b['prio']) ? -1 : 1;
 	}
 }
 

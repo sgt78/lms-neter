@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -36,9 +36,9 @@ CREATE TABLE debitnotecontents (
 	value numeric(9,2)      DEFAULT 0 NOT NULL,
         description text 	DEFAULT '' NOT NULL,
 	PRIMARY KEY (id),
-	UNIQUE (docid, itemid)
+	CONSTRAINT debitnotecontents_docid_key UNIQUE (docid, itemid)
 );
-										
+
 ");
 
 $DB->Execute("UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?", array('2009062300', 'dbversion'));

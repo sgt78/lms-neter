@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -75,7 +75,7 @@ if(isset($_POST['ticket']))
 			if(!empty($CONFIG['phpui']['helpdesk_sender_name']))
 			{
 				$mailfname = $CONFIG['phpui']['helpdesk_sender_name'];
-				
+
 				if($mailfname == 'queue') $mailfname = $LMS->GetQueueName($queue);
 				elseif($mailfname == 'user') $mailfname = $user['name'];
 				$mailfname = '"'.$mailfname.'"';
@@ -89,11 +89,12 @@ if(isset($_POST['ticket']))
 				$mailfrom = $qemail;
 			else
 				$mailfrom =  $ticket['mailfrom'];
-				
+
 		        $headers['From'] = $mailfname.' <'.$mailfrom.'>';
 			$headers['Subject'] = sprintf("[RT#%06d] %s", $id, $ticket['subject']);
 			$headers['Reply-To'] = $headers['From'];
 
+            $sms_body = $headers['Subject']."\n".$ticket['body'];
 			$body = $ticket['body']."\n\nhttp"
 				.(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on' ? 's' : '').'://'
 				.$_SERVER['HTTP_HOST']
@@ -101,43 +102,61 @@ if(isset($_POST['ticket']))
 				.'?m=rtticketview&id='.$id;
 
 			if(chkconfig($CONFIG['phpui']['helpdesk_customerinfo']) && $ticket['customerid'])
-			{	
+			{
 				$info = $DB->GetRow('SELECT '.$DB->Concat('UPPER(lastname)',"' '",'name').' AS customername,
 						email, address, zip, city, (SELECT phone FROM customercontacts 
 							WHERE customerid = customers.id ORDER BY id LIMIT 1) AS phone
 						FROM customers WHERE id = ?', array($ticket['customerid']));
-				
+
 				$body .= "\n\n-- \n";
 				$body .= trans('Customer:').' '.$info['customername']."\n";
 				$body .= trans('ID:').' '.sprintf('%04d', $ticket['customerid'])."\n";
 				$body .= trans('Address:').' '.$info['address'].', '.$info['zip'].' '.$info['city']."\n";
 				$body .= trans('Phone:').' '.$info['phone']."\n";
 				$body .= trans('E-mail:').' '.$info['email'];
+
+				$sms_body .= "\n";
+				$sms_body .= trans('Customer:').' '.$info['customername'];
+				$sms_body .= ' '.sprintf('(%04d)', $ticket['customerid']).'. ';
+				$sms_body .= $info['address'].', '.$info['zip'].' '.$info['city'].'. ';
+				$sms_body .= $info['phone'];
 			}
 
-			if($recipients = $DB->GetCol('SELECT email FROM users, rtrights 
-						WHERE users.id=userid AND queueid=? AND email!=\'\' 
-							AND (rtrights.rights & 8) = 8',array($queue)))
-			{
-				foreach($recipients as $email)
-				{
-					if(!empty($CONFIG['mail']['debug_email']))
-						$recip = $CONFIG['mail']['debug_email'];
-					else
-						$recip = $email;
-					$headers['To'] = '<'.$recip.'>';
-		        
-					$LMS->SendMail($recip, $headers, $body);
+            // send email
+			if($recipients = $DB->GetCol('SELECT DISTINCT email
+			        FROM users, rtrights
+					WHERE users.id = userid AND queueid = ? AND email != \'\'
+						AND (rtrights.rights & 8) = 8 AND deleted = 0
+						AND (ntype & ?) = ?',
+				    array($queue, MSG_MAIL, MSG_MAIL))
+		    ) {
+				foreach($recipients as $email) {
+					$headers['To'] = '<'.$email.'>';
+
+					$LMS->SendMail($email, $headers, $body);
+				}
+			}
+
+            // send sms
+			if (!empty($CONFIG['sms']['service']) && ($recipients = $DB->GetCol('SELECT DISTINCT phone
+			        FROM users, rtrights
+					WHERE users.id = userid AND queueid = ? AND phone != \'\'
+						AND (rtrights.rights & 8) = 8 AND deleted = 0
+						AND (ntype & ?) = ?',
+				    array($queue, MSG_SMS, MSG_SMS)))
+		    ) {
+				foreach ($recipients as $phone) {
+					$LMS->SendSMS($phone, $sms_body);
 				}
 			}
 		}
-		
+
 		$SESSION->redirect('?m=rtticketview&id='.$id);
 	}
 	$SMARTY->assign('ticket', $ticket);
 	$SMARTY->assign('error', $error);
 }
-	
+
 $layout['pagetitle'] = trans('New Ticket');
 
 $SESSION->save('backto', $_SERVER['QUERY_STRING']);

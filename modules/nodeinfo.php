@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -96,11 +96,13 @@ else
 
 $layout['pagetitle'] = trans('Node Info: $0',$nodeinfo['name']);
 
+$nodeinfo = $LMS->ExecHook('node_info_init', $nodeinfo);
+
 $SMARTY->assign('netdevices',$netdevices);
-$SMARTY->assign('nodeinfo',$nodeinfo);
 $SMARTY->assign('nodestats',$nodestats);
 $SMARTY->assign('nodegroups',$nodegroups);
 $SMARTY->assign('othernodegroups',$othernodegroups);
+$SMARTY->assign('nodeinfo',$nodeinfo);
 $SMARTY->display('nodeinfo.html');
 
 ?>

@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License Version 2 as
@@ -32,7 +32,7 @@ $DB->Execute("
         name varchar(255)   NOT NULL,
         idate integer       NOT NULL,
         PRIMARY KEY (id),
-        UNIQUE (idate, name)
+        CONSTRAINT sourcefiles_idate_key UNIQUE (idate, name)
     );
 
     CREATE INDEX sourcefiles_userid_idx ON sourcefiles (userid);

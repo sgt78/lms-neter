@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -71,9 +71,9 @@ function GetRecipients($filter, $type=MSG_MAIL)
 			AND name NOT LIKE "%#no_sms%") x ON (x.customerid = c.id)';
 	}
 	
-	$recipients = $DB->GetAll('SELECT c.id, email, pin, '
+	$recipients = $LMS->DB->GetAll('SELECT c.id, email, pin, '
 		.($type==MSG_SMS ? 'x.phone, ': '')
-		.$DB->Concat('c.lastname', "' '", 'c.name').' AS customername,
+		.$LMS->DB->Concat('c.lastname', "' '", 'c.name').' AS customername,
 		COALESCE(b.value, 0) AS balance, divisionid
 		FROM customersview c 
 		LEFT JOIN (
@@ -108,7 +108,7 @@ function GetRecipients($filter, $type=MSG_MAIL)
 
 function GetRecipient($customerid, $type=MSG_MAIL)
 {
-	global $DB, $LMS, $CONFIG, $LANGDEFS, $_language;
+	global $LMS;
 
 	if($type == MSG_SMS)
 	{
@@ -133,9 +133,9 @@ function GetRecipient($customerid, $type=MSG_MAIL)
 			) x ON (x.customerid = c.id)';
 	}
 
-	return $DB->GetAll('SELECT c.id, email, pin, '
+	return $LMS->DB->GetAll('SELECT c.id, email, pin, '
 		.($type==MSG_SMS ? 'x.phone, ': '')
-		.$DB->Concat('c.lastname', "' '", 'c.name').' AS customername,
+		.$LMS->DB->Concat('c.lastname', "' '", 'c.name').' AS customername,
 		COALESCE((SELECT SUM(value) FROM cash WHERE customerid = c.id), 0) AS balance
 		FROM customersview c '
 		.(!empty($smstable) ? $smstable : '')
@@ -145,6 +145,8 @@ function GetRecipient($customerid, $type=MSG_MAIL)
 
 function BodyVars(&$body, $data)
 {
+    global $LMS, $LANGDEFS;
+
 	$body = str_replace('%customer', $data['customername'], $body);
 	$body = str_replace('%balance', $data['balance'], $body);
 	$body = str_replace('%cid', $data['id'], $body);
@@ -155,14 +157,14 @@ function BodyVars(&$body, $data)
 	if(!(strpos($body, '%last_10_in_a_table') === FALSE))
 	{
 		$last10 = '';
-		if($last10_array = $DB->GetAll('SELECT comment, time, value 
+		if($last10_array = $LMS->DB->GetAll('SELECT comment, time, value 
 			FROM cash WHERE customerid = ?
 			ORDER BY time DESC LIMIT 10', array($data['id'])))
 		{
 			foreach($last10_array as $r)
 			{
 				$last10 .= date("Y/m/d | ", $r['time']);
-				$last10 .= sprintf("%20s | ", sprintf($LANGDEFS[$LMS->ui_lang][money_format],$r['value']));
+				$last10 .= sprintf("%20s | ", sprintf($LANGDEFS[$LMS->ui_lang]['money_format'], $r['value']));
 				$last10 .= $r['comment']."\n";
 			}
 		}
@@ -222,13 +224,13 @@ if(isset($_POST['message']))
 		else // upload errors
 			switch($_FILES['file']['error'])
 			{
-				case 1: 			
+				case 1:
 				case 2: $error['file'] = trans('File is too large.'); break;
 				case 3: $error['file'] = trans('File upload has finished prematurely.'); break;
 				case 4: $error['file'] = trans('Path to file was not specified.'); break;
 				default: $error['file'] = trans('Problem during file upload.'); break;
 			}
-	}	
+	}
 
 	if(!$error)
 	{
@@ -267,20 +269,12 @@ if(isset($_POST['message']))
 			));
 		
 		$msgid = $DB->GetLastInsertID('messages');
-		$prefix = !empty($CONFIG['sms']['prefix']) ? $CONFIG['sms']['prefix'] : '';
 
 		foreach($recipients as $key => $row)
 		{
 			if($message['type'] == MSG_MAIL)
-				$recipients[$key]['destination'] = !empty($CONFIG['mail']['debug_email']) ? $CONFIG['mail']['debug_email'] : $row['email'];
+				$recipients[$key]['destination'] = $row['email'];
 			else {
-				$number = !empty($CONFIG['mail']['debug_sms']) ? $CONFIG['mail']['debug_sms'] : $row['phone'];
-
-				$number = preg_replace('/[^0-9]/', '', $number);
-				$number = preg_replace('/^0+/', '', $number);
-				if ($prefix && substr($number, 0, strlen($prefix)) != $prefix)
-				        $number = $prefix . $number;
-
 				$recipients[$key]['destination'] = $number;
 			}
 			
@@ -308,15 +302,20 @@ if(isset($_POST['message']))
 
 			if(!empty($CONFIG['mail']['debug_email']))
 				echo '<B>'.trans('Warning! Debug mode (using address $0).',$CONFIG['mail']['debug_email']).'</B><BR>';
-			#$message['sender']='';
+
 			$headers['From'] = '"'.$message['from'].'" <'.$message['sender'].'>';
 			$headers['Subject'] = $message['subject'];
 			$headers['Reply-To'] = $headers['From'];
 		}
-			
+		else {
+			if (!empty($CONFIG['sms']['debug_phone']))
+				echo '<B>'.trans('Warning! Debug mode (using phone $0).',$CONFIG['sms']['debug_phone']).'</B><BR>';
+		}
+
 		foreach($recipients as $key => $row)
 		{
 			$body = $message['body'];
+
 			BodyVars($body, $row);
 			
 			if($message['type'] == MSG_MAIL)

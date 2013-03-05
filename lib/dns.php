@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -228,8 +228,6 @@ function validate_dns_record(&$record, &$error)
 	        if (!in_array($record['type'], $arpa_records))
 			$error['type'] = trans('Wrong record type!');
 	}
-	else if ($record['type'] == 'PTR')
-	        $error['type'] = trans('You can\'t add PTR record to this domain!');
 
 	if ($error)
 		return;
@@ -282,11 +280,8 @@ function validate_dns_record(&$record, &$error)
 				$error['desc'] = trans('Field cannot be empty!');
 		break;
 		case 'PTR':
-    			if (preg_match('/in-addr\.arpa$/', $record['domainname']))
-			{
-		    		if ($errorcontent = check_hostname_fqdn($record['domain'], false, true))
-		            		$error['domain'] = $errorcontent;
-			}
+			if ($errorcontent = check_hostname_fqdn($record['domain'], false, true))
+				$error['domain'] = $errorcontent;
 		break;
 		case 'SOA':
 			foreach (array('serial', 'refresh', 'retry', 'expire', 'minttl') as $idx)

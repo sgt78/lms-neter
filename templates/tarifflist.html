@@ -13,15 +13,15 @@
 		<TD WIDTH="1%" CLASS="fbt" align="right" NOWRAP>
 			<A href="?m=tarifflist&o=downrate{if $listdata.direction eq "asc" && $listdata.order eq "downrate"},desc{/if}">{t}Downrate:{/t}</A> {if $listdata.order eq "downrate"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}<BR>
 			<A href="?m=tarifflist&o=uprate{if $listdata.direction eq "asc" && $listdata.order eq "uprate"},desc{/if}">{t}Uprate{/t}:</A> {if $listdata.order eq "uprate"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
-		</TD>	
+		</TD>
 		<TD WIDTH="1%" CLASS="fbt" align="right" NOWRAP>
 			<A href="?m=tarifflist&o=uprate{if $listdata.direction eq "asc" && $listdata.order eq "downceil"},desc{/if}">{t}Downceil:{/t}</A> {if $listdata.order eq "downceil"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}<BR>
 			<A href="?m=tarifflist&o=upceil{if $listdata.direction eq "asc" && $listdata.order eq "upceil"},desc{/if}">{t}Upceil:{/t}</A> {if $listdata.order eq "upceil"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
-		</TD>	
+		</TD>
 		<TD NOWRAP WIDTH="1%" CLASS="fbt" align="right" NOWRAP>
-			<A href="?m=tarifflist&o=value{if $listdata.direction eq "asc" && $listdata.order eq "value"},desc{/if}">{t}Value:{/t}</A> {if $listdata.order eq "value"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}<BR>
+			<A href="?m=tarifflist&o=value{if $listdata.direction eq "asc" && $listdata.order eq "value"},desc{/if}"><B>{t}Value:{/t}</B></A> {if $listdata.order eq "value"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}<BR>
 			{t}Tax:{/t}
-		</TD>	
+		</TD>
 		<TD WIDTH="1%" CLASS="fbt" align="right" NOWRAP>
 			<A href="?m=tarifflist&o=count{if $listdata.direction eq "asc" && $listdata.order eq "count"},desc{/if}">{t}Assigned:{/t}</A> {if $listdata.order eq "count"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
 		</TD>
@@ -48,6 +48,13 @@
 					<OPTION value="{$key}" {if $listdata.type eq $key} SELECTED {/if}>{$item}</OPTION>
 					{/foreach}
 				</SELECT>
+				{t}Promotion:{/t}
+				<SELECT SIZE="1" NAME="p" ONCHANGE="document.choosefilter.submit();">
+					<OPTION value="0"{if !$listdata.promotionid} SELECTED{/if}>{t}- all -{/t}</OPTION>
+					{section name=promotions loop=$promotions}
+					<OPTION value="{$promotions[promotions].id}" {if $listdata.promotionid eq $promotions[promotions].id} SELECTED {/if}>{$promotions[promotions].name|truncate:50:"...":true}</OPTION>
+					{/section}
+				</SELECT>
 				{t}Group:{/t}
 				<SELECT SIZE="1" NAME="g" ONCHANGE="document.choosefilter.submit();">
 					<OPTION value="0"{if !$listdata.customergroupid} SELECTED{/if}>{t}- all -{/t}</OPTION>
@@ -57,7 +64,7 @@
 				</SELECT>
 			</FORM>
 		</TD>
-	</TR>		
+	</TR>
 	{cycle values="light,lucid" print=false}
 	{section name=tariffs loop=$tarifflist}
 	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
@@ -86,7 +93,7 @@
 		</TD>
 		<TD WIDTH="1%" align="right" onClick="return self.location.href='?m=tariffinfo&id={$tarifflist[tariffs].id}';">
 			<NOBR>
-			{$tarifflist[tariffs].value|money_format} <BR>
+			<B>{$tarifflist[tariffs].value|money_format}</B><BR>
 			{$tarifflist[tariffs].tax}
 			</NOBR>
 		</TD>

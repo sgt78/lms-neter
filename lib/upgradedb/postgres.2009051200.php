@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -35,7 +35,7 @@ CREATE TABLE docrights (
     doctype     integer         DEFAULT 0 NOT NULL,
     rights      integer         DEFAULT 0 NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (userid, doctype)
+    CONSTRAINT docrights_userid_key UNIQUE (userid, doctype)
 );
 
 ");

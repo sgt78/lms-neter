@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -346,7 +346,7 @@ switch($type)
 			FROM cash c
 			JOIN customersview v ON (v.id = c.customerid)
 			WHERE c.time >= ? AND c.time <= ?'
-			.($source ? ' AND c.sourceid = '.intval($source).' AND ' : '')
+			.($source ? ' AND c.sourceid = '.intval($source) : '')
 			.' AND c.importid IS NOT NULL
 			ORDER BY time', array($date['from'], $date['to']));
 

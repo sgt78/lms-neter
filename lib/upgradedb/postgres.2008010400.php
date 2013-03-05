@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2010 LMS Developers
+ *  (C) Copyright 2001-2011 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -42,7 +42,7 @@ $DB->Execute("
         nodegroupid	integer 	NOT NULL DEFAULT 0,
 	nodeid		integer		NOT NULL DEFAULT 0,
 	PRIMARY KEY (id),
-	UNIQUE (nodeid, nodegroupid)
+	CONSTRAINT nodegroupassignments_nodeid_key UNIQUE (nodeid, nodegroupid)
     );
 ");
 

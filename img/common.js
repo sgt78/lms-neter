@@ -50,8 +50,7 @@ function autoiframe_setsize(width, height)
 function openSelectWindow(theURL, winName, myWidth, myHeight, isCenter, formfield)
 {
 	targetfield = formfield;
-    overlib('<iframe id="autoiframe" frameborder=0 scrolling=no src="' + theURL + '">',
-            HAUTO,VAUTO,OFFSETX,30,OFFSETY,15,STICKY,MOUSEOFF);
+    popup(theURL, 1, 1, 30, 15);
     autoiframe_setsize(myWidth, myHeight);
 
 	return false;
@@ -82,7 +81,7 @@ function sendvalue(targetfield, value)
 {
 	targetfield.value = value;
     // close popup
-    window.parent.parent.nd();
+    window.parent.parent.popclick();
 	targetfield.focus();
 }
 
@@ -140,13 +139,26 @@ function setCookie(name, value)
         document.cookie = name + '=' + escape(value);
 }
 
-if (typeof String.prototype.trim == 'undefined') 
+if (typeof String.prototype.trim == 'undefined')
 {
 	String.prototype.trim = function()
 	{
         	var s = this.replace(/^\s*/, '');
 	        return s.replace(/\s*$/, '');
 	};
+}
+
+if (typeof Array.prototype.inArray == 'undefined')
+{
+    Array.prototype.inArray = function(v)
+    {
+        for (var i in this) {
+            if (this[i] == v) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 function checkElement(id)
@@ -281,4 +293,64 @@ function multiselect(formid, elemid, def)
 		}
 	};
 	// TODO: keyboard events
+}
+
+var lms_login_timeout_value,
+    lms_login_timeout,
+    lms_sticky_popup;
+
+function start_login_timeout(sec)
+{
+    if (!sec) sec = 600;
+    lms_login_timeout_value = sec;
+    lms_login_timeout = window.setTimeout('window.location.reload(true)', (sec + 5) * 1000);
+}
+
+function reset_login_timeout()
+{
+    window.clearTimeout(lms_login_timeout);
+    start_login_timeout(lms_login_timeout_value);
+}
+
+// Display overlib popup
+function popup(content, frame, sticky, offset_x, offset_y)
+{
+    if (lms_sticky_popup)
+        return;
+
+    if (frame) {
+        content = '<iframe id="autoiframe" width=100 height=10 frameborder=0 scrolling=no '
+            +'src="'+content+'&popup=1"></iframe>';
+    }
+
+    if (!offset_x) offset_x = 15;
+    if (!offset_y) offset_y = 15;
+
+    if (sticky) {
+        overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y, STICKY, MOUSEOFF);
+        var body = document.getElementsByTagName('BODY')[0];
+        body.onmousedown = function () { popclick(); };
+        lms_sticky_popup = 1;
+    }
+    else {
+        overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y);
+    }
+}
+
+// Hide non-sticky popup
+function pophide()
+{
+    if (lms_sticky_popup) {
+        return;
+    }
+
+    return nd();
+}
+
+// Hide sticky popup
+function popclick()
+{
+    lms_sticky_popup = 0;
+    o3_removecounter++;
+    return nd();
 }
