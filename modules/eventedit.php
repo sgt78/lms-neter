@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -85,6 +85,13 @@ if(isset($_POST['event']))
 				$DB->Execute('INSERT INTO eventassignments (eventid, userid) VALUES(?,?)',array($event['id'], $event['user']));
 			}
 		}
+
+		$DB->Execute('UPDATE events SET moddate=?, moduserid=? WHERE id=?',
+			array(
+				mktime(), 
+				$AUTH->id,
+				$event['id']
+				));
 
 		$SESSION->redirect('?m=eventlist');
 	}

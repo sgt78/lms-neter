@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -28,6 +28,11 @@ $layout['pagetitle'] = trans('Configuration Reload');
 
 $_RELOAD_TYPE = $CONFIG['phpui']['reload_type'];
 $_EXECCMD = $CONFIG['phpui']['reload_execcmd'];
+
+$serverTime = date("r");
+
+if (check_conf('phpui.reload_timer'))
+	$SMARTY->assign('serverTime', $serverTime);
 
 switch($_RELOAD_TYPE)
 {

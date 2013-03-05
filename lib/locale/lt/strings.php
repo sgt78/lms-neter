@@ -1,9 +1,9 @@
 <?php
 
 /* R&A [ETANETAS] Vertinimas v1.0
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -314,7 +314,7 @@ $_LANG['Customers List $a$b'] = 'Klientų sąrašas $a$b';
 $_LANG['Customers: list, add, search, groups'] = 'Klientai: sąrašas, paieška, pridėjimas, grupės';
 $_LANG['customers management'] = 'klientų valdymas ';
 $_LANG['Customers Without Nodes List $a$b'] = 'Klientų be kompiuterių sąrašas $a$b';
-$_LANG['CVS Repository'] = 'Saugykla  CVS';
+$_LANG['GIT Repository'] = 'Saugykla GIT';
 $_LANG['Daemon'] = 'Daemonas';
 $_LANG['daemon management and configuration'] = 'daemono konfiguracija ir valdymas';
 $_LANG['Daemon(s) Configuration'] = 'Daemono konfiguacija';

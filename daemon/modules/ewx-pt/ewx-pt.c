@@ -1,7 +1,7 @@
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -376,6 +376,7 @@ void reload(GLOBAL *g, struct ewx_module *ewx)
         free(hosts[i].name);
         free(hosts[i].mac);
         free(hosts[i].ip);
+        free(hosts[i].passwd);
 	}
 	free(hosts);
 
@@ -510,7 +511,7 @@ int add_node(GLOBAL *g, struct ewx_module *ewx, struct snmp_session *sh, struct 
 	if (status == STAT_SUCCESS && response->errstat == SNMP_ERR_NOERROR)
 	{
 #ifdef LMS_SNMP_DEBUG
-		struct variable_list 	*vars;
+		struct variable_list *vars;
 		for (vars = response->variables; vars; vars = vars->next_variable)
 			print_variable(vars->name, vars->name_length, vars);
 #endif
@@ -572,10 +573,10 @@ int update_node(GLOBAL *g, struct ewx_module *ewx, struct snmp_session *sh, stru
 	status = snmp_synch_response(sh, pdu, &response);
 
 	// Process the response
-	if (status != STAT_SUCCESS || response->errstat != SNMP_ERR_NOERROR)
+	if (status == STAT_SUCCESS && response->errstat == SNMP_ERR_NOERROR)
 	{
 #ifdef LMS_SNMP_DEBUG
-		struct variable_list 	*vars;
+		struct variable_list *vars;
 		for (vars = response->variables; vars; vars = vars->next_variable)
 			print_variable(vars->name, vars->name_length, vars);
 #endif
@@ -633,7 +634,7 @@ int update_node(GLOBAL *g, struct ewx_module *ewx, struct snmp_session *sh, stru
 	if (status == STAT_SUCCESS && response->errstat == SNMP_ERR_NOERROR)
 	{
 #ifdef LMS_SNMP_DEBUG
-		struct variable_list 	*vars;
+		struct variable_list *vars;
 		for (vars = response->variables; vars; vars = vars->next_variable)
 			print_variable(vars->name, vars->name_length, vars);
 #endif
@@ -677,7 +678,7 @@ int save_tables(GLOBAL *g, struct ewx_module *ewx, struct snmp_session *sh)
 	if(status == STAT_SUCCESS && response->errstat == SNMP_ERR_NOERROR)
 	{
 #ifdef LMS_SNMP_DEBUG
-		struct variable_list 	*vars;
+		struct variable_list *vars;
 		for (vars = response->variables; vars; vars = vars->next_variable)
 			print_variable(vars->name, vars->name_length, vars);
 #endif

@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -59,14 +59,9 @@ function smarty_function_tip($params, $template)
 		}
 		elseif($params['text'] != '')
 		{
-			$text = $params['text'];
-			$tmpl = $template->getTemplateVars('_LANG');
-			if($tmpl[$text])
-				$text = trim($tmpl[$text]);
-
-			if(is_array($params))
-				foreach($params as $paramid => $paramval)
-					$text = str_replace('$'.$paramid, $paramval, $text);
+		    $text = $params['text'];
+		    unset($params['text']);
+    		$text = trans(array_merge((array)$text, $params));
 
 			$text = str_replace('\'', '\\\'', $text);
 			$text = str_replace('"', '&quot;', $text);

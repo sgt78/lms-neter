@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -37,6 +37,8 @@ function DBLoad($filename=NULL)
 		$file = gzopen($filename,'r'); //jezeli chcemy gz to plik najpierw trzeba rozpakowac
 	else
 		$file = fopen($filename,'r');
+
+	if (!$file) return FALSE;
 
 	$DB->BeginTrans(); // przyspieszmy działanie jeżeli baza danych obsługuje transakcje
 	while(!feof($file))

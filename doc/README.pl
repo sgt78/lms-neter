@@ -1,10 +1,10 @@
-LMS - LAN Management System 1.11-cvs
+LMS - LAN Management System 1.11-git
 
    [logo-small.png]
 
 LMS Developers
 
-   Copyright © 2001-2012 LMS Developers
+   Copyright © 2001-2013 LMS Developers
      __________________________________________________________________
 
    Spis treści
@@ -564,8 +564,8 @@ $ /usr/local/pgsql/bin/postmaster -D /usr/local/pgsql/data >logfile 2>&1 &
 
    Ostrzeżenie
 
-   Wymagane jest dodanie wpisu w postgresql.conf: custom_variable_classes
-   = 'lms'
+   Dotyczy wersji <= 9.1.x: Wymagane jest dodanie wpisu w postgresql.conf:
+   custom_variable_classes = 'lms'
      __________________________________________________________________
 
 2.5.2.3. Utworzenie bazy danych
@@ -3159,6 +3159,7 @@ http://www.naszasiec.pl/
        jego końca
        %current_period - bieżący miesiąc w formacie MM/RRRR
        %next_period - następny miesiąc w formacie MM/RRRR
+       %prev_period - poprzedni miesiąc w formacie MM/RRRR
        %desc - opis taryfy
        Przykład: comment = 'Abonament za %current_month w/g taryfy
        %tariff'
@@ -6353,6 +6354,9 @@ Rozdział 7. Dla dociekliwych
    failedlogindate - data ostatniej nieudanej próby logowania
    failedloginip - adres IP, z którego próbowano się zalogować
    deleted - czy usunięty (0/1)
+   access - czy konto aktywne (0/1)
+   accessfrom - data od której konto jest aktywne
+   accessto - data do której konto jest aktywne
      __________________________________________________________________
 
 7.2.2. Klienci ('customers')
@@ -7013,6 +7017,8 @@ Rozdział 7. Dla dociekliwych
    customerid - identyfikator klienta
    private - prywatny/publiczny
    closed - status zamknięcia
+   moduserid - id użytkownika, który ostatnio zmodyfikował zdarzenie
+   moddate - data ostatniej modyfikacji zdarzenia
      __________________________________________________________________
 
 7.2.55. Terminarz - powiązania ('eventassignments')

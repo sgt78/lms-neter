@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -159,18 +159,17 @@ $layout['logid'] = $AUTH->id;
 $layout['lmsdbv'] = $DB->_version;
 $layout['smarty_version'] = SMARTY_VERSION;
 $layout['hostname'] = hostname();
-$layout['lmsv'] = '1.11-cvs';
-$layout['lmsvr'] = $LMS->_revision.'/'.$AUTH->_revision;
+$layout['lmsv'] = '1.11-git';
+//$layout['lmsvr'] = $LMS->_revision.'/'.$AUTH->_revision;
+$layout['lmsvr'] = '';
 $layout['dberrors'] =& $DB->errors;
 $layout['dbdebug'] = $_DBDEBUG;
 $layout['popup'] = isset($_GET['popup']) ? true : false;
 
 $SMARTY->assignByRef('layout', $layout);
-$SMARTY->assignByRef('_LANG', $_LANG);
 $SMARTY->assignByRef('LANGDEFS', $LANGDEFS);
 $SMARTY->assignByRef('_ui_language', $LMS->ui_lang);
 $SMARTY->assignByRef('_language', $LMS->lang);
-$SMARTY->assignByRef('_config',$CONFIG);
 
 $error = NULL; // initialize error variable needed for (almost) all modules
 
@@ -185,51 +184,60 @@ if(!$layout['popup'])
 header('X-Powered-By: LMS/'.$layout['lmsv']);
 
 // Check privileges and execute modules
-if($AUTH->islogged)
-{
+if ($AUTH->islogged) {
+	// Load plugin files and register hook callbacks
+	$plugins = preg_split('/[;,\s\t\n]+/', $CONFIG['phpui']['plugins'], -1, PREG_SPLIT_NO_EMPTY);
+	if (!empty($plugins))
+		foreach ($plugins as $plugin_name)
+			require LIB_DIR . '/plugins/' . $plugin_name . '.php';
+
+	$res = $LMS->ExecHook('access_table_init', array('accesstable' => $access['table']));
+	if (isset($res['accesstable']))
+		$access['table'] = $res['accesstable'];
+
 	$module = isset($_GET['m']) ? preg_replace('/[^a-zA-Z0-9_-]/', '', $_GET['m']) : '';
 	$deny = $allow = FALSE;
 
-	if($module == '')
+	$res = $LMS->ExecHook('module_load_before', array('module' => $module));
+	if ($res['abort']) {
+		$SESSION->close();
+		$DB->Destroy();
+		die;
+	}
+	$module = $res['module'];
+
+	if ($AUTH->passwdrequiredchange)
+		$module = 'chpasswd';
+
+	if ($module == '')
 	{
 		$module = $CONFIG['phpui']['default_module'];
 	}
 
-    // Load plugin files and register hook callbacks
-    $plugins = preg_split('/[;,\s\t\n]+/', $CONFIG['phpui']['plugins'], -1, PREG_SPLIT_NO_EMPTY);
-    if (!empty($plugins)) {
-        foreach ($plugins as $plugin_name) {
-            require LIB_DIR . '/plugins/' . $plugin_name . '.php';
-        }
-    }
-
-	if(file_exists(MODULES_DIR.'/'.$module.'.php'))
+	if (file_exists(MODULES_DIR.'/'.$module.'.php'))
 	{
-		$allow = !$AUTH->id || (!empty($access['allow']) && preg_match('/'.$access['allow'].'/i', $module));
+		$global_allow = !$AUTH->id || (!empty($access['allow']) && preg_match('/'.$access['allow'].'/i', $module));
 
-		$adminuser = FALSE;
-		if($AUTH->id && ($rights = $LMS->GetUserRights($AUTH->id)))
-			foreach($rights as $level)
+		if ($AUTH->id && ($rights = $LMS->GetUserRights($AUTH->id)))
+			foreach ($rights as $level)
 			{
-				if($level === 0)
-					$adminuser = TRUE;
-				if(!$allow)
-				{
-					if(isset($access['table'][$level]['deny_reg']))
-						$deny = (bool) preg_match('/'.$access['table'][$level]['deny_reg'].'/i', $module);
-					elseif(isset($access['table'][$level]['allow_reg']))
-						$allow = (bool) preg_match('/'.$access['table'][$level]['allow_reg'].'/i', $module);
+				if ($level === 0) {
+					$CONFIG['privileges']['superuser'] = true;
 				}
 
-				if(isset($access['table'][$level]['privilege']))
+				if (!$global_allow && !$deny && isset($access['table'][$level]['deny_reg']))
+					$deny = (bool) preg_match('/'.$access['table'][$level]['deny_reg'].'/i', $module);
+				elseif (!$allow && isset($access['table'][$level]['allow_reg']))
+					$allow = (bool) preg_match('/'.$access['table'][$level]['allow_reg'].'/i', $module);
+
+				if (isset($access['table'][$level]['privilege']))
 					$CONFIG['privileges'][$access['table'][$level]['privilege']] = TRUE;
 			}
 
-		if($allow && ! $deny)
+		if ($global_allow || ($allow && !$deny))
 		{
 			$layout['module'] = $module;
 			$LMS->InitUI();
-			$SMARTY->assign('adminuser', $adminuser);
 			include(MODULES_DIR.'/'.$module.'.php');
 		}
 		else

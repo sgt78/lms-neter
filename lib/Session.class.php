@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -27,7 +27,7 @@
 class Session {
 
 	var $SID = NULL;			// session unique ID
-	var $_version = '1.11-cvs';		// library version
+	var $_version = '1.11-git';		// library version
 	var $_revision = '$Revision$';	// library revision
 	var $_content = array();		// session content array
 	var $_updated = FALSE;			// indicates that content has
@@ -151,7 +151,8 @@ class Session {
 			{
 				$this->_destroySession();
 			} else {
-				$this->DB->Execute('UPDATE sessions SET atime = ?NOW? WHERE id = ?', array($this->SID));
+				if (!isset($_POST['xjxfun']))
+					$this->DB->Execute('UPDATE sessions SET atime = ?NOW? WHERE id = ?', array($this->SID));
 				$this->_content = unserialize($row['content']);
 				return;
 			}

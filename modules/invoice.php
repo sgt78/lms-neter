@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -26,7 +26,7 @@
 
 if(strtolower($CONFIG['invoices']['type']) == 'pdf')
 {
-    include('invoice_pdf.php');
+    include('invoice_tcpdf.php');
     $SESSION->close();
     die;
 }
@@ -99,10 +99,12 @@ elseif(isset($_GET['fetchallinvoices']))
 {
 	$layout['pagetitle'] = trans('Invoices');
 
+	$offset = intval(date('Z'));
 	$ids = $DB->GetCol('SELECT d.id FROM documents d
 		WHERE d.cdate >= ? AND d.cdate <= ? AND (d.type = ? OR d.type = ?)'
 		.(!empty($_GET['customerid']) ? ' AND d.customerid = '.intval($_GET['customerid']) : '')
 		.(!empty($_GET['numberplanid']) ? ' AND d.numberplanid = '.intval($_GET['numberplanid']) : '')
+		.(!empty($_GET['autoissued']) ? ' AND d.userid = 0' : '')
 		.(!empty($_GET['groupid']) ? 
 		' AND '.(!empty($_GET['groupexclude']) ? 'NOT' : '').'
 		        EXISTS (SELECT 1 FROM customerassignments a
@@ -113,7 +115,7 @@ elseif(isset($_GET['fetchallinvoices']))
 		        JOIN excludedgroups e ON (a.customergroupid = e.customergroupid)
 			WHERE e.userid = lms_current_user() AND a.customerid = d.customerid)' 
 		.' ORDER BY d.customerid, CEIL(d.cdate/86400), d.id',
-		array($_GET['from'], $_GET['to'], DOC_INVOICE, DOC_CNOTE));
+		array(intval($_GET['from']) - $offset, intval($_GET['to']) - $offset, DOC_INVOICE, DOC_CNOTE));
 
 	if(!$ids)
 	{

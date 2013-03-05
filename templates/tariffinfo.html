@@ -26,7 +26,7 @@
 		</TD>
 	</TR>
 	<TR class="LIGHT">
-	    <TD WIDTH="100%" COLSPAN="2" CLASS="flr">
+	    <TD WIDTH="100%" COLSPAN="2" CLASS="flr container">
 		<TABLE WIDTH="100%" CELLPADDING="0">
 		<TR CLASS="LIGHT">
 		    <TD WIDTH="50%" style="vertical-align: top;">
@@ -65,7 +65,7 @@
 				    {$tariff.prodid}
 				</TD>
 			    </TR>
-			{if !$_config.privileges.hide_summaries|chkconfig || $adminuser}
+			{if !check_conf('privileges.hide_summaries')}
 			    <TR CLASS="light">
 				<TD WIDTH="1%">
 				    <IMG SRC="img/customers.gif" ALT="">

@@ -79,7 +79,7 @@
 			    <tr>
 				<td width="1%" valign="top" nowrap>{trans("In words:")}</td>
 				<td width="99%" class="sdr"><b>
-					{if $_config.phpui.to_words_short_version|chkconfig}
+					{if check_conf('phpui.to_words_short_version')}
 						{$receipt.total|string_format:"%d"|to_words:0:"":1} {$receipt.totalg|string_format:"%02d"}/100
 					{else}
 						{t a=$receipt.total|string_format:"%d"|to_words b=$receipt.totalg|to_words}$a dollars $b cents{/t}
@@ -135,7 +135,7 @@
 	</tr>
 	<tr>
 		<td colspan="6" align="right">
-			<font class="small">Copyright &copy; 2001-2012 LMS Developers</font>
+			<font class="small">Copyright &copy; 2001-{$smarty.now|date_format:'%Y'} LMS Developers</font>
 		</td>
 	</tr>
 </table>
@@ -221,7 +221,7 @@
 			    <tr>
 				<td width="1%" valign="top" nowrap>{trans("In words:")}</td>
 				<td width="99%" class="sdr"><b>
-					{if $_config.phpui.to_words_short_version|chkconfig}
+					{if check_conf('phpui.to_words_short_version')}
 						{$receipt.total|string_format:"%d"|to_words:0:"":1} {$receipt.totalg|string_format:"%02d"}/100
 					{else}
 						{t a=$receipt.total|string_format:"%d"|to_words b=$receipt.totalg|to_words}$a dollars $b cents{/t}
@@ -277,7 +277,7 @@
 	</tr>
 	<tr>
 		<td colspan="6" align="right">
-			<font class="small">Copyright &copy; 2001-2012 LMS Developers</font>
+			<font class="small">Copyright &copy; 2001-{$smarty.now|date_format:'%Y'} LMS Developers</font>
 		</td>
 	</tr>
 </table>

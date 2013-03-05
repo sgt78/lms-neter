@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -99,7 +99,7 @@ elseif(isset($_FILES['file']) && is_uploaded_file($_FILES['file']['tmp_name']) &
 					$from = mktime(0,0,0, $invmonth, 1, $invyear);
 					$to = mktime(0,0,0, !empty($pattern['pinvoice_month']) && $pattern['pinvoice_month'] > 0 ? $invmonth + 1 : 13, 1, $invyear);
 					$id = $DB->GetOne('SELECT customerid FROM documents 
-							WHERE number=? AND cdate>? AND cdate<? AND type IN (?,?)', 
+							WHERE number=? AND cdate>=? AND cdate<? AND type IN (?,?)', 
 							array($invid, $from, $to, DOC_INVOICE, DOC_CNOTE));
 				}
 			}
@@ -140,8 +140,14 @@ elseif(isset($_FILES['file']) && is_uploaded_file($_FILES['file']['tmp_name']) &
 		if(!empty($pattern['comment_replace']))
 			$comment = preg_replace($pattern['comment_replace']['from'], $pattern['comment_replace']['to'], $comment);
 
-		$customer = trim($lastname.' '.$name);
+		// remove unneeded spaces and cut $customer and $comment to fit into database (150 chars limit)
+		$customer = trim($lastname.' '.$name);                                                                                                                                           
+		$customer = preg_replace('/[ ]+/',' ',$customer);
+		$customer = substr($customer,0,150);
+
 		$comment = trim($comment);
+		$comment = preg_replace('/[ ]+/',' ',$comment);
+		$comment = substr($comment,0,150);
 
 		if(!empty($pattern['use_line_hash']))
 			$hash = md5($theline.(!empty($pattern['line_idx_hash']) ? $ln : ''));

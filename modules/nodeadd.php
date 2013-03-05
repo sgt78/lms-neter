@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -48,7 +48,7 @@ if(isset($_GET['premac']))
 if(isset($_GET['prename']))
 	$nodedata['name'] = $_GET['prename'];
 
-if(isset($_POST['nodedata']) && !isset($_GET['newmac']))
+if (isset($_POST['nodedata']))
 {
 	$nodedata = $_POST['nodedata'];
 
@@ -73,7 +73,7 @@ if(isset($_POST['nodedata']) && !isset($_GET['newmac']))
 		$error['name'] = trans('Node name is required!');
 	elseif(strlen($nodedata['name']) > 32)
 		$error['name'] = trans('Node name is too long (max.32 characters)!');
-	elseif(!preg_match('/^[_a-z0-9-]+$/i', $nodedata['name']))
+	elseif(!preg_match('/^[_a-z0-9-.]+$/i', $nodedata['name']))
 		$error['name'] = trans('Specified name contains forbidden characters!');
 	elseif($LMS->GetNodeIDByName($nodedata['name']))
 		$error['name'] = trans('Specified name is in use!');
@@ -202,16 +202,6 @@ if(isset($_POST['nodedata']) && !isset($_GET['newmac']))
 		if($nodedata['ipaddr_pub']=='0.0.0.0')
 			$nodedata['ipaddr_pub'] = '';
     }
-}
-else
-{
-	if(isset($_POST['nodedata']) && isset($_GET['newmac']))
-	{
-		$nodedata = $_POST['nodedata'];
-		$nodedata['ipaddr'] = $_POST['nodedataipaddr'];
-		$nodedata['ipaddr_pub'] = $_POST['nodedataipaddr_pub'];
-		$nodedata['macs'][] = '';
-	}
 }
 
 if(empty($nodedata['macs']))

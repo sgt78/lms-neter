@@ -1,4 +1,4 @@
-$Id$
+$Id: ChangeLog,v 1.1637 2012/04/19 10:00:00 chilek Exp $
 
 version ? (????-??-??):
 
@@ -83,6 +83,71 @@ version ? (????-??-??):
   - invoicenote: we use tax rates which were current in the day
     when invoice was issued [Jarosław Dziubek/chilan]
   - ping: added selection of ping type thanks to Grzegorz Cichowski [chilan]
+  - use more <label> elements instead of javascript's checkElement() [alec]
+  - fixed issue with too big session data on mysql [alec]
+  - new contact add and new mac add ported to javascript [chilan]
+  - BTS#0000908: added function format_bankaccount [wdjag/chilan]
+  - added support for domain mx backup [chilan]
+  - BTS#0000911: msie support for javascript used for new mac/contact add [prezes_kk/chilan]
+  - assignment locks support introduced [chilan]
+  - daemon/ewx-stm: save channel id without offset in ewx_stm_nodes table [chilan]
+  - added fiber link type and changed link type selection from checkbox to combobox [chilan]
+  - teryt streets containing two segments support [chilan]
+  - added link speed for netlinks and nodelinks [chilan]
+  - additional tariff types to select (phone, tv) [chilan]
+  - uke report support for service types [chilan]
+  - netdevmap: show link properties in tooltip [chilan]
+  - netdevmap: link weight depends on link speed [chilan]
+  - added timeout mechanism for fetch_url(); without timeout support
+    we could wait for LMS update info forever [chilan]
+  - searching nodes by teryt localization [chilan]
+  - nodesearchresults: first operation introduced - connect to device [chilan]
+  - customersearch: division selection - requested by jlc [chilan]
+  - daemon tc-new: fix empty mac segfault [chilan]
+  - invoice_pdf: %bankaccount substitution for invoice from division header and footer [chilan]
+  - tcpdf support for invoices [prezes_kk]
+  - assignmentlocks -> nodelocks [chilan]
+  - we can choose format of reports beetween html and pdf - phpui->report_type [prezes_kk]
+  - script for automatic filling of gps coordinates based on Sebastian Wielgosz work [prezes_kk]
+  - changed pin field type from int to varchar(6) [red]
+  - liability reports are consistent with invoice/cash issues [chilan]
+  - small fix for new PHP version [red]
+  - fix validation data in domains for DKIM [red]
+  - added management urls for netdevices [chilan]
+  - customersearch: we can search customers by tariff [ceho]
+  - cashimportparser.php: fixed problem with long customername and description [ceho]
+  - customergroups: extended group name to 255 chars [ceho]
+  - lms-traffic: disable 'autocommit' for postgresql [ceho]
+  - clicking on mac icon changes mac format [chilan]
+  - daemon/payments: better to not depend on localtime() singularity [chilan]
+  - daemon/payments: fixed assignment numberplan support [chilan]
+  - fixed domain filtering [chilan]
+  - fixed position of table on tcpdf invoice [chilan]
+  - selection of only automatically issued invoices is possible now in invoice print [chilan]
+  - added reload timer. Add reload_timer true to phpui to enable it [paszczus]
+  - implemented simple password expiration mechanism [chilan]
+  - chpasswd: new password should be different than old one [chilan]
+  - new hook: we can register function which is invoked before module load and modify
+    access table [chilan]
+  - new simple plugin which allows to use one-time sms passwords [chilan]
+  - payments: support %type placeholder which gets its value from tarifftypes config section [chilan]
+  - queues to whom we don't have access privileges, are not shown at all [chilan]
+  - user password should contain at least one capital letter, one lower case letter, one digit
+    and should consist of at least 8 characters [chilan]
+  - user should have reports privilege to have access to any reports [chilan]
+  - small user permission revolution: if user has deny permission defined after allow permission,
+    he won't have an access to given module [chilan]
+  - OpenLayers: ported 'Fix Google terms/poweredby/popup' commit to our version [chilan]
+  - past at date for disposable assignments is possible and we're only warned in such situation [chilan]
+  - bumped OpenLayers to 2.12 [chilan]
+  - support of ucs2 encoded smses [chilan]
+  - bin/lms-payments: added %prev_period variable [ceho]
+  - enabling and disabling user accounts is possible [michu006]
+  - validity period for users accounts [michu006]
+  - added info about last modification user and date for events [ceho]
+  - fixed discount presentation on invoices [chilan]
+  - added live traffic stats in node info module [chilan]
+  - don't update time counter for session when we get access to xajax funcions [chilan]
 
 version 1.11.13 Dira (2011-04-07)
 

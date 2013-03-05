@@ -7,8 +7,8 @@
 			<B>{$customerinfo.customername|escape} ({$customerinfo.id|string_format:"%04d"}){if $customerinfo.deleted} <FONT COLOR="RED">({trans("deleted customer")})</FONT>{/if}</B>
 		</TD>
 	</TR>
-        <TR class="LIGHT"{if $customerpanel} id="customerpanel" style="display:none;"{/if}>
-	        <TD WIDTH="100%" {if $customerpanel} CLASS="fall" ALIGN="RIGHT"{else}CLASS="flr"{/if}>
+    <TR class="LIGHT"{if $customerpanel} id="customerpanel" style="display:none;"{/if}>
+	    <TD WIDTH="100%" {if $customerpanel} CLASS="fall container" ALIGN="RIGHT"{else}CLASS="flr container"{/if}>
 			<TABLE WIDTH="100%" CELLPADDING="0">
 				<TR CLASS="LIGHT">
 					<TD WIDTH="50%" style="vertical-align:top;">
@@ -40,7 +40,7 @@
 			<IMG src="img/folder.gif" alt="">
 		</TD>
 		<TD WIDTH="99%">
-			{if $customerinfo.type}{trans("legal entity")}{else}{trans("private person")}{/if}
+			{if $customerinfo.type == $smarty.const.CTYPES_COMPANY}{assign var='type' value=$smarty.const.CTYPES_COMPANY}{$_CTYPES.$type}{elseif $customerinfo.type == $smarty.const.CTYPES_PRIVATE}{assign var='type' value=$smarty.const.CTYPES_PRIVATE}{$_CTYPES.$type}{/if}
 		</TD>
 	</TR>
 	<TR CLASS="LIGHT">
@@ -182,7 +182,7 @@
 			<IMG SRC="img/card.gif" ALT="">
 		</TD>
 		<TD WIDTH="99%" NOWRAP>
-			{$customerinfo.bankaccount}
+			{format_bankaccount($customerinfo.bankaccount)}
 		</TD>
 	</TR>
 {/if}
@@ -314,7 +314,7 @@
 		</TD>
 	</TR>
 	{/if}
-	{if $_config.privileges.finances_management|chkconfig || $adminuser}
+	{if !check_conf('privileges.hide_finances')}
 	<TR CLASS="LIGHT">
 		<TD WIDTH="1%">
 			<IMG SRC="img/money.gif" ALT="">

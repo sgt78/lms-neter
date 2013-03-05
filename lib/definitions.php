@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -25,6 +25,17 @@
  */
 
 // that definitions should be included before LMS.class.php but after Smarty
+
+// customers and contractor type
+define('CTYPES_PRIVATE',0);
+define('CTYPES_COMPANY',1);
+define('CTYPES_CONTRACTOR',2);
+
+$CTYPES = array(
+    CTYPES_PRIVATE	=> trans('private person'),
+    CTYPES_COMPANY	=> trans('legal entity'),
+    CTYPES_CONTRACTOR	=> trans('contractor'),
+);
 
 // Helpdesk ticket status
 define('RT_NEW', 0);
@@ -62,6 +73,9 @@ define('DOC_RECEIPT', 2);
 define('DOC_CNOTE', 3);
 //define('DOC_CMEMO', 4);
 define('DOC_DNOTE', 5);
+define('DOC_INVOICE_PRO',6);
+define('DOC_INVOICE_PURCHASE',7);
+
 define('DOC_CONTRACT', -1);
 define('DOC_ANNEX', -2);
 define('DOC_PROTOCOL', -3);
@@ -71,6 +85,8 @@ define('DOC_OTHER', -10);
 
 $DOCTYPES = array(
     DOC_INVOICE 	=>	trans('invoice'),
+    DOC_INVOICE_PRO	=>	trans('pro-forma invoice'),
+    DOC_INVOICE_PURCHASE =>	trans('purchase invoice'),
     DOC_RECEIPT 	=>	trans('cash receipt'),
     DOC_CNOTE	    =>	trans('credit note'), // faktura korygujaca
 //    DOC_CMEMO	    =>	trans('credit memo'), // nota korygujaca
@@ -144,13 +160,17 @@ $NUM_PERIODS = array(
 define('TARIFF_INTERNET', 1);
 define('TARIFF_HOSTING', 2);
 define('TARIFF_SERVICE', 3);
+define('TARIFF_PHONE', 4);
+define('TARIFF_TV', 5);
 define('TARIFF_OTHER', -1);
 
 $TARIFFTYPES = array(
-    TARIFF_INTERNET => trans('internet'),
-    TARIFF_HOSTING 	=> trans('hosting'),
-    TARIFF_SERVICE 	=> trans('service'),
-    TARIFF_OTHER	=> trans('other'),
+	TARIFF_INTERNET	=> isset($CONFIG['tarifftypes']['internet']) ? $CONFIG['tarifftypes']['internet'] : trans('internet'),
+	TARIFF_HOSTING	=> isset($CONFIG['tarifftypes']['hosting']) ? $CONFIG['tarifftypes']['config'] : trans('hosting'),
+	TARIFF_SERVICE	=> isset($CONFIG['tarifftypes']['service']) ? $CONFIG['tarifftypes']['service'] : trans('service'),
+	TARIFF_PHONE	=> isset($CONFIG['tarifftypes']['phone']) ? $CONFIG['tarifftypes']['phone'] : trans('phone'),
+	TARIFF_TV	=> isset($CONFIG['tarifftypes']['tv']) ? $CONFIG['tarifftypes']['tv'] : trans('tv'),
+	TARIFF_OTHER	=> isset($CONFIG['tarifftypes']['other']) ? $CONFIG['tarifftypes']['other'] : trans('other'),
 );
 
 $PAYTYPES = array(
@@ -161,6 +181,7 @@ $PAYTYPES = array(
     5   => trans('compensation'),
     6   => trans('barter'),
     7   => trans('contract'),
+    8   => trans('paid'),
 );
 
 // Contact types
@@ -180,8 +201,66 @@ $DISCOUNTTYPES = array(
 	DISCOUNT_AMOUNT		=> trans('amount'),
 );
 
+define('DAY_MONDAY', 0);
+define('DAY_TUESDAY', 1);
+define('DAY_THURSDAY', 2);
+define('DAY_WEDNESDAY', 3);
+define('DAY_FRIDAY', 4);
+define('DAY_SATURDAY', 5);
+define('DAY_SUNDAY', 6);
+
+$DAYS = array(
+	DAY_MONDAY	=> trans('Mon'),
+	DAY_TUESDAY	=> trans('Tue'),
+	DAY_THURSDAY	=> trans('Thu'),
+	DAY_WEDNESDAY	=> trans('Wed'),
+	DAY_FRIDAY	=> trans('Fri'),
+	DAY_SATURDAY	=> trans('Sat'),
+	DAY_SUNDAY	=> trans('Sun'),
+);
+
+$LINKTYPES = array(
+	0		=> trans('wire'),
+	1		=> trans('wireless'),
+	2		=> trans('fiber'),
+);
+
+$LINKSPEEDS = array(
+	10000		=> trans('10Mbit/s'),
+	25000		=> trans('25Mbit/s'),
+	54000		=> trans('54Mbit/s'),
+	100000		=> trans('100Mbit/s'),
+	200000		=> trans('200Mbit/s'),
+	300000		=> trans('300Mbit/s'),
+	1000000		=> trans('1Gbit/s'),
+	10000000	=> trans('10Gbit/s'),
+);
+
+$BOROUGHTYPES = array(
+	1 => trans('municipal commune'),
+	2 => trans('rural commune'),
+	3 => trans('municipal-rural commune'),
+	4 => trans('city in the municipal-rural commune'),
+	5 => trans('rural area to municipal-rural commune'),
+	8 => trans('estate in Warsaw-Centre commune'),
+	9 => trans('estate'),
+);
+
+$PASSWDEXPIRATIONS = array(
+	0	=> trans('never expires'),
+	7	=> trans('week'),
+	14	=> trans('2 weeks'),
+	21	=> trans('21 days'),
+	31	=> trans('month'),
+	62	=> trans('2 months'),
+	93	=> trans('quarter'),
+	183	=> trans('half year'),
+	365	=> trans('year'),
+);
+
 if(isset($SMARTY))
 {
+	$SMARTY->assign('_CTYPES',$CTYPES);
 	$SMARTY->assign('_DOCTYPES', $DOCTYPES);
 	$SMARTY->assign('_PERIODS', $PERIODS);
 	$SMARTY->assign('_GUARANTEEPERIODS', $GUARANTEEPERIODS);
@@ -192,6 +271,11 @@ if(isset($SMARTY))
 	$SMARTY->assign('_PAYTYPES', $PAYTYPES);
 	$SMARTY->assign('_CONTACTTYPES', $CONTACTTYPES);
 	$SMARTY->assign('_DISCOUNTTYPES', $DISCOUNTTYPES);
+	$SMARTY->assign('_DAYS', $DAYS);
+	$SMARTY->assign('_LINKTYPES', $LINKTYPES);
+	$SMARTY->assign('_LINKSPEEDS', $LINKSPEEDS);
+	$SMARTY->assign('_BOROUGHTYPES', $BOROUGHTYPES);
+	$SMARTY->assign('_PASSWDEXPIRATIONS', $PASSWDEXPIRATIONS);
 }
 
 define('DEFAULT_NUMBER_TEMPLATE', '%N/LMS/%Y');

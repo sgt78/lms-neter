@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -152,8 +152,10 @@ function BodyVars(&$body, $data)
 	$body = str_replace('%cid', $data['id'], $body);
 	$body = str_replace('%pin', $data['pin'], $body);
 	$body = str_replace('%balance', $data['balance'], $body);
-	$body = str_replace('%account', bankaccount($data['id'], $data['divisionid']), $body);
-	$body = str_replace('%bankaccount', bankaccount($data['id'], $data['divisionid']), $body);
+	if (strpos($body, '%account') !== false)
+		$body = str_replace('%account', format_bankaccount(bankaccount($data['id']), $body));
+	if (strpos($body, '%bankaccount') !== false)
+		$body = str_replace('%bankaccount', format_bankaccount(bankaccount($data['id']), $body));
 
 	if(!(strpos($body, '%last_10_in_a_table') === FALSE))
 	{

@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -172,8 +172,10 @@ if(isset($_POST['assignment']))
 				{
 					$at = mktime(0, 0, 0, $m, $d, $y);
 
-					if($at < mktime(0,0,0))
+					if ($at < mktime(0, 0, 0) && !$a['atwarning']) {
+						$a['atwarning'] = TRUE;
 						$error['at'] = trans('Incorrect date!');
+					}
 				}
 				else
 					$error['at'] = trans('Incorrect date format! Enter date in YYYY/MM/DD format!');
@@ -290,6 +292,8 @@ else
 		$a['settlement'] = true;
 	if (!empty($CONFIG['phpui']['default_assignment_period']))
 		$a['period'] = $CONFIG['phpui']['default_assignment_period'];
+	if (!empty($CONFIG['phpui']['default_assignment_at']))
+		$a['at'] = $CONFIG['phpui']['default_assignment_at'];
 }
 
 $expired = isset($_GET['expired']) ? $_GET['expired'] : false;

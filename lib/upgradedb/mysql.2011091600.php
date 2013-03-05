@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License Version 2 as
@@ -60,7 +60,7 @@ $DB->Execute("INSERT INTO rtticketcategories (ticketid, categoryid)
 		SELECT id, ? FROM rttickets",
 		array($default_catid));
 
-$DB->Execute("INSERT INTO uiconfig (section, var) VALUES ('userpanel', 'default_categories')");
+$DB->Execute("INSERT INTO uiconfig (section, var, value) VALUES ('userpanel', 'default_categories', ?)", array($default_catid));
 
 $DB->Execute("UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?", array('2011091600', 'dbversion'));
 

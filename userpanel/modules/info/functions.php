@@ -1,9 +1,9 @@
 <?php
 
 /*
- *  LMS version 1.11-cvs
+ *  LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -36,6 +36,13 @@ function module_main()
 $userinfo['account'] = bankaccount($SESSION->id, $division['divisionid']);
     $usernodes = $LMS->GetCustomerNodes($SESSION->id);
     $balancelist = $LMS->GetCustomerBalanceList($SESSION->id);
+    $documents = $LMS->DB->GetAll('SELECT c.docid, d.number, d.type, c.title, c.fromdate, c.todate, 
+	c.description, c.filename, c.md5sum, c.contenttype, n.template, d.closed, d.cdate
+	FROM documentcontents c
+	JOIN documents d ON (c.docid = d.id)
+	LEFT JOIN numberplans n ON (d.numberplanid = n.id)
+	WHERE d.customerid = ?
+	ORDER BY cdate', array($SESSION->id));
 
     $fields_changed = $LMS->DB->GetRow('SELECT id FROM up_info_changes WHERE customerid = ?', 
     	array($SESSION->id));
@@ -43,9 +50,15 @@ $userinfo['account'] = bankaccount($SESSION->id, $division['divisionid']);
     $SMARTY->assign('userinfo',$userinfo);
     $SMARTY->assign('usernodes',$usernodes);
     $SMARTY->assign('balancelist',$balancelist);
+    $SMARTY->assign('documents',$documents);
     $SMARTY->assign('fields_changed', $fields_changed);
     $SMARTY->display('module:info.html');
 } 
+
+function module_docview()
+{
+	include 'docview.php';
+}
 
 function module_updateuserform()
 {
@@ -53,6 +66,13 @@ function module_updateuserform()
 
     $userinfo = $LMS->GetCustomer($SESSION->id);
     $usernodes = $LMS->GetCustomerNodes($SESSION->id);
+    $documents = $LMS->DB->GetAll('SELECT c.docid, d.number, d.type, c.title, c.fromdate, c.todate, 
+	c.description, c.filename, c.md5sum, c.contenttype, n.template, d.closed, d.cdate
+	FROM documentcontents c
+	JOIN documents d ON (c.docid = d.id)
+	LEFT JOIN numberplans n ON (d.numberplanid = n.id)
+	WHERE d.customerid = ?
+	ORDER BY cdate', array($SESSION->id));
     
     $userinfo['im'] = isset($userinfo['messengers'][IM_GG]) ? $userinfo['messengers'][IM_GG]['uid'] : '';
     $userinfo['yahoo'] = isset($userinfo['messengers'][IM_YAHOO]) ? $userinfo['messengers'][IM_YAHOO]['uid'] : '';
@@ -60,6 +80,7 @@ function module_updateuserform()
     
     $SMARTY->assign('userinfo',$userinfo);
     $SMARTY->assign('usernodes',$usernodes);
+    $SMARTY->assign('documents',$documents);
     $SMARTY->display('module:updateuser.html');
 }
 

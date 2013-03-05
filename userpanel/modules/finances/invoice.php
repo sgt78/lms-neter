@@ -1,9 +1,9 @@
 <?php
 
 /*
- *  LMS version 1.11-cvs
+ *  LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -26,11 +26,11 @@
 
 global $LMS,$SESSION,$CONFIG,$_CONFIG,$SMARTY,$invoice, $layout, $type;
 
-$type = chkconfig($CONFIG['userpanel']['invoice_duplicate']) ? trans('DUPLICATE') : trans('ORIGINAL');
+$type = check_conf('userpanel.invoice_duplicate') ? trans('DUPLICATE') : trans('ORIGINAL');
 
 if(strtolower($CONFIG['invoices']['type']) == 'pdf')
 {
-    include('invoice_pdf.php');
+    include('invoice_tcpdf.php');
     die;
 }
 

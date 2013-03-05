@@ -17,6 +17,12 @@ struct payments_module
 	int num_period;
 	int check_invoices;
 	double suspension_percentage;
+	char *tariff_internet;
+	char *tariff_hosting;
+	char *tariff_service;
+	char *tariff_phone;
+	char *tariff_tv;
+	char *tariff_other;
 };
 
 struct plan
@@ -25,6 +31,7 @@ struct plan
 	int period;
 	int plan;
 	int number;
+	int isdefault;
 };
 
 #ifdef USE_PGSQL

@@ -1,10 +1,10 @@
-LMS - LAN Management System 1.11-cvs
+LMS - LAN Management System 1.11-git
 
    [logo-small.png]
 
 LMS Developers
 
-   Copyright © 2001-2012 LMS Developers
+   Copyright © 2001-2013 LMS Developers
      __________________________________________________________________
 
    Table of Contents
@@ -516,8 +516,8 @@ $ /usr/local/pgsql/bin/postmaster -D /usr/local/pgsql/data >logfile 2>&1 &
 
    Warning
 
-           It's required to add in postgresql.conf: custom_variable_classes =
-           'lms'
+           Applies to version <= 9.1.x: It's required to add in postgresql.conf:
+           custom_variable_classes = 'lms'
      __________________________________________________________________
 
 2.5.2.3. Database Creation
@@ -2704,6 +2704,7 @@ http://www.bigpro.com/
        day
        %current_period - current month in MM/YYYY format
        %next_period - next month in MM/YYYY format
+       %prev_period - previous month in MM/YYYY format
        %desc - tariff description
        Example: comment = 'Subscription for %current_month'
      * settlement_comment (optional)
@@ -5330,6 +5331,9 @@ Chapter 7. For curious
    failedlogindate - date of last failed login attempt
    failedloginip - IP of last failed login attempt
    deleted - if is deleted boolean (0/1)
+   access - whether the account is active (0/1)
+   accessfrom - date from which the account is active
+   accessto - date to which the account is active
      __________________________________________________________________
 
 7.2.2. Customers ('customers')
@@ -5986,6 +5990,8 @@ Chapter 7. For curious
    customerid - customer ID
    private - status (private/public)
    closed - is event closed? (1-yes/0-no)
+   moduserid - id of last user that modified the event
+   moddate - date of last event modification
      __________________________________________________________________
 
 7.2.55. Timetable - assignments ('eventassignments')

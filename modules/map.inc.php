@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -34,7 +34,7 @@ $devices = $DB->GetAllByKey('SELECT n.id, n.name, n.location, '.$DB->GroupConcat
 
 if ($devices)
 {
-	foreach ($devices as $devidx => $device)
+	foreach ($devices as $devidx => $device) {
 		if ($device['lastonline'])
 			if (time() - $device['lastonline'] > $CONFIG['phpui']['lastonline_limit'])
 				$devices[$devidx]['state'] = 2;
@@ -42,10 +42,18 @@ if ($devices)
 				$devices[$devidx]['state'] = 1;
 		else
 			$devices[$devidx]['state'] = 0;
+		$urls = $DB->GetRow('SELECT '.$DB->GroupConcat('url').' AS url,
+			'.$DB->GroupConcat('comment').' AS comment FROM managementurls WHERE netdevid = ?',
+			array($device['id']));
+		if ($urls) {
+			$devices[$devidx]['url'] = $urls['url'];
+			$devices[$devidx]['comment'] = $urls['comment'];
+		}
+	}
 
 	$devids = implode(',', array_keys($devices));
 
-	$devlinks = $DB->GetAll('SELECT src, dst, type FROM netlinks WHERE src IN ('.$devids.') AND dst IN ('.$devids.')');
+	$devlinks = $DB->GetAll('SELECT src, dst, type, speed FROM netlinks WHERE src IN ('.$devids.') AND dst IN ('.$devids.')');
 	if ($devlinks)
 		foreach ($devlinks as $devlinkidx => $devlink)
 		{
@@ -53,6 +61,8 @@ if ($devices)
 			$devlinks[$devlinkidx]['srclon'] = $devices[$devlink['src']]['lon'];
 			$devlinks[$devlinkidx]['dstlat'] = $devices[$devlink['dst']]['lat'];
 			$devlinks[$devlinkidx]['dstlon'] = $devices[$devlink['dst']]['lon'];
+			$devlinks[$devlinkidx]['typename'] = trans("Link type:")." ".$LINKTYPES[$devlink['type']];
+			$devlinks[$devlinkidx]['speedname'] = trans("Link speed:")." ".$LINKSPEEDS[$devlink['speed']];
 		}
 }
 
@@ -75,7 +85,7 @@ if ($nodes)
 
 	if ($devices)
 	{
-		$nodelinks = $DB->GetAll('SELECT n.id AS nodeid, netdev, linktype AS type FROM nodes n WHERE netdev > 0 AND ownerid > 0 
+		$nodelinks = $DB->GetAll('SELECT n.id AS nodeid, netdev, linktype AS type, linkspeed AS speed FROM nodes n WHERE netdev > 0 AND ownerid > 0 
 			AND n.id IN ('.$nodeids.') AND netdev IN ('.$devids.')');
 		if ($nodelinks)
 			foreach ($nodelinks as $nodelinkidx => $nodelink)
@@ -84,6 +94,8 @@ if ($nodes)
 				$nodelinks[$nodelinkidx]['nodelon'] = $nodes[$nodelink['nodeid']]['lon'];
 				$nodelinks[$nodelinkidx]['netdevlat'] = $devices[$nodelink['netdev']]['lat'];
 				$nodelinks[$nodelinkidx]['netdevlon'] = $devices[$nodelink['netdev']]['lon'];
+				$nodelinks[$nodelinkidx]['typename'] = trans("Link type:")." ".$LINKTYPES[$nodelink['type']];
+				$nodelinks[$nodelinkidx]['speedname'] = trans("Link speed:")." ".$LINKSPEEDS[$nodelink['speed']];
 			}
 	}
 }

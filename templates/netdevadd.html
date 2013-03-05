@@ -12,12 +12,12 @@
 		<TD WIDTH="1%" CLASS="FBT">
 			<B>{trans("Name:")}</B>
 		<TD WIDTH="98%" CLASS="FRIGHTU">
-			<INPUT TYPE="TEXT" NAME="netdev[name]" VALUE="{$netdev.name}" MAXLENGTH="32" {tip trigger="name" text="Enter device name" bold=1}> 
+			<INPUT TYPE="TEXT" NAME="netdev[name]" VALUE="{$netdev.name}" MAXLENGTH="32" {tip trigger="name" text="Enter device name" bold=1}>
 		</TD>
 	</TR>
 	<TR class="LIGHT">
-                <TD WIDTH="100%" COLSPAN="3" CLASS="flr">
-		        <TABLE WIDTH="100%" CELLPADDING="0">
+        <TD WIDTH="100%" COLSPAN="3" CLASS="flr container">
+		    <TABLE WIDTH="100%" CELLPADDING="0">
 				<TR CLASS="LIGHT">
 					<TD WIDTH="50%" style="vertical-align:top;">
 					        <TABLE WIDTH="100%" CELLPADDING="3">
@@ -80,7 +80,7 @@
 		    <INPUT type="hidden" name="netdev[location_street]" value="{$netdev.location_street}">
 		    <INPUT type="hidden" name="netdev[location_house]" value="{$netdev.location_house}">
 		    <INPUT type="hidden" name="netdev[location_flat]" value="{$netdev.location_flat}">
-			<INPUT TYPE="checkbox" name="netdev[teryt]" id="teryt" onchange="check_teryt('location')"{if $netdev.teryt} checked{/if}><a href="javascript:checkElement('netdev[teryt]');">{trans("TERRIT-DB")}</a>
+			<INPUT TYPE="checkbox" name="netdev[teryt]" id="teryt" onchange="check_teryt('location')"{if $netdev.teryt} checked{/if}><label for="teryt">{trans("TERRIT-DB")}</label>
 		</TD>
 	</TR>
 	<TR>
@@ -107,7 +107,7 @@
 			<a href="javascript: void(0);" onClick="return gpscoordschoosewin(document.netdevadd.elements['netdev[longitude]'], document.netdevadd.elements['netdev[latitude]']);" {tip text="Click to select gps coordinates from map"}>&raquo;&raquo;&raquo;</A>
 		</TD>
 	</TR>
-{if $_config.phpui.radius|chkconfig}
+{if check_conf('phpui.radius')}
 	<TR CLASS="LIGHT">
 		<TD WIDTH="1%">
 			<IMG SRC="img/radius.gif" ALT="">

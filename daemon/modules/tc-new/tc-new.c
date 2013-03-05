@@ -1,5 +1,5 @@
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
  *  (C) Copyright 2001-2007 LMS Developers
  *
@@ -394,7 +394,7 @@ void reload(GLOBAL *g, struct tc_module *tc)
 
 				// get first mac from the list
 				char *mac = strdup(host.mac);
-				if (!tc->multi_mac) {
+				if (!tc->multi_mac && strlen(mac)) {
 				    mac = strtok(mac, ",");
 				}
 

@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -79,6 +79,7 @@ $access['table'][15]['allow_reg']   	= '^((daemoninstance|daemonconfig)(list|edi
 
 $access['table'][16]['name']        	= trans('cash operations');
 $access['table'][16]['allow_reg']   	= '^(cashreglist|receipt|receipt(list|edit|add|del|adv)|cashreglog(info|view|add|edit|del)|choosecustomer)$';
+$access['table'][16]['privilege']	= 'cash_operations';
 
 $access['table'][17]['name']		= trans('customers groups management');
 $access['table'][17]['allow_reg']	= '^(customergroup|customergroup(add|edit|del|info|list|move))$';
@@ -106,6 +107,12 @@ $access['table'][24]['privilege']	= 'hide_sysinfo';
 
 $access['table'][25]['name']		= trans('links hiding');
 $access['table'][25]['privilege']	= 'hide_links';
+
+$access['table'][26]['name']		= trans('finances hiding');
+$access['table'][26]['privilege']	= 'hide_finances';
+
+$access['table'][27]['name']		= trans('reports');
+$access['table'][27]['privilege']	= 'reports';
 
 $access['table'][253]['name']		= trans('users edition and addition forbidden');
 $access['table'][253]['deny_reg']	= '^(user(add|del|edit|passwd))$';

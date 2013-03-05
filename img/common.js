@@ -37,14 +37,35 @@ function autoiframe_setsize(id, width, height)
 	var doc = window.parent ? parent.document : document,
 		frame = doc.getElementById(id);
 
+    if (!frame)
+        return;
+
 	if (width) {
 		frame.style.width = width + 'px';
 		frame.parentNode.style.width = width + 'px';
 	}
+	else
+	    width = frame.offsetWidth;
+
 	if (height) {
 		frame.style.height = height + 'px';
 		frame.parentNode.style.height = height + 'px';
 	}
+	else
+	    height = frame.offsetHeight;
+
+    // move frame if it doesn't fit the screen
+    var pos = get_object_pos(frame),
+        parent_frame = doc.getElementById('overDiv'),
+        dw = doc.body.offsetWidth,
+        dh = doc.body.offsetWidth;
+
+    if (width < dw && pos.x + width > dw - 15) {
+        parent_frame.style.left = (dw - width - 15) + 'px';
+    }
+    if (height < dh && pos.y + height > dh - 15) {
+        parent_frame.style.top = (dh - height - 15) + 'px';
+    }
 }
 
 function openSelectWindow(theURL, winName, myWidth, myHeight, isCenter, formfield)
@@ -95,6 +116,12 @@ function locationchoosewin(varname, formname, city, street)
 function gpscoordschoosewin(formfield1, formfield2)
 {
 	return openSelectWindow2('?m=choosegpscoords', 'choosegpscoords', 450, 300, 'true', formfield1, formfield2);
+}
+
+function netlinkpropertieschoosewin(id, devid, isnetlink)
+{
+	return openSelectWindow('?m=netlinkproperties&id=' + id + '&devid=' + devid + '&isnetlink=' + (isnetlink ? 1 : 0),
+		'netlinkproperties', 350, 100, 'true');
 }
 
 function sendvalue(targetfield, value)
@@ -198,16 +225,41 @@ function checkElement(id)
 	}
 }
 
+function CheckAll(form, elem, excl)
+{
+    var i, len, n, e, f,
+        form = document.forms[form] ? document.forms[form] : document.getElementById(form),
+        inputs = form.getElementsByTagName('INPUT');
+
+    for (i=0, len=inputs.length; i<len; i++) {
+        e = inputs[i];
+
+        if (e.type != 'checkbox' || e == elem)
+            continue;
+
+        if (excl && excl.length) {
+            f = 0;
+            for (n=0; n<excl.length; n++)
+                if (e.name == excl[n])
+                    f = 1;
+            if (f)
+                continue;
+        }
+
+        e.checked = elem.checked;
+    }
+}
+
 function get_object_pos(obj)
 {
-	// get old select size/position
+	// get old element size/position
 	var x = (document.layers) ? obj.x : obj.offsetLeft;
 	var y = (document.layers) ? obj.y : obj.offsetTop;
 
-	// calculate select position
+	// calculate element position
 	var elm = obj.offsetParent;
-	while(elm && elm !== null) {
-	        x += elm.offsetLeft;
+	while (elm) {
+	    x += elm.offsetLeft;
 		y += elm.offsetTop;
 		elm = elm.offsetParent;
 	}
@@ -392,8 +444,8 @@ function check_teryt(locid, init)
     if (locid) {
         var loc = document.getElementById(locid);
         if (checked) {
-            if (!init)
-                loc.value = '';
+            //if (!init)
+            //    loc.value = '';
             loc.setAttribute('readonly', true);
         }
         else {
@@ -406,8 +458,39 @@ function check_teryt(locid, init)
 
 function ping_popup(ip, type)
 {
-	if (type == null)
-		type = 1;
-	popup('?m=ping&ip=' + ip + '&type=' + type, 1, 1, 30, 30);
+	popup('?m=ping&ip=' + ip + '&type=' + (type ? type : 0), 1, 1, 30, 30);
 	autoiframe_setsize('autoiframe', 480, 300);
+}
+
+function changeMacFormat(id)
+{
+	if (!id) return;
+	var elem = document.getElementById(id);
+	if (!elem) return;
+	var curmac = elem.innerHTML;
+	var macpatterns = [ /^([0-9a-f]{2}:){5}[0-9a-f]{2}$/gi, /^([0-9a-f]{2}-){5}[0-9a-f]{2}$/gi,
+		/^([0-9a-f]{4}\.){2}[0-9a-f]{4}$/gi, /^[0-9a-f]{12}$/gi ];
+	for (var i in macpatterns)
+		if (macpatterns[i].test(curmac))
+			break;
+	if (i >= macpatterns.length)
+		return;
+	i = parseInt(i);
+	switch (i) {
+		case 0:
+			curmac = curmac.replace(/:/g, '-');
+			break;
+		case 1:
+			curmac = curmac.replace(/-/g, '');
+			curmac = curmac.toLowerCase();
+			curmac = curmac.replace(/^([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{4})$/gi, '$1.$2.$3');
+			break;
+		case 2:
+			curmac = curmac.replace(/\./g, '');
+			curmac = curmac.toUpperCase();
+			break;
+		case 3:
+			curmac = curmac.replace(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/gi, '$1:$2:$3:$4:$5:$6');
+	}
+	elem.innerHTML = curmac;
 }

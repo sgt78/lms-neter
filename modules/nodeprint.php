@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -23,6 +23,9 @@
  *
  *  $Id$
  */
+
+if (!check_conf('privileges.reports'))
+	access_denied();
 
 $type = isset($_GET['type']) ? $_GET['type'] : '';
 
@@ -65,21 +68,22 @@ switch($type)
 					case 'mac':
 						$sqlord = ' ORDER BY mac';
 					break;
-				    	case 'ip':
+					case 'ip':
 						$sqlord = ' ORDER BY ipaddr';
 					break;
 					case 'ownerid':
 						$sqlord = ' ORDER BY ownerid';
 					break;
-				    	case 'owner':
+					case 'owner':
 						$sqlord = ' ORDER BY owner';
 					break;
 				}
 
-				if($_POST['network'])
+				$net = intval($_POST['network']);
+				if ($net)
 					$net = $LMS->GetNetworkParams($_POST['network']);
-				
-				$group = $_POST['customergroup'];
+
+				$group = intval($_POST['customergroup']);
 
 				$nodelist = $DB->GetAll('SELECT vnodes.id AS id, inet_ntoa(ipaddr) AS ip, mac, 
 					    vnodes.name AS name, vnodes.info AS info, 
@@ -96,7 +100,12 @@ switch($type)
 					    .($sqlord != '' ? $sqlord.' '.$direction : ''));
 				
 				$SMARTY->assign('nodelist', $nodelist);
-				$SMARTY->display('printindebtnodelist.html');
+				if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+					$output = $SMARTY->fetch('printindebtnodelist.html');
+					html2pdf($output, trans('Reports'), $layout['pagetitle']);
+				} else {
+					$SMARTY->display('printindebtnodelist.html');
+				}
 				$SESSION->close();
 				die;
 			break;
@@ -109,7 +118,12 @@ switch($type)
 		unset($nodelist['totaloff']);
 		
 		$SMARTY->assign('nodelist', $nodelist);
-		$SMARTY->display('printnodelist.html');
+		if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+			$output = $SMARTY->fetch('printnodelist.html');
+			html2pdf($output, trans('Reports'), $layout['pagetitle']);
+		} else {
+			$SMARTY->display('printnodelist.html');
+		}
 	break;
 
 	default:

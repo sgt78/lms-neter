@@ -4,25 +4,6 @@
 {include file="calendar_js.html"}
 <SCRIPT type="text/javascript">
 	<!--
-	function CheckAll()
-	{
-		for (var i=0; i<document.page.elements.length; i++)
-		{
-			var e = document.page.elements[i];
-			if (e.name != 'allbox' &&
-				e.name != 'original' &&
-				e.name != 'duplicate' &&
-				e.name != 'copy')
-			e.checked = document.page.allbox.checked;
-		}
-	}
-
-	function CheckAll2()
-	{
-		document.page.elements['allbox'].checked = !document.page.elements['allbox'].checked;
-		CheckAll();
-	}
-
 	function DeleteMarked()
 	{
 		if(!confirm('{trans("Are you sure, you want to delete selected operation(s) and/or document item(s)?")}'))
@@ -70,7 +51,7 @@
 		document.page.submit();
 	}
 
-	{if $_config.phpui.short_pagescroller|chkconfig}
+	{if check_conf('phpui.short_pagescroller')}
 	function pagechange1()
 	{
 		document.page.action="?m=balancelist&page=" + document.forms['page'].elements['page1'].value;
@@ -142,7 +123,7 @@
 					{/section}
 				</SELECT>
 				<NOBR>
-				<INPUT type="checkbox" name="groupexclude" {if $listdata.groupexclude} CHECKED{/if}><A HREF="javascript:setCheckbox('groupexclude')">{trans("exclude group")}</a>
+				<INPUT type="checkbox" name="groupexclude" id="groupexclude"{if $listdata.groupexclude} CHECKED{/if}><label for="groupexclude">{trans("exclude group")}</label>
 				</NOBR>
 				<NOBR>
 				{trans("From:")}&nbsp;<INPUT TYPE="text" NAME="from" SIZE="10" MAXSIZE="10" value="{if $listdata.from > 0}{$listdata.from|date_format:"%Y/%m/%d"}{/if}" OnClick="javascript:cal1.popup();" {tip text="Enter date in YYYY/MM/DD format (empty field means no limit) or click to choose it from calendar"}>
@@ -150,7 +131,7 @@
 				<A href="javascript: filter();">&raquo;&raquo;&raquo;</A><BR>
 				</NOBR>
 		</TD>
-	</TR>		
+	</TR>
 	{if $listdata.total != 0}
 	<TR class="dark">
 		<TD WIDTH="100%" class="fall" COLSPAN="10">
@@ -214,19 +195,19 @@
 			<P><B>{trans("No such transactions found in database.")}</B></P>
 			<P>&nbsp;</P>
 		</TD>
-	</TR>    
+	</TR>
 	{/section}
 	<TR class="dark">
 		<TD class="fleftu" COLSPAN="8" nowrap>
 			<A HREF="javascript:DeleteMarked();">{trans("Delete")} <IMG SRC="img/delete.gif" ALT="{trans("Delete")}" HSPACE="2"></A>&nbsp;
 			<A HREF="javascript:printi();">{trans("Print invoices")} <IMG SRC="img/print.gif" ALT="" HSPACE="2"></A>&nbsp;
 			<A HREF="javascript:printr();">{trans("Print cash receipts")} <IMG SRC="img/printr.gif" ALT="" HSPACE="2"></A>&nbsp;
-			<INPUT type="checkbox" name="original" id="original"{if preg_match('/original/i',$_config.invoices.default_printpage)} checked{/if}><A HREF="javascript:checkElement('original')">{trans("original")}&nbsp;</a>
-			<INPUT type="checkbox" name="copy" id="copy"{if preg_match('/copy/i',$_config.invoices.default_printpage)} checked{/if}><A HREF="javascript:checkElement('copy')">{trans("copy")}</a>
-			<INPUT type="checkbox" name="duplicate"id ="duplicate"{if preg_match('/duplicate/i',$_config.invoices.default_printpage)} checked{/if}><A HREF="javascript:checkElement('duplicate')">{trans("duplicate")}</a>
+			<INPUT type="checkbox" name="original" id="original"{if preg_match('/original/i', get_conf('invoices.default_printpage'))} checked{/if}><label for="original">{trans("original")}</label>
+			<INPUT type="checkbox" name="copy" id="copy"{if preg_match('/copy/i', get_conf('invoices.default_printpage'))} checked{/if}><label for="copy">{trans("copy")}</label>
+			<INPUT type="checkbox" name="duplicate" id="duplicate"{if preg_match('/duplicate/i', get_conf('invoices.default_printpage'))} checked{/if}><label for="duplicate">{trans("duplicate")}</label>
 		</TD>
 		<TD class="frightu" ALIGN="right" colspan="2">
-			<A HREF="javascript:CheckAll2();">{trans("Check All")}</A><INPUT TYPE="checkbox" NAME="allbox" onClick="CheckAll();" VALUE="Check All Boxes">
+			<label for="allbox">{trans("Check All")}</label><INPUT TYPE="checkbox" NAME="allbox" id="allbox" onchange="CheckAll('page', this, ['original', 'duplicate', 'copy'])" VALUE="1">
 		</TD>
 	</TR>
 	{if $listdata.total != 0}
@@ -258,7 +239,6 @@
 			<B>{$listdata.totalval|money_format}</B>
 		</TD>
 		<TD class="frightu">&nbsp;
-			
 		</TD>
 	</TR>
 </TABLE>

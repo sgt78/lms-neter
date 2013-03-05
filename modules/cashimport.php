@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -138,6 +138,10 @@ elseif(isset($_POST['marks']))
 	    	&& chkconfig($CONFIG['finances']['cashimport_checkinvoices']);
 
         foreach ($imports as $import) {
+			
+			// do not insert if the record is already closed (prevent multiple inserts of the same record)
+			if($import['closed'] == 1)
+				continue;
 
 			$DB->BeginTrans();
 

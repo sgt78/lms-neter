@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -38,7 +38,7 @@ if(isset($_POST['customergroupadd']))
 
 	if($customergroupadd['name'] == '')
 		$error['name'] = trans('Group name required!');
-	elseif(strlen($customergroupadd['name']) > 16)
+	elseif(strlen($customergroupadd['name']) > 255)
 		$error['name'] = trans('Group name is too long!');
 	elseif(!preg_match('/^[._a-z0-9-]+$/i', $customergroupadd['name']))
 		$error['name'] = trans('Invalid chars in group name!');

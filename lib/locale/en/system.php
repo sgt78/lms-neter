@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -84,6 +84,11 @@ function bankaccount($id, $account=NULL)
 		$account = 'US'.sprintf('%02d',98-bcmod($account.sprintf('%012d',$id).$cc.'00',97)).$account.sprintf('%012d', $id);
 	} 
 
+	return $account;
+}
+
+function format_bankaccount($account)
+{
 	return $account;
 }
 

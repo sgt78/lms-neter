@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -72,12 +72,7 @@ if(isset($_GET['ajax']))
 
 $customeradd = array();
 
-if(isset($_POST['customeradd']) && isset($_GET['newcontact']))
-{
-	$customeradd = $_POST['customeradd'];
-	$customeradd['contacts'][] = array();
-}
-elseif(isset($_POST['customeradd']))
+if (isset($_POST['customeradd']))
 {
 	$customeradd = $_POST['customeradd'];
 

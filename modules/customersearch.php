@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -29,6 +29,9 @@ $SESSION->save('backto', $_SERVER['QUERY_STRING']);
 if(isset($_POST['search']))
 {
 	$customersearch = $_POST['search'];
+
+	if(!empty($customersearch['tariffs']))
+		$customersearch['tariffs'] = implode(",", $customersearch['tariffs']);
 	
 	if($customersearch['createdfrom'])
 	{
@@ -93,10 +96,16 @@ else
 	$ng = $_POST['ng'];
 $SESSION->save('cslng', $ng);
 
+if(!isset($_POST['d']))
+	$SESSION->restore('csld', $d);
+else
+	$d = $_POST['d'];
+$SESSION->save('csld', $d);
+
 if(isset($_GET['search']))
 {
 	$layout['pagetitle'] = trans('Customer Search Results');
-	$customerlist = $LMS->GetCustomerList($o, $s, $n, $g, $customersearch, NULL, $k, $ng);
+	$customerlist = $LMS->GetCustomerList($o, $s, $n, $g, $customersearch, NULL, $k, $ng, $d);
 	
 	$listdata['total'] = $customerlist['total'];
 	$listdata['direction'] = $customerlist['direction'];
@@ -107,6 +116,7 @@ if(isset($_GET['search']))
 	$listdata['network'] = $n;
 	$listdata['customergroup'] = $g;
 	$listdata['nodegroup'] = $ng;
+	$listdata['division'] = $d;
 
 	unset($customerlist['total']);
 	unset($customerlist['state']);
@@ -154,6 +164,8 @@ else
 	$SMARTY->assign('customergroups', $LMS->CustomergroupGetAll());
 	$SMARTY->assign('nodegroups', $LMS->GetNodeGroupNames());
 	$SMARTY->assign('cstateslist', $LMS->GetCountryStates());
+	$SMARTY->assign('tariffs', $LMS->GetTariffs());
+	$SMARTY->assign('divisions', $DB->GetAll('SELECT id, shortname FROM divisions ORDER BY shortname'));
 	$SMARTY->assign('k', $k);
 	$SMARTY->display('customersearch.html');
 }

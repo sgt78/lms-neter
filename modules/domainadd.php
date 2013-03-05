@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -80,12 +80,13 @@ if(isset($_POST['domainadd']))
 	{
 		$DB->BeginTrans();
 	
-		$DB->Execute('INSERT INTO domains (name, ownerid, type, master, description) VALUES (?,?,?,?,?)',
+		$DB->Execute('INSERT INTO domains (name, ownerid, type, master, description, mxbackup) VALUES (?,?,?,?,?,?)',
 				array($domainadd['name'], 
 					$domainadd['ownerid'], 
 					$domainadd['type'], 
 					$domainadd['master'], 
-					$domainadd['description']));
+					$domainadd['description'],
+					empty($domainadd['mxbackup']) ? 0 : 1));
 
 		$lid = $DB->GetLastInsertID('domains');
 
@@ -129,6 +130,12 @@ if(isset($_POST['domainadd']))
 					VALUES (?, ?, ?, \'MX\', 10, ?)',
 					array($lid, $domainadd['name'], $CONFIG['zones']['default_ttl'],
 						$CONFIG['zones']['default_mx']));
+				if($CONFIG['zones']['default_spf']) {
+					$DB->Execute('INSERT INTO records(domain_id,name,ttl,type,prio,content)
+						VALUES (?, ?, ?, \'TXT\', 0, ?)',
+						array($lid, $domainadd['name'], $CONFIG['zones']['default_ttl'],
+							$CONFIG['zones']['default_spf']));
+				}
 			}
 		}
 		

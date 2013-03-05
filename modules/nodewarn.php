@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -31,26 +31,18 @@ if(isset($setwarnings['mnodeid']))
 	$message = isset($setwarnings['message']) ? $setwarnings['message'] : '';
 	$warnon  = isset($setwarnings['warnon']) ? $setwarnings['warnon'] : FALSE;
 	$warnoff = isset($setwarnings['warnoff']) ? $setwarnings['warnoff'] : FALSE;
-    $nodes   = array();
 
-	foreach($setwarnings['mnodeid'] as $value)
-	{
-		if ($warnon) {
-			if ($LMS->NodeSetWarn($value, TRUE))
-			    $nodes[] = $value;
-	    }
-		else if ($warnoff) {
-			if ($LMS->NodeSetWarn($value, FALSE))
-			    $nodes[] = $value;
-        }
-		if($message)
-			$DB->Execute('UPDATE customers SET message=? WHERE id=?', array($message,$LMS->GetNodeOwner($value)));
+	$nodes = array_filter($setwarnings['mnodeid'], 'is_natural');
+
+	if (!empty($nodes)) {
+		$LMS->NodeSetWarn($nodes, $warnon ? 1 : 0);
+		if ($message)
+			$DB->Execute('UPDATE customers SET message = ? WHERE id IN 
+				(SELECT DISTINCT n.ownerid FROM nodes n WHERE n.id IN (' . implode(',', $nodes) . '))',
+				array($message));
+		$data = array('nodes' => $nodes);
+		$LMS->ExecHook('node_warn_after', $data);
 	}
-
-    if (!empty($nodes)) {
-        $data = array('nodes' => $nodes);
-        $LMS->ExecHook('node_warn_after', $data);
-    }
 
 	$SESSION->save('warnmessage', $message);
 	$SESSION->save('warnon', $warnon);
@@ -61,18 +53,15 @@ if(isset($setwarnings['mnodeid']))
 
 $warning = isset($_GET['warning']) ? 1 : 0;
 
-if(!empty($_POST['marks']))
+if (!empty($_POST['marks']))
 {
-    $nodes = array();
-    foreach($_POST['marks'] as $id) {
-        if ($LMS->NodeSetWarn($id, $warning))
-			$nodes[] = $id;
-    }
+	$nodes = array_filter($_POST['marks'], 'is_natural');
 
-    if (!empty($nodes)) {
-        $data = array('nodes' => $nodes, 'warning' => $warning);
-        $LMS->ExecHook('node_warn_after', $data);
-    }
+	$LMS->NodeSetWarn($nodes, $warning);
+	if (!empty($nodes)) {
+		$data = array('nodes' => $nodes, 'warning' => $warning);
+		$LMS->ExecHook('node_warn_after', $data);
+	}
 
 	$SESSION->redirect('?'.$SESSION->get('backto'));
 }

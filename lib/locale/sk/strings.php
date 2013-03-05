@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -314,7 +314,7 @@ $_LANG['Customers List $a$b'] = 'Zoznam zákazníkov $a$b';
 $_LANG['Customers: list, add, search, groups'] = 'Zákazníci: zoznam, pridať, hladať, skupiny';
 $_LANG['customers management'] = 'správa zákazníkov';
 $_LANG['Customers Without Nodes List $a$b'] = 'Zoznam zákazníkov bez počítačov $a$b';
-$_LANG['CVS Repository'] = 'Sklad CVS';
+$_LANG['GIT Repository'] = 'Sklad GIT';
 $_LANG['Daemon'] = 'Demon';
 $_LANG['daemon management and configuration'] = 'správa a konfigurácia demona';
 $_LANG['Daemon(s) Configuration'] = 'Konfigurácia demona(ov)';

@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS ewx_channels;
 DROP TABLE IF EXISTS numberplans;
 DROP TABLE IF EXISTS nodeassignments;
 DROP TABLE IF EXISTS assignments;
+DROP TABLE IF EXISTS nodelocks;
 DROP TABLE IF EXISTS taxes;
 DROP TABLE IF EXISTS cash;
 DROP TABLE IF EXISTS dbinfo;
@@ -35,6 +36,7 @@ DROP TABLE IF EXISTS location_cities;
 DROP TABLE IF EXISTS location_boroughs;
 DROP TABLE IF EXISTS location_districts;
 DROP TABLE IF EXISTS location_states;
+DROP TABLE IF EXISTS pna;
 DROP TABLE IF EXISTS netdevices;
 DROP TABLE IF EXISTS netlinks;
 DROP TABLE IF EXISTS networks;
@@ -53,6 +55,7 @@ DROP TABLE IF EXISTS rtqueues;
 DROP TABLE IF EXISTS rttickets;
 DROP TABLE IF EXISTS rtrights;
 DROP TABLE IF EXISTS stats;
+DROP TABLE IF EXISTS nodesessions;
 DROP TABLE IF EXISTS tariffs;
 DROP TABLE IF EXISTS promotions;
 DROP TABLE IF EXISTS promotionschemas;
@@ -90,6 +93,7 @@ DROP TABLE IF EXISTS voipaccounts;
 DROP TABLE IF EXISTS messages;
 DROP TABLE IF EXISTS messageitems;
 DROP TABLE IF EXISTS nastypes;
+DROP TABLE IF EXISTS managementurls;
 DROP TABLE IF EXISTS up_rights;
 DROP TABLE IF EXISTS up_rights_assignments;
 DROP TABLE IF EXISTS up_customers;
@@ -120,6 +124,11 @@ CREATE TABLE users (
   failedlogindate int(11) NOT NULL DEFAULT '0',
   failedloginip varchar(16) NOT NULL DEFAULT '',
   deleted tinyint(1)    NOT NULL DEFAULT '0',
+  passwdexpiration int(11) NOT NULL DEFAULT '0',
+  passwdlastchange int(11) NOT NULL DEFAULT '0',
+  access tinyint(1) NOT NULL DEFAULT '1',
+  accessfrom int(11) NOT NULL DEFAULT '0',
+  accessto int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY  (id),
   UNIQUE KEY login (login)
 ) ENGINE=InnoDB;
@@ -157,7 +166,7 @@ CREATE TABLE customers (
   modid int(11) 	NOT NULL DEFAULT '0',
   deleted tinyint(1) 	NOT NULL DEFAULT '0',
   message text 		NOT NULL,
-  pin int(6) 		NOT NULL DEFAULT '0',
+  pin varchar(6)	NOT NULL DEFAULT '0',
   cutoffstop int(11) 	NOT NULL DEFAULT '0',
   consentdate int(11)   NOT NULL DEFAULT '0',
   einvoice tinyint(1)   DEFAULT NULL,
@@ -448,6 +457,7 @@ CREATE TABLE location_street_types (
 CREATE TABLE location_streets (
     id int(11)          NOT NULL auto_increment,
     name varchar(128)   NOT NULL, -- TERYT: NAZWA_1
+    name2 varchar(128)  DEFAULT NULL, -- TERYT: NAZWA_2
     ident varchar(8)    NOT NULL, -- TERYT: SYM_UL
     typeid int(11)      DEFAULT NULL
         REFERENCES location_street_types (id) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -455,6 +465,24 @@ CREATE TABLE location_streets (
         REFERENCES location_cities (id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (id),
     UNIQUE (cityid, name, ident)
+) ENGINE=INNODB;
+
+# --------------------------------------------------------
+#
+# Structure of table pna
+#
+CREATE TABLE pna (
+	id int(11)		NOT NULL auto_increment,
+	zip varchar(10)		NOT NULL,
+	cityid int(11)		NOT NULL
+		REFERENCES location_cities (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	streetid int(11)	DEFAULT NULL
+		REFERENCES location_streets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	fromhouse varchar(10)	DEFAULT NULL,
+	tohouse varchar(10)	DEFAULT NULL,
+	parity smallint		DEFAULT '0' NOT NULL,
+	PRIMARY KEY (id),
+	UNIQUE (zip, cityid, streetid, fromhouse, tohouse, parity)
 ) ENGINE=INNODB;
 
 # --------------------------------------------------------
@@ -554,6 +582,7 @@ CREATE TABLE netlinks (
   src int(11) NOT NULL DEFAULT '0',
   dst int(11) NOT NULL DEFAULT '0',
   type tinyint(1) NOT NULL DEFAULT '0',
+  speed int(11) NOT NULL DEFAULT '100000',
   srcport smallint NOT NULL DEFAULT '0',
   dstport smallint NOT NULL DEFAULT '0',
   PRIMARY KEY  (id),
@@ -601,6 +630,7 @@ CREATE TABLE nodes (
   modid int(11) NOT NULL DEFAULT '0',
   netdev int(11) NOT NULL DEFAULT '0',
   linktype tinyint(1) NOT NULL DEFAULT '0',
+  linkspeed int(11) NOT NULL DEFAULT '100000',
   port smallint NOT NULL DEFAULT '0',
   access tinyint(1) NOT NULL DEFAULT '1',
   warning tinyint(1) NOT NULL DEFAULT '0',
@@ -627,6 +657,20 @@ CREATE TABLE nodes (
   INDEX location_city (location_city, location_street, location_house, location_flat),
   INDEX location_street (location_street)
 ) ENGINE=InnoDB;
+
+# --------------------------------------------------------
+#
+# Structure of table  nodelocks
+#
+CREATE TABLE nodelocks (
+	id int(11)		NOT NULL auto_increment,
+	nodeid int(11)		NOT NULL
+		REFERENCES nodes (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	days smallint		DEFAULT 0 NOT NULL,
+	fromsec int(11)		DEFAULT 0 NOT NULL,
+	tosec int(11)		DEFAULT 0 NOT NULL,
+	PRIMARY KEY (id)
+) ENGINE=INNODB;
 
 # --------------------------------------------------------
 #
@@ -845,12 +889,35 @@ CREATE TABLE rtticketcategories (
 # Structure of table stats
 #
 CREATE TABLE stats (
-  nodeid int(11) NOT NULL DEFAULT '0',
-  dt int(11) NOT NULL DEFAULT '0',
-  upload BIGINT DEFAULT '0',
-  download BIGINT DEFAULT '0',
-  UNIQUE KEY nodeid (nodeid,dt),
-  INDEX dt (dt)
+	nodeid int(11)		NOT NULL DEFAULT '0',
+	dt int(11)		NOT NULL DEFAULT '0',
+	upload bigint		DEFAULT '0',
+	download bigint		DEFAULT '0',
+	nodesessionid int(11)	NOT NULL DEFAULT '0',
+	UNIQUE KEY nodeid (nodeid, dt),
+	INDEX dt (dt),
+	INDEX nodesessionid (nodesessionid)
+) ENGINE=InnoDB;
+
+# --------------------------------------------------------
+#
+# Structure of table nodesessions
+#
+CREATE TABLE nodesessions (
+	id int(11)		NOT NULL auto_increment,
+	customerid int(11)	NOT NULL DEFAULT '0',
+	nodeid int(11)		NOT NULL DEFAULT '0',
+	ipaddr int(16) unsigned NOT NULL DEFAULT '0',
+	mac varchar(17)		NOT NULL DEFAULT '',
+	start int(11)		NOT NULL DEFAULT '0',
+	stop int(11)		NOT NULL DEFAULT '0',
+	download bigint		DEFAULT '0',
+	upload bigint		DEFAULT '0',
+	tag varchar(32)		NOT NULL DEFAULT '',
+	PRIMARY KEY (id),
+	INDEX customerid (customerid),
+	INDEX nodeid (nodeid),
+	INDEX tag (tag)
 ) ENGINE=InnoDB;
 
 # --------------------------------------------------------
@@ -1029,6 +1096,7 @@ CREATE TABLE domains (
     type VARCHAR(6) NOT NULL,
     notified_serial INT(11) DEFAULT NULL,
     account VARCHAR(40) DEFAULT NULL,
+    mxbackup tinyint(1) NOT NULL DEFAULT '0',
     PRIMARY KEY (id),
     UNIQUE KEY (name),
     INDEX ownerid (ownerid)
@@ -1090,6 +1158,8 @@ CREATE TABLE events (
     customerid int(11) NOT NULL DEFAULT '0',
     private tinyint(1) NOT NULL DEFAULT '0',
     closed tinyint(1) NOT NULL DEFAULT '0',
+    moddate int(11) NOT NULL DEFAULT '0',
+    moduserid int(11) NOT NULL DEFAULT '0',
     PRIMARY KEY (id),
     INDEX date (date)
 ) ENGINE=InnoDB;
@@ -1109,12 +1179,12 @@ CREATE TABLE eventassignments (
 # Structure of table sessions
 #
 CREATE TABLE sessions (
-    id varchar(50) NOT NULL DEFAULT '', 
-    ctime int(11) NOT NULL DEFAULT 0, 
-    mtime int(11) NOT NULL DEFAULT 0, 
-    atime int(11) NOT NULL DEFAULT 0, 
-    vdata text NOT NULL, 
-    content text NOT NULL, 
+    id varchar(50) NOT NULL DEFAULT '',
+    ctime int(11) NOT NULL DEFAULT 0,
+    mtime int(11) NOT NULL DEFAULT 0,
+    atime int(11) NOT NULL DEFAULT 0,
+    vdata text NOT NULL,
+    content mediumtext NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
@@ -1445,6 +1515,19 @@ CREATE TABLE nastypes (
 
 # --------------------------------------------------------
 #
+# Structure of table managementurls
+#
+CREATE TABLE managementurls (
+	id int(11)		NOT NULL auto_increment,
+	netdevid int(11)	NOT NULL
+		REFERENCES netdevices (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	url text		DEFAULT '' NOT NULL,
+	comment varchar(100)	DEFAULT NULL,
+	PRIMARY KEY (id)
+) ENGINE=INNODB;
+
+# --------------------------------------------------------
+#
 # Structure of table records
 #
 CREATE TABLE records (
@@ -1504,7 +1587,12 @@ CREATE VIEW customersview AS
 	WHERE NOT EXISTS (
 	    	SELECT 1 FROM customerassignments a
 		JOIN excludedgroups e ON (a.customergroupid = e.customergroupid)
-		WHERE e.userid = lms_current_user() AND a.customerid = c.id);
+		WHERE e.userid = lms_current_user() AND a.customerid = c.id) 
+		AND c.type IN ('0','1');
+
+CREATE VIEW contractorview AS
+	SELECT c.* FROM customers c
+	WHERE c.type = '2';
 
 CREATE VIEW teryt_terc AS
 SELECT ident AS woj, '0' AS pow, '0' AS gmi, 0 AS rodz,
@@ -1534,7 +1622,7 @@ SELECT s.ident AS woj, d.ident AS pow, b.ident AS gmi, b.type AS rodz_gmi,
 
 CREATE VIEW teryt_ulic AS
 SELECT st.ident AS woj, d.ident AS pow, b.ident AS gmi, b.type AS rodz_gmi,
-        c.ident AS sym, s.ident AS sym_ul, s.name AS nazwa_1, t.name AS cecha, s.id
+        c.ident AS sym, s.ident AS sym_ul, s.name AS nazwa_1, s.name2 AS nazwa_2, t.name AS cecha, s.id
     FROM location_streets s
     JOIN location_street_types t ON (s.typeid = t.id)
     JOIN location_cities c ON (s.cityid = c.id)
@@ -1618,6 +1706,8 @@ CREATE TABLE up_info_changes (
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
+INSERT INTO rtcategories (name, description)
+	VALUES ('default', 'default category');
 INSERT INTO uiconfig (section, var)
 	VALUES ('userpanel', 'data_consent_text');
 INSERT INTO uiconfig (section, var, value, description, disabled) 
@@ -1644,7 +1734,8 @@ INSERT INTO uiconfig (section, var, value, description, disabled)
 	VALUES ('userpanel', 'logout_url', '', '', 0);
 INSERT INTO uiconfig (section, var, value, description, disabled)
 	VALUES ('userpanel', 'owner_stats', '0', '', 0);
-INSERT INTO uiconfig (section, var) VALUES ('userpanel', 'default_categories');
+INSERT INTO uiconfig (section, var, value)
+	VALUES ('userpanel', 'default_categories', (SELECT MAX(id) FROM rtcategories));
 INSERT INTO up_rights(module, name, description)
 	VALUES ('info', 'edit_addr_ack', 'Customer can change address information with admin acknowlegment');
 INSERT INTO up_rights(module, name, description)
@@ -1675,4 +1766,4 @@ INSERT INTO nastypes (name) VALUES ('usrhiper');
 INSERT INTO nastypes (name) VALUES ('other');
 
 # --------------------------------------------------------
-INSERT INTO dbinfo (keytype, keyvalue) VALUES ('dbversion', '2011113000');
+INSERT INTO dbinfo (keytype, keyvalue) VALUES ('dbversion', '2012111100');

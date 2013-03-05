@@ -10,22 +10,6 @@
 {include file="calendar_js.html"}
 <SCRIPT type="text/javascript">
 <!--
-	function CheckAll()
-	{
-		for (var i=0; i<document.page.elements.length; i++)
-		{
-			var e = document.page.elements[i];
-			if (e.name != 'allbox' && e.name != 'original' && e.name != 'copy')
-				e.checked = document.page.allbox.checked;
-		}
-	}
-
-	function CheckAll2()
-	{
-		document.page.allbox.checked = !document.page.allbox.checked;
-		CheckAll();
-	}
-
 	function prints()
 	{
 		var add = "";
@@ -35,7 +19,7 @@
 			add = "&which=original";
 		else if (!document.page.original.checked && document.page.copy.checked)
 			add = "&which=copy";
-		
+
 		document.page.action = "?m=receipt&print=cached" + add;
 		document.page.target = "_blank";
 		document.page.submit();
@@ -48,7 +32,7 @@
 		document.page.submit();
 	}
 
-{if $_config.phpui.short_pagescroller|chkconfig}
+{if check_conf('phpui.short_pagescroller')}
 	function pagechange1()
 	{
 		document.page.action="?m=receiptlist&page=" + document.forms['page'].elements['page1'].value;
@@ -63,11 +47,6 @@
 		document.page.submit();
 	}
 {/if}
-
-	function setType(type)
-	{
-		document.page.elements[type].checked = !document.page.elements[type].checked;
-	}
 //-->
 </SCRIPT>
 <FORM METHOD="POST" NAME="page">
@@ -116,7 +95,7 @@
 				<B>{trans("Period:")}</B>&nbsp;
 				{trans("from")}&nbsp;<INPUT TYPE="text" NAME="from" SIZE="10" MAXSIZE="10" value="{if $listdata.from > 0}{$listdata.from|date_format:"%Y/%m/%d"}{/if}" OnClick="javascript:cal1.popup();" {tip text="Enter date in YYYY/MM/DD format (empty field means no limit) or click to choose it from calendar"}>
 				{trans("to")}&nbsp;<INPUT TYPE="text" NAME="to" SIZE="10" MAXSIZE="10" value="{if $listdata.to > 0}{$listdata.to|date_format:"%Y/%m/%d"}{/if}" OnClick="javascript:cal2.popup();"  {tip text="Enter date in YYYY/MM/DD format (empty field means no limit) or click to choose it from calendar"}>&nbsp;
-				<INPUT type="checkbox" name="advances" value="1"{if $listdata.advances} checked{/if}><A HREF="javascript:setType('advances');">{trans("not settled adv. only")}</A>&nbsp;
+				<INPUT type="checkbox" id="advances" name="advances" value="1"{if $listdata.advances} checked{/if}><label for="advances">{trans("not settled adv. only")}</label>&nbsp;
 				<A href="javascript: filter();">&raquo;&raquo;&raquo;</A>
 		</TD>
 	</TR>		
@@ -189,11 +168,11 @@
 				<TR>
 					<TD ALIGN="left" nowrap>
 						<A HREF="javascript:prints();">{trans("Print")} <IMG SRC="img/printr.gif" ALT="" ></A>&nbsp;
-						<INPUT type="checkbox" name="original" checked> <A HREF="javascript:setType('original');">{trans("original")}</A>&nbsp;
-						<INPUT type="checkbox" name="copy" checked> <A HREF="javascript:setType('copy');">{trans("copy")}</A>
+						<INPUT type="checkbox" id="original" name="original" checked> <label for="original">{trans("original")}</label>&nbsp;
+						<INPUT type="checkbox" id="copy" name="copy" checked> <label for="copy">{trans("copy")}</label>
 					</TD>
 					<TD ALIGN="right">	
-						<NOBR><A HREF="javascript:CheckAll2();">{trans("Check All")}</A><INPUT TYPE="checkbox" NAME="allbox" onClick="CheckAll();" VALUE="Check All Boxes"></NOBR>
+						<NOBR><label for="allbox">{trans("Check All")}</label><INPUT TYPE="checkbox" NAME="allbox" id="allbox" onchange="CheckAll('page', this, ['original', 'copy'])" VALUE="1"></NOBR>
 					</TD>
 				</TR>
 			</TABLE>

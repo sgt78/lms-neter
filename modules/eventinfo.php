@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -31,7 +31,8 @@ if(!$_GET['id'])
 
 $event = $DB->GetRow('SELECT events.id AS id, title, description, note, userid, customerid, begintime, endtime, date, private, closed, '
 			    .$DB->Concat('UPPER(customers.lastname)',"' '",'customers.name').' AS customername,
-			    users.name AS username
+			    users.name AS username, events.moddate, events.moduserid, 
+			    (SELECT name FROM users WHERE id=events.moduserid) AS modusername 
 			    FROM events LEFT JOIN customers ON (customers.id = customerid)
 			    LEFT JOIN users ON (users.id = userid)
 			    WHERE events.id = ?', array($_GET['id']));

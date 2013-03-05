@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -23,7 +23,8 @@
  *
  *  $Id$
  */
-
+$_LANG['purchase invoice'] = 'faktura zakupu';
+$_LANG['pro-forma invoice'] = 'faktura pro-forma';
 $_LANG['$a ($b addresses)'] = '$a ($b adresów)';
 $_LANG['$a addresses'] = '$a adresów';
 $_LANG['$a ago ($b)'] = '$a temu ($b)';
@@ -255,6 +256,7 @@ $_LANG['Content:'] = 'Treść:';
 $_LANG['Customer notice content'] = 'Treść powiadomienia dla klienta';
 $_LANG['Content-type for document. If you enter "application/octet-stream", browser will send file to save on disk, instead of displaying it. It\'s useful if you use your own template which generate e.g. rtf or xls file. Default: "text/html".'] = 'Content-type dokumentu. Jeżeli wpiszecie tutaj "application/octet-stream", to przeglądarka zechce wam wysłać plik do zapisania na dysku, zamiast go wyświetlić. Przydatne jeżeli użyjecie własnego template\'a który wygeneruje np. rtf\'a czy xls\'a. Domyślnie: "text/html"';
 $_LANG['Contract'] = 'Umowa';
+$_LANG['Contract No. $a'] = 'Umowa Nr $a';
 $_LANG['Contractor'] = 'Klient';
 $_LANG['copy'] = 'kopia';
 $_LANG['COPY'] = 'KOPIA';
@@ -305,7 +307,7 @@ $_LANG['Customers List $a$b'] = 'Lista klientów $a$b';
 $_LANG['Customers Management'] = 'Zarządzanie klientami';
 $_LANG['customers management'] = 'zarządzanie klientami';
 $_LANG['Customers Without Nodes List $a$b'] = 'Lista klientów bez komputerów $a$b';
-$_LANG['CVS Repository'] = 'Repozytorium CVS';
+$_LANG['GIT Repository'] = 'Repozytorium GIT';
 $_LANG['Daemon'] = 'Demon';
 $_LANG['daemon management and configuration'] = 'konfiguracja i zarządzanie demonem';
 $_LANG['Daemon(s) Configuration'] = 'Konfiguracja demona(ów)';
@@ -382,6 +384,7 @@ $_LANG['Display this form again, when this payment is saved'] = 'Po dodaniu pła
 $_LANG['Display this form again, when this group is saved'] = 'Po dodaniu grupy wyświetl ten formularz ponownie';
 $_LANG['Display tickets matching the following criteria:'] = 'Wyświetl zgłoszenia pasujące do następujących kryteriów';
 $_LANG['DNS servers:'] = 'Serwery DNS:';
+$_LANG['Document'] = 'Dokument';
 $_LANG['Documentation'] = 'Dokumentacja';
 $_LANG['Document with specified number exists!'] = 'Dokument z podanym numerem już istnieje!';
 $_LANG['Domain:'] = 'Domena:';
@@ -558,12 +561,14 @@ $_LANG['expired'] = 'wygasł';
 $_LANG['expired<!guarantee>'] = 'wygasła';
 $_LANG['Exposed By'] = 'Wystawił';
 $_LANG['Expositor:'] = 'Wystawił:';
+$_LANG['fiber'] = 'światłowodowe';
 $_LANG['File upload has finished prematurely.'] = 'Plik został wysłany częściowo.';
 $_LANG['File is too large.'] = 'Plik jest za duży.';
 $_LANG['File name for saving document printout. WARNING: Setting attachment_name with default content_type will (in case of MSIE) print document, and prompt for save on disk. Default: empty.'] = 'Nazwa pliku dla zapisu dokumentu. UWAGA: Ustawienie attachment_name tak samo jak domyślnie content_type spowoduje (w przypadku MSIE) wydruk dokumentu i zapytanie o zapis na dysk. Domyślnie: pusta.';
 $_LANG['Filter'] = 'Filtr';
 $_LANG['Filter:'] = 'Filtr:';
 $_LANG['Finances'] = 'Finanse';
+$_LANG['finances hiding'] = 'ukrywanie informacji finansowych';
 $_LANG['finances management'] = 'zarządzanie finansami';
 $_LANG['Find events matching the following search criteria:'] = 'Znajdź zdarzenia pasujące do następujących kryteriów:';
 $_LANG['Find nodes matching the following search criteria:'] = 'Znajdź komputery pasujące do następujących kryteriów:';
@@ -1090,6 +1095,8 @@ $_LANG['Register your installation today! ;-)'] = 'Zarejestruj swoją instalacj�
 $_LANG['Registration ID:'] = 'Nr rejestracyjny:';
 $_LANG['Registration info:'] = 'Informacje o rejestracji:';
 $_LANG['Reload'] = 'Przeładowanie';
+$_LANG['Reload configuration in:'] = "Przeładowanie konfiguracji za:";
+$_LANG['Reload timer. If set to true it will display remaining time to configuration reload. If using more than one host, remember to sync time between them.'] = 'Odliczanie przeładowania. Jeżeli ustawione na 1, wyświetli czas pozostały do przeładowania konfiguracji. Jeżeli używasz więcej niż jednego hosta, należy pamiętać aby czas między nim i był synchronizowany.';
 $_LANG['Reload type. Allowed values: exec - call some command (most often with sudo, some script or something else, configurable below); sql - writes down to SQL (multiple queries separated with semicolon may be setup).'] = 'Typ przeładowania. Dostępne opcje: exec - wykonanie komendy (najczęściej jakiego skryptu lub innego programu przy użyciu sudo - konfigurowalne dalej); sql - zapisuje zlecenie w bazie danych SQL (konkretne zapytanie sql również może być zdefiniowane).';
 $_LANG['Remove'] = 'Usuń';
 $_LANG['Remove customer from group'] = 'Usuń klienta z grupy';
@@ -1432,6 +1439,7 @@ $_LANG['Tax Rates Definitions'] = 'Definicje stawek podatkowych';
 $_LANG['Tax Rates List'] = 'Lista stawek podatkowych';
 $_LANG['Tax rate value is not numeric!'] = 'Wartość stawki podatku nie jest liczbą!';
 $_LANG['annex'] = 'aneks';
+$_LANG['Annex No. $a'] = 'Aneks Nr $a';
 $_LANG['Are you sure, you want to remove that document?'] = 'Jesteś pewien, że chcesz usunąć ten dokument?';
 $_LANG['Can\'t save file in "$a" directory!'] = 'Nie można zapisać pliku w katalogu "$a"!';
 $_LANG['contract'] = 'umowa';
@@ -2253,6 +2261,7 @@ $_LANG['Are you sure you want to delete this record?'] = 'Jesteś pewien, że ch
 $_LANG['Enter IP address of mailserver'] = 'Wprowadź adres IP serwera pocztowego';
 $_LANG['Enter IP address of master NS'] = 'Wprowadź adres IP głównego serwera nazw';
 $_LANG['Enter IP address of webserver'] = 'wprowadź adres IP serwera www';
+$_LANG['Default SPF record. If you leave the field blank, record will not add. Example: "v=spf1 a mx ip4:ADDRESS_MAILSERVER ~all" (Put in quotes).'] = 'Domyślny SPF rekord. Jeśli pozostawimy puste pole, rekord się nie doda. Przykład: "v=spf1 a mx ip4:ADRES_SERWERA_MAIL ~all" (Umieszczać w cudzysłowiach).';
 $_LANG['Enter record TTL'] = 'Wprowadź TTL rekordu';
 $_LANG['IP address of mailserver'] = 'Adres IP serwera pocztowego';
 $_LANG['IP address of master NS:'] = 'Adres IP głównego serwera nazw:';
@@ -2360,6 +2369,7 @@ $_LANG['tariffless liability'] = 'zobowiązanie beztaryfowe';
 $_LANG['barter'] = 'barter';
 $_LANG['card'] = 'karta';
 $_LANG['cash'] = 'gotówka';
+$_LANG['paid'] = 'zapłacono';
 $_LANG['compensation'] = 'kompensata';
 $_LANG['transfer'] = 'przelew';
 $_LANG['transfer/cash'] = 'przelew/gotówka';
@@ -2532,5 +2542,93 @@ $_LANG['Select users'] = 'Wybierz użytkowników';
 $_LANG['Enter discount percentage or value'] = 'Wprowadź wartość kwotową lub procentową rabatu';
 $_LANG['Min [bit/s]'] = 'Min [bit/s]';
 $_LANG['Ping'] = 'Ping';
+$_LANG['arp'] = 'arp';
+$_LANG['icmp'] = 'icmp';
+$_LANG['Start'] = 'Uruchom';
+$_LANG['Stop'] = 'Zatrzymaj';
+
+$_LANG['Backup MX support:'] = 'Obsługa zapasowego MX:';
+
+$_LANG['Mon'] = 'pn.';
+$_LANG['Tue'] = 'wt.';
+$_LANG['Thu'] = 'śr.';
+$_LANG['Wed'] = 'cz.';
+$_LANG['Fri'] = 'pt.';
+$_LANG['Sat'] = 'sb.';
+$_LANG['Sun'] = 'nd.';
+$_LANG['No locks.'] = 'Brak blokad.';
+$_LANG['Locks:'] = 'Blokady:';
+$_LANG['Add new lock'] = 'Dodaj nową blokadę';
+$_LANG['Remove lock'] = 'Usuń blokadę';
+$_LANG['Days:'] = 'Dni:';
+
+$_LANG['UKE report'] = 'Raport do UKE';
+$_LANG['Allows you to prepare SIIS v2 report for UKE'] = 'Wygenerowanie raportu SIIS w wersji 2 do UKE';
+
+$_LANG['Link speed:'] = 'Szybkość łącza:';
+$_LANG['Select link speed'] = 'Wybierz szybkość łącza';
+
+$_LANG['phone'] = 'telefon';
+$_LANG['tv'] = 'telewizja';
+$_LANG['Change connection properties'] = 'Zmień właściwości połączenia';
+
+$_LANG['Check a host ...'] = 'Sprawdź łączność z hostem ...';
+$_LANG['Center map around network elements ...'] = 'Wyśrodkuj mapę wokół jej elementów ...';
+$_LANG['Refresh network state ...'] = 'Odśwież stan sieci ...';
+
+$_LANG['municipal commune'] = 'gm. miejska';
+$_LANG['rural commune'] = 'gm. wiejska';
+$_LANG['municipal-rural commune'] = 'gm. miejsko-wiejska';
+$_LANG['city in the municipal-rural commune'] = 'miasto w gm. miejsko-wiejskiej';
+$_LANG['rural area to municipal-rural commune'] = 'obszar wiejski gm. miejsko-wiejskiej';
+$_LANG['estate in Warsaw-Centre commune'] = 'dzielnica gminy Warszawa-Centrum';
+$_LANG['estate'] = 'dzielnica';
+$_LANG['Commune'] = 'Gmina';
+$_LANG['Select commune'] = 'Wybierz gminę';
+
+$_LANG['Operation:'] = 'Czynność:';
+$_LANG['Connect to device'] = 'Podłączenie do urządzenia';
+$_LANG['Previous operation has not been finished yet!'] = 'Poprzednia czynność nie została jeszcze zakończona!';
+$_LANG['You haven\\\'t selected any nodes!'] = 'Nie wybrałeś żadnego komputera!';
+
+$_LANG['Your balance on date of invoice issue:'] = 'Saldo w dniu wystawienia faktury:';
+
+$_LANG['Remove management URL'] = 'Usuń adres URL do zarządzania';
+$_LANG['Enter management URL'] = 'Podaj adres URL do zarządzania';
+$_LANG['No management URL\'s.'] = 'Brak adresów URL do zarządzania.';
+$_LANG['Management URL\'s:'] = 'Adresy URL do zarządzania';
+$_LANG['Enter URL comment'] = 'Podaj komentarz adresu URL do zarządzania';
+$_LANG['Add new management URL'] = 'Dodaj nowy adres URL do zarządzania';
+
+$_LANG['only automatically issued'] = 'tylko wystawione automatycznie';
+
+$_LANG['Password expiration:'] = 'Wygasanie hasła:';
+$_LANG['Last password change:'] = 'Ostatnia zmiana hasła:';
+$_LANG['never expires'] = 'nigdy nie wygasa';
+$_LANG['week'] = 'tydzień';
+$_LANG['2 weeks'] = '2 tygodnie';
+$_LANG['21 days'] = '21 dni';
+$_LANG['month'] = 'miesiąc';
+$_LANG['2 months'] = '2 miesiące';
+$_LANG['quarter'] = 'kwartał';
+$_LANG['half year'] = 'pół roku';
+$_LANG['year'] = 'rok';
+$_LANG['Select password expiration period'] = 'Ustal czas po którym hasło wygasa';
+$_LANG['New password is the same as old password!'] = 'Nowe hasło jest takie same jak stare hasło!';
+$_LANG['The password should contain at least one capital letter, one lower case letter, one digit and should consist of at least 8 characters!'] = 'Hasło powinno zawierać co najmniej jedną dużą literę, jedną małą literę, jedną cyfrę oraz składać się z co najmniej 8 znaków!';
+
+$_LANG['reports'] = 'raporty';
+
+$_LANG['Active from:'] = 'Aktywne od:';
+$_LANG['Active to:'] = 'Aktywne do:';
+$_LANG['Account active:'] = 'Konto aktywne:';
+$_LANG['Account is disabled'] = 'Konto jest wyłączone';
+$_LANG['Account is not active'] = 'Konto nie jest aktywne';
+$_LANG['Enter access start date in YYYY/MM/DD format. If you don\'t want to define \'From\' date leave this field empty'] = 'Wprowadź datę od której ważność konta powinna obowiązywać lub zostaw to pole puste. Data powinna być w formacie RRRR/MM/DD';
+$_LANG['Enter access end date in YYYY/MM/DD format. If you don\'t want to define \'To\' date leave this field empty'] = 'Wprowadź datę do której ważność konta powinna obowiązywać lub zostaw to pole puste. Data powinna być w formacie RRRR/MM/DD';
+$_LANG['Last modification time:'] = 'Czas ostatniej modyfikacji:';
+$_LANG['Last modified by:'] = 'Ostatnio zmodyfikował:';
+
+$_LANG['current:'] = 'aktualnie:';
 
 ?>

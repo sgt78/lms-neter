@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -28,13 +28,13 @@ function trans()
 {
 	global $_LANG;
 
-	$args    = func_get_args();
-    $content = array_shift($args);
+	$args = func_get_args();
+	$content = array_shift($args);
 
-    if (is_array($content)) {
-        $args    = array_values($content);
-        $content = array_shift($args);
-    }
+	if (is_array($content)) {
+		$args = array_values($content);
+		$content = array_shift($args);
+	}
 
 	if (isset($_LANG[$content]))
 		$content = trim($_LANG[$content]);
@@ -92,6 +92,15 @@ $LANGDEFS = array(
 			'money_format' => '%01.2f RON',
 //			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
 			),
+		'cz' => array(
+			'name' => 'Czech',
+			'orig' => 'Česky',
+			'locale' => 'cs_CZ.UTF-8',
+			'charset' => 'UTF-8',
+			'html' => 'cz',
+			'money_format' => '%01.2f Kč',
+//			'mobile' => '(88[08]|50[0-9]|6[09][0-9])[0-9]{6}',
+			),
 		);
 
 // UI language
@@ -104,7 +113,7 @@ $langs = explode(',', $langs);
 
 foreach ($langs as $val)
 {
-    $val = substr($val, 0, 2);
+	$val = substr($val, 0, 2);
 	switch ($val)
 	{
 		case 'pl':
@@ -112,8 +121,9 @@ foreach ($langs as $val)
 		case 'sk':
 		case 'ro':
 		case 'en':
+		case 'cz':
 			$_ui_language = $val;
-    	    break 2;
+			break 2;
 	}
 }
 
@@ -123,13 +133,12 @@ if(!empty($CONFIG['phpui']['lang']))
 else if (!empty($_ui_language))
 	$_language = $_ui_language;
 else
-    $_language = 'en'; // default language
+	$_language = 'en'; // default language
 
 // Use system lang for UI if any of browser langs isn't supported
 // or browser langs aren't set
 if (empty($_ui_language))
 	$_ui_language = $_language;
-
 $_LANG = array();
 
 if (@is_readable(LIB_DIR.'/locale/'.$_ui_language.'/strings.php'))

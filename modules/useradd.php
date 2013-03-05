@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -51,10 +51,41 @@ if(sizeof($useradd))
 	if($useradd['name']=='')
 		$error['name'] = trans('You have to enter first and lastname!');
 
-	if($useradd['password']=='')
+	if ($useradd['password'] == '')
 		$error['password'] = trans('Empty passwords are not allowed!');
-	elseif($useradd['password']!=$useradd['confirm'])
+	elseif ($useradd['password'] != $useradd['confirm'])
 		$error['password'] = trans('Passwords does not match!');
+	elseif (!check_password_strength($useradd['password']))
+		$error['password'] = trans('The password should contain at least one capital letter, one lower case letter, one digit and should consist of at least 8 characters!');
+
+	if($useradd['accessfrom'] == '')
+		$accessfrom = 0;
+	elseif(preg_match('/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/',$useradd['accessfrom']))
+	{
+		list($y, $m, $d) = explode('/', $useradd['accessfrom']);
+		if(checkdate($m, $d, $y))
+			$accessfrom = mktime(0, 0, 0, $m, $d, $y);
+		else
+			$error['accessfrom'] = trans('Incorrect charging time!');
+	}
+	else
+		$error['accessfrom'] = trans('Incorrect charging time!');
+
+	if($useradd['accessto'] == '')
+		$accessto = 0;
+	elseif(preg_match('/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/', $useradd['accessto']))
+	{
+		list($y, $m, $d) = explode('/', $useradd['accessto']);
+		if(checkdate($m, $d, $y))
+			$accessto = mktime(23, 59, 59, $m, $d, $y);
+		else
+			$error['accessto'] = trans('Incorrect charging time!');
+	}
+	else
+		$error['accessto'] = trans('Incorrect charging time!');
+
+	if($accessto < $accessfrom && $accessto != 0 && $accessfrom != 0)
+		$error['accessto'] = trans('Incorrect date range!');
 
 	// ACL mask...
 	$mask = '';
@@ -79,6 +110,8 @@ if(sizeof($useradd))
 
 	if(!$error)
 	{
+		$useradd['accessfrom'] = $accessfrom;
+		$useradd['accessto'] = $accessto;
 		$id = $LMS->UserAdd($useradd);
 
                 if(isset($_POST['selected']))

@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -26,22 +26,18 @@
 
 $setwarnings = isset($_POST['setwarnings']) ? $_POST['setwarnings'] : array();
 
-if(isset($setwarnings['mcustomerid']))
+if (isset($setwarnings['mcustomerid']))
 {
 	$warnon = isset($setwarnings['warnon']) ? $setwarnings['warnon'] : FALSE;
 	$warnoff = isset($setwarnings['warnoff']) ? $setwarnings['warnoff'] : FALSE;
 	$message = isset($setwarnings['message']) ? $setwarnings['message'] : NULL;
 
-	foreach($setwarnings['mcustomerid'] as $uid)
-	{
-		if($warnon)
-			$LMS->NodeSetWarnU($uid, TRUE);
-
-		if($warnoff) 
-			$LMS->NodeSetWarnU($uid, FALSE);
-
-		if(isset($message))
-			$DB->Execute('UPDATE customers SET message=? WHERE id=?', array($message, $uid));
+	$cids = array_filter($setwarnings['mcustomerid'], 'is_natural');
+	if (!empty($cids)) {
+		$LMS->NodeSetWarnU($cids, $warnon ? 1 : 0);
+		if (isset($message))
+			$DB->Execute('UPDATE customers SET message = ? WHERE id IN (' . implode(',', $cids) . ')',
+				array($message));
 	}
 
 	$SESSION->save('warnmessage', $message);

@@ -4,6 +4,8 @@ var maprequest = null;
 var mappopup = null;
 var lastonline_limit;
 var lmsProjection = new OpenLayers.Projection("EPSG:4326");
+var devicesLbl;
+var nodesLbl;
 
 function removeInvisiblePopups()
 {
@@ -35,7 +37,7 @@ function netdevmap_updater()
 		var devices = data.devices;
 		var nodes = data.nodes;
 
-		var devicelayer = map.getLayersByName('Devices')[0];
+		var devicelayer = map.getLayersByName(devicesLbl)[0];
 		for (i in devices)
 		{
 			var features = devicelayer.getFeaturesByAttribute('id', parseInt(devices[i].id));
@@ -50,7 +52,7 @@ function netdevmap_updater()
 			}
 		}
 
-		var nodelayer = map.getLayersByName('Nodes')[0];
+		var nodelayer = map.getLayersByName(nodesLbl)[0];
 		for (i in nodes)
 		{
 			var features = nodelayer.getFeaturesByAttribute('id', parseInt(nodes[i].id));
@@ -108,22 +110,13 @@ function ping_any_host(id)
 	if (!ip.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}$/))
 		return false;
 
-	var type = (document.forms[id + '_ipform'].elements[id + '_type1'].checked ? 1 : 2);
-	ping_host(id, ip, type);
+	ping_host(id, ip);
 
 	return false;
 }
 
-function check_host(id, ip)
+function findFeaturesIntersection(selectFeature, feature, featureLonLat)
 {
-	var type = (document.getElementById('type1_' + ip).checked ? 1 : 2);
-	ping_host(id, ip, type);
-}
-
-function findFeaturesIntersection(selectFeature, feature)
-{
-	var featureLonLat = new OpenLayers.LonLat(feature.data.lon, feature.data.lat);
-	featureLonLat.transform(lmsProjection, map.getProjectionObject());
 	var featurePixel = map.getPixelFromLonLat(featureLonLat);
 	var features = [];
 	for (var i in selectFeature.layers) {
@@ -140,16 +133,27 @@ function findFeaturesIntersection(selectFeature, feature)
 			}
 		}
 	}
+	if (!features.length)
+		features.push(feature);
 	return features;
 }
 
 function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selection, startLon, startLat)
 {
 	var linkstyles = [
-		{ strokeColor: '#00ff00', strokeOpacity: 0.5, strokeWidth: 2 },
-		{ strokeColor: '#0000ff', strokeOpacity: 0.5, strokeWidth: 2 },
-		{ strokeColor: '#ff0000', strokeOpacity: 0.5, strokeWidth: 2 }
+		{ strokeColor: '#00ff00', strokeOpacity: 0.5 },
+		{ strokeColor: '#0000ff', strokeOpacity: 0.5 },
+		{ strokeColor: '#ff0000', strokeOpacity: 0.5 }
 	];
+	var linkweights = [];
+	linkweights[10000] = 1;
+	linkweights[25000] = 1;
+	linkweights[54000] = 2;
+	linkweights[100000] = 2;
+	linkweights[200000] = 3;
+	linkweights[300000] = 3;
+	linkweights[1000000] = 4;
+	linkweights[10000000] = 6;
 
 	var map = new OpenLayers.Map("map", {
 		controls: [new OpenLayers.Control.KeyboardDefaults(),
@@ -226,7 +230,8 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 				), deviceArray[i]));
 		}
 
-	var devicelayer = new OpenLayers.Layer.Vector("Devices", {
+	devicesLbl = OpenLayers.Lang.translate("Devices");
+	var devicelayer = new OpenLayers.Layer.Vector(devicesLbl, {
 		styleMap: new OpenLayers.StyleMap(devicestyle)
 	});
 	devicelayer.addFeatures(devices);
@@ -241,12 +246,14 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 				new OpenLayers.Geometry.Point(devlinkArray[i].dstlon, devlinkArray[i].dstlat)
 					.transform(lmsProjection, map.getProjectionObject())
 			);
+			linkstyles[devlinkArray[i].type].strokeWidth = linkweights[devlinkArray[i].speed];
 			devlinks.push(new OpenLayers.Feature.Vector(
 				new OpenLayers.Geometry.LineString(points),
-				null, linkstyles[devlinkArray[i].type]));
+				devlinkArray[i], linkstyles[devlinkArray[i].type]));
 		}
 
-	var devlinklayer = new OpenLayers.Layer.Vector("Device Links");
+	var devlinkLbl = OpenLayers.Lang.translate("Device Links");
+	var devlinklayer = new OpenLayers.Layer.Vector(devlinkLbl);
 	devlinklayer.addFeatures(devlinks);
 
 	var nodes = [];
@@ -263,7 +270,8 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 				), nodeArray[i]));
 		}
 
-	var nodelayer = new OpenLayers.Layer.Vector("Nodes", {
+	nodesLbl = OpenLayers.Lang.translate("Nodes");
+	var nodelayer = new OpenLayers.Layer.Vector(nodesLbl, {
 		styleMap: new OpenLayers.StyleMap(nodestyle)
 	});
 	nodelayer.addFeatures(nodes);
@@ -278,12 +286,14 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 				new OpenLayers.Geometry.Point(nodelinkArray[i].netdevlon, nodelinkArray[i].netdevlat)
 					.transform(lmsProjection, map.getProjectionObject())
 				);
+			linkstyles[nodelinkArray[i].type].strokeWidth = linkweights[nodelinkArray[i].speed];
 			nodelinks.push(new OpenLayers.Feature.Vector(
 				new OpenLayers.Geometry.LineString(points),
-				null, linkstyles[nodelinkArray[i].type]));
+				nodelinkArray[i], linkstyles[nodelinkArray[i].type]));
 		}
 
-	var nodelinklayer = new OpenLayers.Layer.Vector("Node Links");
+	var nodelinkLbl = OpenLayers.Lang.translate("Node Links");
+	var nodelinklayer = new OpenLayers.Layer.Vector(nodelinkLbl);
 	nodelinklayer.addFeatures(nodelinks);
 
 	map.addLayer(devicelayer);
@@ -291,7 +301,7 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 	map.addLayer(nodelayer);
 	map.addLayer(nodelinklayer);
 
-	var highlightlayer = new OpenLayers.Control.SelectFeature([devicelayer, nodelayer], {
+	var highlightlayer = new OpenLayers.Control.SelectFeature([devicelayer, devlinklayer, nodelayer, nodelinklayer], {
 		hover: true,
 		highlightOnly: true,
 		clickout: false,
@@ -299,24 +309,35 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 		multiple: false,
 		eventListeners: {
 			"featurehighlighted": function(e) {
-				var map = this.map;
-				var feature = e.feature;
 				if (mappopup == null)
 				{
-					var features = findFeaturesIntersection(this, feature);
+					var map = this.map;
+					var feature = e.feature;
+					var featureLonLat, mapLonLat;
+					if (feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point") {
+						featureLonLat = new OpenLayers.LonLat(feature.data.lon, feature.data.lat);
+						featureLonLat.transform(lmsProjection, map.getProjectionObject());
+						mapLonLat = featureLonLat.clone();
+					}
+					else {
+						featureLonLat = map.getLonLatFromViewPortPx(this.handlers.feature.evt.xy);
+						mapLonLat = featureLonLat.clone();
+						mapLonLat.transform(map.getProjectionObject(), lmsProjection).transform(lmsProjection, map.getProjectionObject());
+					}
+					var features = findFeaturesIntersection(this, feature, featureLonLat);
 					var content = '<div class="lmsMapPopupContents">';
 					for (var i in features) {
-						content += '<div class="lmsMapPopupName">' + features[i].data.name + '</div>'
-							+ (features[i].data.ipaddr.length ? 
-								'<div class="lmsMapPopupAddress">' + features[i].data.ipaddr.replace(/,/g, 
-									'<div class="lmsMapPopupAddress">') + '</div>'
-								: '');
+						if (features[i].geometry.CLASS_NAME == "OpenLayers.Geometry.Point")
+							content += '<div class="lmsMapPopupName">' + features[i].data.name + '</div>'
+								+ (features[i].data.ipaddr.length ? 
+									'<div class="lmsMapPopupAddress">' + features[i].data.ipaddr.replace(/,/g, 
+										'</div><div class="lmsMapPopupAddress">') + '</div>'
+									: '');
+						else
+							content += '<span class="bold">' + features[i].data.typename + '<br>' + features[i].data.speedname + '</span>';
 					}
 					content += '</div>';
-					mappopup = new OpenLayers.Popup.Anchored(null,
-						new OpenLayers.LonLat(feature.data.lon, feature.data.lat)
-							.transform(lmsProjection, map.getProjectionObject()),
-						new OpenLayers.Size(10, 10), content);
+					mappopup = new OpenLayers.Popup.Anchored(null, mapLonLat, new OpenLayers.Size(10, 10), content);
 					mappopup.setOpacity(0.8);
 					mappopup.closeOnMove = true;
 					map.addPopup(mappopup);
@@ -348,13 +369,12 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 
 	if (selection)
 	{
-		var selectlayer = new OpenLayers.Control.SelectFeature([devicelayer, nodelayer], {
+		var selectlayer = new OpenLayers.Control.SelectFeature([devlinklayer, nodelinklayer, devicelayer, nodelayer], {
 			clickout: true, toggle: false,
 			multiple: true, hover: false,
 			toggleKey: "ctrlKey", // ctrl key removes from selection
 			multipleKey: "shiftKey", // shift key adds to selection
 			onSelect: function(feature) {
-				//alert(feature);
 				var map = feature.layer.map;
 				if (mappopup)
 				{
@@ -362,64 +382,69 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 					mappopup = null;
 				}
 				selectedFeature = feature;
-				var featurepopup = new OpenLayers.Popup(null,
-					new OpenLayers.LonLat(feature.data.lon, feature.data.lat)
-						.transform(lmsProjection, map.getProjectionObject()),
-					new OpenLayers.Size(10, 10));
-				featurepopup.setOpacity(0.9);
-				//featurepopup.closeOnMove = true;
-				//featurepopup.keepInMap = true;
-				//featurepopup.panMapIfOutOfView = true;
-				var content = '<div class="lmsPopupTitleBar"><div class="lmsPopupTitle">Info</div>'
-					+ '<div id="' + featurepopup.id + '_popupCloseBox" class="olPopupCloseBox lmsPopupCloseBox">&nbsp;</div></div>'
-					+ '<div class="lmsInfoPopupContents">';
-				var features = findFeaturesIntersection(this, feature);
-				for (var i in features) {
-					content += '<div class="lmsInfoPopupName">' + features[i].data.name + '</div>';
-					if (features[i].data.type == 'netdevinfo') {
-						if (features[i].data.ipaddr.length) {
-							var ips = features[i].data.ipaddr.split(',');
-							var nodeids = features[i].data.nodeid.split(',');
-							for (var j in nodeids)
-								content += '<div class="lmsInfoPopupAddress"><a href="javascript:check_host(\''
-								+ featurepopup.id + '\', \'' + ips[j] + '\')"><img src="img/ip.gif" alt="">&nbsp;'
-								+ ips[j] + '</a><form name="checktype_' + ips[j] + '">'
-								+ '<input type="radio" id="type1_' + ips[j] + '" name="type" value="1" checked>'
-								+ '<a href="javascript:checkElement(\'type1_' + ips[j] + '\')">icmp</a>'
-								+ '<input type="radio" id="type2_' + ips[j] + '" name="type" value="2">'
-								+ '<a href="javascript:checkElement(\'type2_' + ips[j] + '\')">arp</a>'
-								+ '</form></div>';
-						}
-					} else
-						content += '<div class="lmsInfoPopupAddress"><a href="javascript:check_host(\''
-							+ featurepopup.id + '\', \'' + features[i].data.ipaddr + '\')"><img src="img/ip.gif" alt="">&nbsp;'
-							+ features[i].data.ipaddr + '</a><form name="checktype_' + features[i].data.ipaddr + '">'
-							+ '<input type="radio" id="type1_' + features[i].data.ipaddr + '" name="type" value="1" checked>'
-							+ '<a href="javascript:checkElement(\'type1_' + features[i].data.ipaddr + '\')">icmp</a>'
-							+ '<input type="radio" id="type2_' + features[i].data.ipaddr + '" name="type" value="2">'
-							+ '<a href="javascript:checkElement(\'type2_' + features[i].data.ipaddr + '\')">arp</a>'
-							+ '</form></div>';
-					content += '<div class="lmsInfoPopupDetails"><a href="?m=' + features[i].data.type + '&id=' + features[i].data.id + '">'
-						+ '<img src="img/info1.gif" alt="">&nbsp;Info</a></div>';
+				var featureLonLat;
+				if (feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point") {
+					featureLonLat = new OpenLayers.LonLat(feature.data.lon, feature.data.lat);
+					featureLonLat.transform(lmsProjection, map.getProjectionObject());
 				}
-				content += '</div>';
-				featurepopup.setContentHTML(content);
+				else 
+					featureLonLat = map.getLonLatFromViewPortPx(this.handlers.feature.evt.xy);
+				var features = findFeaturesIntersection(this, feature, featureLonLat);
+				if (features.length > 1 || features[0].geometry.CLASS_NAME == "OpenLayers.Geometry.Point") {
+					var featurepopup = new OpenLayers.Popup(null, featureLonLat, new OpenLayers.Size(10, 10));
+					featurepopup.setOpacity(0.9);
+					//featurepopup.closeOnMove = true;
+					//featurepopup.keepInMap = true;
+					//featurepopup.panMapIfOutOfView = true;
+					var content = '<div class="lmsPopupTitleBar"><div class="lmsPopupTitle">Info</div>'
+						+ '<div id="' + featurepopup.id + '_popupCloseBox" class="olPopupCloseBox lmsPopupCloseBox">&nbsp;</div></div>'
+						+ '<div class="lmsInfoPopupContents">';
+					for (var i in features) {
+						content += '<div class="lmsInfoPopupName">' + features[i].data.name + '</div>';
+						if (features[i].data.type == 'netdevinfo') {
+							if (features[i].data.ipaddr.length) {
+								var ips = features[i].data.ipaddr.split(',');
+								var nodeids = features[i].data.nodeid.split(',');
+								for (var j in nodeids)
+									content += '<div class="lmsInfoPopupAddress"><a href="#" onclick="ping_host(\''
+									+ featurepopup.id + '\', \'' + ips[j] + '\')"><img src="img/ip.gif" alt="">&nbsp;'
+									+ ips[j] + '</a></div>';
+							}
+						} else
+							content += '<div class="lmsInfoPopupAddress"><a href="#" onclick="ping_host(\''
+								+ featurepopup.id + '\', \'' + features[i].data.ipaddr + '\')"><img src="img/ip.gif" alt="">&nbsp;'
+								+ features[i].data.ipaddr + '</a></div>';
+						content += '<div class="lmsInfoPopupDetails"><a href="?m=' + features[i].data.type + '&id=' + features[i].data.id + '">'
+							+ '<img src="img/info1.gif" alt="">&nbsp;Info</a></div>';
+						if (features[i].data.type == 'netdevinfo' && features[i].data.url) {
+							var urls = features[i].data.url.split(',');
+							var comments = features[i].data.comment.split(',');
+							for (var j in urls) {
+								content += '<div class="lmsInfoPopupDetails"><a href="' + urls[j] + '" target="_blank">'
+									+ '<img src="img/network.gif" alt=""> '
+									+ (comments[j].length ? comments[j] : urls[j]) + '</a></div>';
+							}
+						}
+					}
+					content += '</div>';
+					featurepopup.setContentHTML(content);
 
-				map.addPopup(featurepopup);
+					map.addPopup(featurepopup);
 
-				var dragpopup = new OpenLayers.Control.DragPopup(featurepopup, { feature: feature });
-				map.addControl(dragpopup);
+					var dragpopup = new OpenLayers.Control.DragPopup(featurepopup, { feature: feature });
+					map.addControl(dragpopup);
 
-				featurepopup.div.style.overflow = 'visible';
-				featurepopup.div.style.width = 'auto';
-				featurepopup.div.style.height = 'auto';
-				featurepopup.groupDiv.style.overflow = 'visible';
-				featurepopup.groupDiv.style.width = 'auto';
-				featurepopup.groupDiv.style.height = 'auto';
-				featurepopup.contentDiv.style.width = 'auto';
-				featurepopup.contentDiv.style.heigh = 'auto';
-				//featurepopup.updateSize();
-				feature.popup = featurepopup;
+					featurepopup.div.style.overflow = 'visible';
+					featurepopup.div.style.width = 'auto';
+					featurepopup.div.style.height = 'auto';
+					featurepopup.groupDiv.style.overflow = 'visible';
+					featurepopup.groupDiv.style.width = 'auto';
+					featurepopup.groupDiv.style.height = 'auto';
+					featurepopup.contentDiv.style.width = 'auto';
+					featurepopup.contentDiv.style.heigh = 'auto';
+					//featurepopup.updateSize();
+					feature.popup = featurepopup;
+				}
 			},
 			onUnselect: function(feature) {
 				//map.removePopup(feature.popup);
@@ -431,17 +456,17 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 
 		var checkbutton = new OpenLayers.Control.Button({
 			displayClass: "lmsCheckButton", 
-			title: "Check a host ...",
+			title: checkhostcaption,
 			command: 'check'});
 
 		var centerbutton = new OpenLayers.Control.Button({
 			displayClass: "lmsCenterButton", 
-			title: "Cetner map around network elements ...",
+			title: centermapcaption,
 			command: 'center'});
 
 		var refreshbutton = new OpenLayers.Control.Button({
 			displayClass: "lmsRefreshButton", 
-			title: "Refesh network state ...",
+			title: refreshmapcaption,
 			command: 'refresh'});
 
 		var panel = new OpenLayers.Control.Panel({
@@ -508,7 +533,13 @@ function createMap(deviceArray, devlinkArray, nodeArray, nodelinkArray, selectio
 	}
 
 	map.addControl(new OpenLayers.Control.ScaleLine());
-	var layerSwitcher = new OpenLayers.Control.LayerSwitcher();
+	//map.addControl(new OpenLayers.Control.NavToolbar());
+	/* in MSIE LayerSwitcher display rounded corners is broken */
+	if (navigator.appName == "Microsoft Internet Explorer") {
+		var layerSwitcher = new OpenLayers.Control.LayerSwitcher({ roundedCorner: false });
+	} else {
+		var layerSwitcher = new OpenLayers.Control.LayerSwitcher({ roundedCornerColor: '#CEBD9B' });
+	}
 	map.addControl(layerSwitcher);
 	map.addControl(new OpenLayers.Control.MousePosition({ displayProjection: lmsProjection }));
 

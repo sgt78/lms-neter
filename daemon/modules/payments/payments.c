@@ -1,7 +1,7 @@
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -255,6 +255,24 @@ char * get_num_period_end(struct tm *t, int period)
 	return res;
 }
 
+char *get_tarifftype_str(struct payments_module *p, int tarifftype)
+{
+	switch (tarifftype) {
+	case 1:
+		return p->tariff_internet;
+	case 2:
+		return p->tariff_hosting;
+	case 3:
+		return p->tariff_service;
+	case 4:
+		return p->tariff_phone;
+	case 5:
+		return p->tariff_tv;
+	default:
+		return p->tariff_other;
+	}
+}
+
 void reload(GLOBAL *g, struct payments_module *p)
 {
 	QueryHandle *res, *result;
@@ -264,7 +282,7 @@ void reload(GLOBAL *g, struct payments_module *p)
 	int docid=0, last_cid=0, last_paytype=0, last_plan=0, exec=0, suspended=0, itemid=0;
 
 	time_t t;
-	struct tm *tt;
+	struct tm tt;
 	char monthday[3], month[3], year[5], quarterday[4], weekday[2], yearday[4], halfday[4];
 	char monthname[20], nextmon[8];
 
@@ -392,22 +410,22 @@ void reload(GLOBAL *g, struct payments_module *p)
 
 	// get current date
 	t = time(NULL);
-	tt = localtime(&t);
-	strftime(monthday, 	sizeof(monthday), 	"%d", tt);
-	strftime(weekday, 	sizeof(weekday), 	"%u", tt);
-	strftime(monthname, 	sizeof(monthname), 	"%B", tt);
-	strftime(month, 	sizeof(month), 		"%m", tt);
-	strftime(year, 		sizeof(year), 		"%Y", tt);
+	memcpy(&tt, localtime(&t), sizeof(tt));
+	strftime(monthday, 	sizeof(monthday), 	"%d", &tt);
+	strftime(weekday, 	sizeof(weekday), 	"%u", &tt);
+	strftime(monthname, 	sizeof(monthname), 	"%B", &tt);
+	strftime(month, 	sizeof(month), 		"%m", &tt);
+	strftime(year, 		sizeof(year), 		"%Y", &tt);
 
 	currtime = strdup(itoa(t));
-	imday = tt->tm_mday;
-	imonth = tt->tm_mon+1;
+	imday = tt.tm_mday;
+	imonth = tt.tm_mon+1;
 
 	// leap year fix
-	if(is_leap_year(tt->tm_year+1900) && tt->tm_yday+1 > 31+28)
-		strncpy(yearday, itoa(tt->tm_yday), sizeof(yearday));
+	if(is_leap_year(tt.tm_year+1900) && tt.tm_yday+1 > 31+28)
+		strncpy(yearday, itoa(tt.tm_yday), sizeof(yearday));
 	else
-		strncpy(yearday, itoa(tt->tm_yday+1), sizeof(yearday));
+		strncpy(yearday, itoa(tt.tm_yday+1), sizeof(yearday));
 
 	// halfyear
 	if(imonth > 6)
@@ -435,23 +453,23 @@ void reload(GLOBAL *g, struct payments_module *p)
 
 	// next month in YYYY/MM format
 	if (imonth == 12)
-		snprintf(nextmon, sizeof(nextmon), "%04d/%02d", tt->tm_year+1901, 1);
+		snprintf(nextmon, sizeof(nextmon), "%04d/%02d", tt.tm_year+1901, 1);
 	else
-		snprintf(nextmon, sizeof(nextmon), "%04d/%02d", tt->tm_year+1900, imonth+1);
+		snprintf(nextmon, sizeof(nextmon), "%04d/%02d", tt.tm_year+1900, imonth+1);
 
 	// time periods
-	y_period = get_period(tt, YEARLY, p->up_payments);
-	h_period = get_period(tt, HALFYEARLY, p->up_payments);
-	q_period = get_period(tt, QUARTERLY, p->up_payments);
-	m_period = get_period(tt, MONTHLY, p->up_payments);
-	w_period = get_period(tt, WEEKLY, p->up_payments);
-	d_period = get_period(tt, DAILY, p->up_payments);
+	y_period = get_period(&tt, YEARLY, p->up_payments);
+	h_period = get_period(&tt, HALFYEARLY, p->up_payments);
+	q_period = get_period(&tt, QUARTERLY, p->up_payments);
+	m_period = get_period(&tt, MONTHLY, p->up_payments);
+	w_period = get_period(&tt, WEEKLY, p->up_payments);
+	d_period = get_period(&tt, DAILY, p->up_payments);
 
 	// today (for disposable liabilities)
-	tt->tm_sec = 0;
-	tt->tm_min = 0;
-	tt->tm_hour = 0;
-	today = mktime(tt);
+	tt.tm_sec = 0;
+	tt.tm_min = 0;
+	tt.tm_hour = 0;
+	today = mktime(&tt);
 
 	/****** main payments *******/
 	if( (res = g->db_pquery(g->conn, "SELECT * FROM payments "
@@ -487,6 +505,7 @@ void reload(GLOBAL *g, struct payments_module *p)
 		"c.paytype, a.paytype AS a_paytype, a.numberplanid, d.inv_paytype AS d_paytype, "
 		"UPPER(c.lastname) AS lastname, c.name AS custname, c.address, c.zip, c.city, c.ten, c.ssn, "
 		"c.countryid, c.divisionid, c.paytime, "
+		"(CASE a.liabilityid WHEN 0 THEN t.type ELSE -1 END) AS tarifftype, "
 		"(CASE a.liabilityid WHEN 0 THEN t.name ELSE li.name END) AS name, "
 		"(CASE a.liabilityid WHEN 0 THEN t.taxid ELSE li.taxid END) AS taxid, "
 		"(CASE a.liabilityid WHEN 0 THEN t.prodid ELSE li.prodid END) AS prodid, "
@@ -536,10 +555,10 @@ void reload(GLOBAL *g, struct payments_module *p)
 			if (!p->numberplanid)
 			{
 				// get numbering plans for all divisions
-				result = g->db_query(g->conn, "SELECT n.id, n.period, COALESCE(a.divisionid, 0) AS divid "
-    					"FROM numberplans n "
-	    				"LEFT JOIN numberplanassignments a ON (a.planid = n.id) "
-		    			"WHERE doctype = 1 AND isdefault = 1");
+				result = g->db_query(g->conn, "SELECT n.id, n.period, COALESCE(a.divisionid, 0) AS divid, isdefault "
+					"FROM numberplans n "
+					"LEFT JOIN numberplanassignments a ON (a.planid = n.id) "
+					"WHERE doctype = 1");
 
 				for(i=0; i<g->db_nrows(result); i++) 
 				{
@@ -547,9 +566,10 @@ void reload(GLOBAL *g, struct payments_module *p)
 					plans[pl].plan = atoi(g->db_get_data(result, i, "id"));
 					plans[pl].period = atoi(g->db_get_data(result, i, "period"));
 					plans[pl].division = atoi(g->db_get_data(result, i, "divid"));
+					plans[pl].isdefault = atoi(g->db_get_data(result, i, "isdefault"));
 					plans[pl].number = 0;
 					pl++;
-    				}
+				}
 				g->db_free(&result);
 			}
 		}
@@ -570,6 +590,8 @@ void reload(GLOBAL *g, struct payments_module *p)
 			int datefrom        = atoi(g->db_get_data(res,i,"datefrom"));
 			int t_period        = atoi(g->db_get_data(res,i,"t_period"));
 			double val          = atof(g->db_get_data(res,i,"value"));
+			int tarifftype_int  = atoi(g->db_get_data(res, i, "tarifftype"));
+			char *tarifftype    = (tarifftype_int == -1 ? "" : get_tarifftype_str(p, tarifftype_int));
 
 			if( !val ) continue;
 
@@ -590,27 +612,26 @@ void reload(GLOBAL *g, struct payments_module *p)
 
 			if( !val ) continue;
 
-            // calculate assignment value according to tariff's period
-            if (t_period && period != DISPOSABLE && t_period != period) {
+			// calculate assignment value according to tariff's period
+			if (t_period && period != DISPOSABLE && t_period != period) {
+				if (t_period == YEARLY)
+					val = val / 12.0;
+				else if (t_period == HALFYEARLY)
+					val = val / 6.0;
+				else if (t_period == QUARTERLY)
+					val = val / 3.0;
 
-                if (t_period == YEARLY)
-                    val = val / 12.0;
-                else if (t_period == HALFYEARLY)
-                    val = val / 6.0;
-                else if (t_period == QUARTERLY)
-                    val = val / 3.0;
-
-                if (period == YEARLY)
-                    val = val * 12.0;
-                else if (period == HALFYEARLY)
-                    val = val * 6.0;
-                else if (period == QUARTERLY)
-                    val = val * 3.0;
-                else if (period == WEEKLY)
-                    val = val / 4.0;
-                else if (period == DAILY)
-                    val = val / 30.0;
-            }
+				if (period == YEARLY)
+					val = val * 12.0;
+				else if (period == HALFYEARLY)
+					val = val * 6.0;
+				else if (period == QUARTERLY)
+					val = val * 3.0;
+				else if (period == WEEKLY)
+					val = val / 4.0;
+				else if (period == DAILY)
+					val = val / 30.0;
+			}
 
 			value = ftoa(val);
 			taxid = g->db_get_data(res,i,"taxid");
@@ -636,6 +657,7 @@ void reload(GLOBAL *g, struct payments_module *p)
 				case HALFYEARLY: g->str_replace(&description, "%period", h_period); break;
 				case YEARLY: g->str_replace(&description, "%period", y_period); break;
 			}
+			g->str_replace(&description, "%type", tarifftype);
 			g->str_replace(&description, "%tariff", g->db_get_data(res,i,"name"));
 			g->str_replace(&description, "%next_mon", nextmon);
 			g->str_replace(&description, "%month", monthname);
@@ -661,17 +683,17 @@ void reload(GLOBAL *g, struct payments_module *p)
 					paytype = p->paytype;
 
 				// select numberplan
-                if (a_numberplan) {
-    				for (n=0; n<pl; n++)
+				if (a_numberplan) {
+					for (n=0; n<pl; n++)
 						if (plans[n].plan == a_numberplan)
 							break;
-			    } else {
-    				for (n=0; n<pl; n++)
-						if (plans[n].division == divid)
+				} else {
+					for (n=0; n<pl; n++)
+						if (plans[n].division == divid && plans[n].isdefault)
 							break;
-                }
+				}
 
-                numberplan = (n < pl) ? n : -1;
+				numberplan = (n < pl) ? n : -1;
 
 				if ( last_cid != cid || last_paytype != paytype || last_plan != numberplan)
 				{
@@ -679,8 +701,8 @@ void reload(GLOBAL *g, struct payments_module *p)
 					char *numberplanid, *paytime, *paytype_str = strdup(itoa(paytype));
 					int period, number = 0;
 
-                    last_paytype = paytype;
-                    last_plan = numberplan;
+					last_paytype = paytype;
+					last_plan = numberplan;
 
 					// numberplan found
 					if (numberplan >= 0)
@@ -698,8 +720,8 @@ void reload(GLOBAL *g, struct payments_module *p)
 
 					if(!number)
 					{
-						char *start = get_num_period_start(tt, period);
-						char *end = get_num_period_end(tt, period);
+						char *start = get_num_period_start(&tt, period);
+						char *end = get_num_period_end(&tt, period);
 
 						// set invoice number
 						result = g->db_pquery(g->conn, "SELECT MAX(number) AS number FROM documents "
@@ -831,6 +853,7 @@ void reload(GLOBAL *g, struct payments_module *p)
 
 				description = strdup(p->s_comment);
 				g->str_replace(&description, "%period", get_diff_period(datefrom, today-86400));
+				g->str_replace(&description, "%type", tarifftype);
 				g->str_replace(&description, "%tariff", g->db_get_data(res,i,"name"));
 				g->str_replace(&description, "%month", monthname);
 				g->str_replace(&description, "%year", year);
@@ -993,6 +1016,7 @@ struct payments_module * init(GLOBAL *g, MODULE *m)
 {
 	struct payments_module *p;
 	QueryHandle *res;
+	int i;
 
 	if(g->api_version != APIVERSION)
 	{
@@ -1015,6 +1039,32 @@ struct payments_module * init(GLOBAL *g, MODULE *m)
 	p->excluded_networks = strdup(g->config_getstring(p->base.ini, p->base.instance, "excluded_networks", ""));
 	p->numberplanid = g->config_getint(p->base.ini, p->base.instance, "numberplan", 0);
 	p->check_invoices = g->config_getbool(p->base.ini, p->base.instance, "check_invoices", 0);
+
+	p->tariff_internet = _TARIFF_INTERNET_;
+	p->tariff_hosting = _TARIFF_HOSTING_;
+	p->tariff_service = _TARIFF_SERVICE_;
+	p->tariff_phone = _TARIFF_PHONE_;
+	p->tariff_tv = _TARIFF_TV_;
+	p->tariff_other = _TARIFF_OTHER_;
+
+	res = g->db_query(g->conn, "SELECT var, value FROM uiconfig WHERE section='tarifftypes' AND disabled=0");
+	for (i = 0; i < g->db_nrows(res); i++) {
+		char *val = g->db_get_data(res, i, "value");
+		if (!strcmp(g->db_get_data(res, i, "var"), _TARIFF_INTERNET_))
+			p->tariff_internet = strdup(val);
+		else if (!strcmp(g->db_get_data(res, i, "var"), _TARIFF_HOSTING_))
+			p->tariff_hosting = strdup(val);
+		else if (!strcmp(g->db_get_data(res, i, "var"), _TARIFF_SERVICE_))
+			p->tariff_service = strdup(val);
+		else if (!strcmp(g->db_get_data(res, i, "var"), _TARIFF_PHONE_))
+			p->tariff_phone = strdup(val);
+		else if (!strcmp(g->db_get_data(res, i, "var"), _TARIFF_TV_))
+			p->tariff_tv = strdup(val);
+		else if (!strcmp(g->db_get_data(res, i, "var"), _TARIFF_OTHER_))
+			p->tariff_other = strdup(val);
+	}
+	g->db_free(&res);
+
 	p->num_period = YEARLY;
 
 	res = g->db_query(g->conn, "SELECT value FROM uiconfig WHERE section='finances' AND var='suspension_percentage' AND disabled=0");

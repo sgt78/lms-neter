@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -158,12 +158,23 @@ if(isset($_POST['search']))
         $s = $_POST['search'];
 else
 	$SESSION->restore('bls', $s);
+if(!isset($s))
+     {
+     $year=date("Y", time());
+     $month=date("m", time());
+     $day=date("d", time());
+     $s = $year.'/'.$month.'/'.$day;
+     }
 $SESSION->save('bls', $s);
 
 if(isset($_POST['cat']))
         $c = $_POST['cat'];
 else
 	$SESSION->restore('blc', $c);
+if (!isset($c))
+{
+$c="cdate";
+}
 $SESSION->save('blc', $c);
 
 if(isset($_POST['group']))

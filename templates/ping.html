@@ -1,10 +1,10 @@
 {if $part eq "titlebar"}
-<div class="lmsPopupTitleBar">
+<div class="lmsPopupTitleBar" style="width: auto !important; width: 452px">
 	<div class="lmsPopupTitle">{t a=$ipaddr}Ping to $a{/t}</div>
 	<div id="{$popupid}_popupCloseBox" class="olPopupCloseBox lmsPopupCloseBox">&nbsp;</div>
 </div>
 <div class="lmsPingContentsFrame">
-	<iframe id="autoiframe_{$popupid}" width=100 height=10 frameborder=0 scrolling=no src="?m=ping&ip={$ipaddr}&type={$type}"></iframe>
+	<iframe id="autoiframe_{$popupid}" width="450px" height="300px" frameborder="0" framespacing="0" scrolling="no" src="?m=ping&ip={$ipaddr}&type={$type}"></iframe>
 </div>
 {elseif $part eq "ipform"}
 <div class="lmsPopupTitleBar">
@@ -16,8 +16,8 @@
 	<div class="lmsIpPopupForm">
 		<form name="{$popupid}_ipform" id="ipform" method="GET" action="?m=ping" onsubmit="return ping_any_host('{$popupid}');">
 			<input type="text" name="ip"><br>
-			<input type="radio" id="type1" name="type" value="1" checked><a href="javascript:checkElement('type1')">icmp</a>
-			<input type="radio" id="type2" name="type" value="2"><a href="javascript:checkElement('type2')">arp</a>
+			<input type="radio" id="{$popupid}_type1" name="type" value="1" checked><label for="{$popupid}_type1">icmp</label>
+			<input type="radio" id="{$popupid}_type2" name="type" value="2"><label for="{$popupid}_type2">arp</label>
 			<input type="submit" class="hiddenbtn">
 		</form>
 	</div>
@@ -39,40 +39,45 @@
 	<frame scrolling="always" frameborder="0" marginheight="0" marginwidth="0" name="m" noresize src="?m=ping&p=main&ip={$ipaddr}&type={$type}">
 </frameset>
 {else}
+<!--[if IE]>
+<script type="text/javascript" src="img/json2.js"></script>
+<![endif]-->
 <script type="text/javascript" src="img/common.js"></script>
-<body>
-	<div id="data" class="lmsPingContents"></div>
-	<div class="lmsPingBottom">
-		<div class="lmsPingTotalSummary">
-			<div id="total" class="lmsPingTotal">
-				{t a="0" b="0" c="0"}Total: $a% ($b/$c){/t}
-			</div>
-			<div id="summary" class="lmsPingSummary">
+<body style="overflow: auto">
+	<div id="data" class="lmsPingContents" style="height: 250px; width: 450px; overflow: auto"></div>
+	<form id="params">
+	<table cellpadding="2" style="bottom: 0; position: absolute" width="100%">
+		<tr class="light">
+			<td width="99%" id="summary" class="fbt bold" align="left" nowrap>
 				mix/avg/max = -/-/- ms
-			</div>
-		</div>
-		<div class="lmsPingControls">
-			<form id="params">
-				<input type="hidden" name="type" value="{$type}">
+			</td>
+			<td width="1%" id="total" class="fbt bold" align="right" nowrap>
+				{t a="0" b="0" c="0"}Total: $a% ($b/$c){/t}
+			</td>
+		</tr>
+		<tr class="dark">
 				<input type="hidden" name="interface" value="{$interface}">
 				<input type="hidden" name="ipaddr" value="{$ipaddr}">
 				<input type="hidden" id="transmitted" name="transmitted" value="0">
 				<input type="hidden" id="received" name="received" value="0">
 				<input type="hidden" id="times" name="times" value="">
-				<div class="lmsPingEnabled">
-					<input type="checkbox" id="enabled" name="enabled" onclick="javascript:ping_toggle()" checked><a href="javascript:enabled_toggle();">{trans("Enabled")}</a>
-				</div>
-				<div class="lmsPingAutoScroll">
-					<input type="checkbox" id="autoscroll" name="autoscroll" checked><a href="javascript:checkElement('autoscroll');">{trans("Auto Scroll")}</a>
-				</div>
-			</form>
-		</div>
-	</div>
+				<td nowrap>
+					<input type="checkbox" id="autoscroll" name="autoscroll" checked><label for="autoscroll">{trans("Auto Scroll")}</label>
+					&nbsp;
+					<input type="radio" name="type" id="type1" value="1"{if $type == 1} checked{/if}><label for="type1">{trans("icmp")}</label>
+					<input type="radio" name="type" id="type2" value="2"{if $type == 2} checked{/if}><label for="type2">{trans("arp")}</label>
+				</td>
+				<td nowrap align="right">
+					<input type="button" id="enabled" name="enabled" onclick="ping_toggle()" />
+				</td>
+		</tr>
+	</table>
+	</form>
 </body>
 <script type="text/javascript">
 <!--
-	var reqTime = 0;
-	var minTime = 1000.0, maxTime = 0.0, sumTime = 0.0;
+	var reqTime = 0
+	    minTime = 1000.0, maxTime = 0.0, sumTime = 0.0;
 
 	function time_to_fixed(time)
 	{
@@ -85,7 +90,10 @@
 
 	function ping_reply()
 	{
-		elem = document.getElementById('data');
+	    var stop = "{trans("Stop")}", start = "{trans("Start")}",
+	        button = document.getElementById('enabled'),
+	        elem = document.getElementById('data');
+
 		if (elem && document.getElementById('autoscroll').checked)
 			elem.scrollTop = elem.scrollHeight;
 		try {
@@ -105,7 +113,14 @@
 					+ [time_to_fixed(minTime), time_to_fixed(avgTime), time_to_fixed(maxTime)].join('/') + ' ms';
 			}
 		} catch(e) {}
-		if (document.getElementById('enabled').checked) {
+
+		if (button.value == stop) {
+			if (window.parent && window.parent.parent && window.parent.parent.parent && window.parent.parent.parent.parent
+				&& window.parent.parent.parent.document.getElementById('autoiframe')) {
+				var elem = window.parent.parent.parent.document.getElementById('overDiv');
+				if (elem && elem.style.visibility == 'hidden')
+					return;
+			}
 			var d = new Date();
 			var waitTime = 1000 - d.getTime() + reqTime;
 			if (waitTime < 10)
@@ -125,17 +140,18 @@
 
 	function ping_toggle()
 	{
-		if (document.getElementById('enabled').checked)
-			ping_refresh();
+	    var stop = "{trans("Stop")}", start = "{trans("Start")}",
+	        button = document.getElementById('enabled');
+
+        if (button.value == stop)
+            button.value = start;
+        else {
+            button.value = stop;
+		    ping_refresh();
+	    }
 	}
 
-	function enabled_toggle()
-	{
-		checkElement('enabled');
-		ping_toggle();
-	}
-
-	ping_refresh();
+	ping_toggle();
 //-->
 </script>
 {/if}

@@ -6,14 +6,14 @@
     <meta name="GENERATOR" content="LMS {$layout.lmsv}">
     <meta http-equiv="Content-Language" content="{$LANGDEFS.$_ui_language.html}">
     <meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_ui_language.charset}">
-    <link href="{if $_config.phpui.style}{$_config.phpui.style}{else}img/style.css{/if}" rel="stylesheet" type="text/css">
+    <link href="{get_conf('phpui.style', 'img/style.css')}" rel="stylesheet" type="text/css">
     <link href="img/map.css" rel="stylesheet" type="text/css">
     <link href="img/lms-net.gif" rel="shortcut icon">
     <script type="text/javascript" src="img/common.js"> </script>
     <script type="text/javascript" src="img/ClickShowHideMenu.js"> </script>
     <script type="text/javascript" src="img/autosuggest.js"> </script>
 </head>
-<body onload="start_login_timeout({$_config.phpui.timeout})">
+<body onload="start_login_timeout({get_conf('phpui.timeout')})">
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:100;"></div>
 <script type="text/javascript" language="JavaScript" src="img/overlib.js"></script>
 {if !$layout.popup}
@@ -23,7 +23,7 @@
 		<tr>
 			<td align="center" style="border-bottom-style: dashed; border-bottom-width: 1px;" valign="top">
 				<br>
-				<img src="{if $_config.phpui.logo}{$_config.phpui.logo}{else}img/logo-40.png{/if}" ALT="LMS {$layout.lmsv}"><br>
+				<img src="{get_conf('phpui.logo', 'img/logo-40.png')}" alt="LMS {$layout.lmsv}"><br>
 				<B>LMS {$layout.lmsv}</B><br>
 				&nbsp;<br>
 			</td>
@@ -56,7 +56,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td nowrap align="center"><font style="font-size: 7pt;">&nbsp;<br><B>LMS {$layout.lmsv}<br>({$layout.lmsvr})<br>DB: {$layout.dbschversion}<br>@ {$layout.hostname}</B></font>&nbsp;<br>&nbsp;<br></td>
+			<td nowrap align="center"><font style="font-size: 7pt;">&nbsp;<br><B>LMS {$layout.lmsv}<br>{if $layout.lmsvr}({$layout.lmsvr})<br>{/if}DB: {$layout.dbschversion}<br>@ {$layout.hostname}</B></font>&nbsp;<br>&nbsp;<br></td>
 		</tr>
 	</table>
 	<script type="text/javascript">
@@ -89,11 +89,12 @@
 			<input type="image" src="img/empty.gif" width="0" height="0" style="border: none;">
 		    </td>
 		    <td width="99%" align="right" nowrap>
-			&nbsp;<A href="?m=copyrights">&copy; 2001-2012 LMS Developers</A>
+			&nbsp;<A href="?m=copyrights">&copy; 2001-{$smarty.now|date_format:'%Y'} LMS Developers</A>
 		    </td>
 		</tr>
 	</table>
 	</form>
+	{include file="toolbar.html"}
 	<hr>
 <SCRIPT type="text/javascript">
 <!--//

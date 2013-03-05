@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- * (C) Copyright 2001-2012 LMS Developers
+ * (C) Copyright 2001-2013 LMS Developers
  *
  * Please, see the doc/AUTHORS for more information about authors!
  *
@@ -231,6 +231,12 @@ $menu = array(
 					'link' => '?m=netdevmap',
 					'tip' => trans('Network map display'),
 					'prio' => 40,
+				),
+				array(
+					'name' => trans('UKE report'),
+					'link' => '?m=uke',
+					'tip' => trans('Allows you to prepare SIIS v2 report for UKE'),
+					'prio' => 50,
 				),
 			),
 		),

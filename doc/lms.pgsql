@@ -22,6 +22,11 @@ CREATE TABLE users (
 	failedlogindate integer DEFAULT 0  NOT NULL,
 	failedloginip varchar(16) DEFAULT '' NOT NULL,
 	deleted smallint	DEFAULT 0 NOT NULL,
+	passwdexpiration integer DEFAULT 0 NOT NULL,
+	passwdlastchange integer DEFAULT 0 NOT NULL,
+	access smallint DEFAULT 1 NOT NULL,
+	accessfrom integer DEFAULT 0 NOT NULL,
+	accessto integer DEFAULT 0 NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE (login)
 );
@@ -61,7 +66,7 @@ CREATE TABLE customers (
 	modid integer 		DEFAULT 0 NOT NULL,
 	deleted smallint 	DEFAULT 0 NOT NULL,
 	message text		DEFAULT '' NOT NULL,
-	pin integer		DEFAULT 0 NOT NULL,
+	pin varchar(6)		DEFAULT 0 NOT NULL,
 	cutoffstop integer	DEFAULT 0 NOT NULL,
 	consentdate integer	DEFAULT 0 NOT NULL,
 	einvoice smallint 	DEFAULT NULL,
@@ -234,6 +239,7 @@ DROP TABLE IF EXISTS location_streets CASCADE;
 CREATE TABLE location_streets (
     id integer          DEFAULT nextval('location_streets_id_seq'::text) NOT NULL,
     name varchar(128)   NOT NULL, -- TERYT: NAZWA_1
+    name2 varchar(128)  DEFAULT NULL, -- TERYT: NAZWA_2
     ident varchar(8)    NOT NULL, -- TERYT: SYM_UL
     typeid integer      DEFAULT NULL
         REFERENCES location_street_types (id) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -241,6 +247,26 @@ CREATE TABLE location_streets (
         REFERENCES location_cities (id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (id),
     UNIQUE (cityid, name, ident)
+);
+
+/* -------------------------------------------------------- 
+  Structure of table "pna"
+-------------------------------------------------------- */
+DROP SEQUENCE IF EXISTS pna_id_seq;
+CREATE SEQUENCE pna_id_seq;
+DROP TABLE IF EXISTS pna CASCADE;
+CREATE TABLE pna (
+	id integer DEFAULT nextval('pna_id_seq'::text) NOT NULL,
+	zip varchar(128) NOT NULL,
+	cityid integer NOT NULL
+		REFERENCES location_cities (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	streetid integer DEFAULT NULL
+		REFERENCES location_streets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	fromhouse varchar(10) DEFAULT NULL,
+	tohouse varchar(10) DEFAULT NULL,
+	parity smallint DEFAULT 0 NOT NULL,
+	PRIMARY KEY (id),
+	UNIQUE (zip, cityid, streetid, fromhouse, tohouse, parity)
 );
 
 /* -------------------------------------------------------- 
@@ -284,6 +310,7 @@ CREATE TABLE nodes (
 	ownerid integer 	DEFAULT 0 NOT NULL,
 	netdev integer 		DEFAULT 0 NOT NULL,
 	linktype smallint	DEFAULT 0 NOT NULL,
+	linkspeed integer	DEFAULT 100000 NOT NULL,
 	port smallint		DEFAULT 0 NOT NULL,
 	creationdate integer 	DEFAULT 0 NOT NULL,
 	moddate integer 	DEFAULT 0 NOT NULL,
@@ -314,6 +341,22 @@ CREATE INDEX nodes_ownerid_idx ON nodes (ownerid);
 CREATE INDEX nodes_ipaddr_pub_idx ON nodes (ipaddr_pub);
 CREATE INDEX nodes_location_street_idx ON nodes (location_street);
 CREATE INDEX nodes_location_city_idx ON nodes (location_city, location_street, location_house, location_flat);
+
+/* ----------------------------------------------------
+ Structure of table "nodelocks"
+---------------------------------------------------*/
+DROP SEQUENCE IF EXISTS nodelocks_id_seq;
+CREATE SEQUENCE nodelocks_id_seq;
+DROP TABLE IF EXISTS nodelocks CASCADE;
+CREATE TABLE nodelocks (
+	id integer		DEFAULT nextval('nodelocks_id_seq'::text) NOT NULL,
+	nodeid integer		NOT NULL
+		REFERENCES nodes (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	days smallint		DEFAULT 0 NOT NULL,
+	fromsec integer		DEFAULT 0 NOT NULL,
+	tosec integer		DEFAULT 0 NOT NULL,
+	PRIMARY KEY (id)
+);
 
 /* -------------------------------------------------------- 
   Structure of table "macs" 
@@ -685,9 +728,32 @@ CREATE TABLE stats (
 	dt integer 		DEFAULT 0 NOT NULL,
 	upload bigint 		DEFAULT 0,
 	download bigint 	DEFAULT 0,
+	nodesessionid integer	DEFAULT 0 NOT NULL,
 	PRIMARY KEY (nodeid, dt)
 );
 CREATE INDEX stats_dt_idx ON stats(dt);
+CREATE INDEX stats_nodesessionid_idx ON stats(nodesessionid);
+
+/* -------------------------------------------------------- 
+  Structure of table "nodesessions" 
+-------------------------------------------------------- */
+CREATE SEQUENCE nodesessions_id_seq;
+CREATE TABLE nodesessions (
+	id integer		DEFAULT nextval('nodesessions_id_seq'::text) NOT NULL,
+	customerid integer	DEFAULT 0 NOT NULL,
+	nodeid integer		DEFAULT 0 NOT NULL,
+	ipaddr bigint		DEFAULT 0 NOT NULL,
+	mac varchar(17)		DEFAULT '' NOT NULL,
+	start integer		DEFAULT 0 NOT NULL,
+	stop integer		DEFAULT 0 NOT NULL,
+	download bigint		DEFAULT 0,
+	upload bigint		DEFAULT 0,
+	tag varchar(32)		DEFAULT '' NOT NULL,
+	PRIMARY KEY (id)
+);
+CREATE INDEX nodesessions_customerid_idx ON nodesessions(customerid);
+CREATE INDEX nodesessions_nodeid_idx ON nodesessions(nodeid);
+CREATE INDEX nodesessions_tag_idx ON nodesessions(tag);
 
 /* ---------------------------------------------------
  Structure of table "netlinks"
@@ -700,6 +766,7 @@ CREATE TABLE netlinks (
 	src integer 		DEFAULT 0 NOT NULL,
 	dst integer 		DEFAULT 0 NOT NULL,
 	type smallint		DEFAULT 0 NOT NULL,
+	speed integer		DEFAULT 100000 NOT NULL,
 	srcport smallint	DEFAULT 0 NOT NULL,
 	dstport smallint	DEFAULT 0 NOT NULL,
 	PRIMARY KEY  (id),
@@ -926,6 +993,7 @@ CREATE TABLE domains (
 	type varchar(6) 	DEFAULT '' NOT NULL,
 	notified_serial integer DEFAULT NULL,
 	account varchar(40) 	DEFAULT NULL,
+	mxbackup smallint	DEFAULT 0 NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE (name)
 );
@@ -1031,6 +1099,8 @@ CREATE TABLE events (
 	customerid 	integer 	DEFAULT 0 NOT NULL,
 	private 	smallint 	DEFAULT 0 NOT NULL,
 	closed 		smallint 	DEFAULT 0 NOT NULL,
+	moddate		integer		DEFAULT 0 NOT NULL,
+	moduserid	integer		DEFAULT 0 NOT NULL,
 	PRIMARY KEY (id)
 );
 CREATE INDEX events_date_idx ON events(date);
@@ -1550,6 +1620,21 @@ CREATE TABLE nastypes (
 );
 
 /* ---------------------------------------------------
+ Structure of table "managementurls"
+------------------------------------------------------*/
+DROP SEQUENCE IF EXISTS managementurls_id_seq;
+CREATE SEQUENCE managementurls_id_seq;
+DROP TABLE IF EXISTS managementurls;
+CREATE TABLE managementurls (
+	id integer		DEFAULT nextval('managementurls_id_seq'::text) NOT NULL,
+	netdevid integer	NOT NULL
+		REFERENCES netdevices (id) ON DELETE CASCADE ON UPDATE CASCADE,
+	url text		DEFAULT '' NOT NULL,
+	comment varchar(100)	DEFAULT NULL,
+	PRIMARY KEY (id)
+);
+
+/* ---------------------------------------------------
  Structure of table "up_rights" (Userpanel)
 ------------------------------------------------------*/
 DROP SEQUENCE IF EXISTS up_rights_id_seq;
@@ -1649,9 +1734,14 @@ END
 CREATE VIEW customersview AS
 SELECT c.* FROM customers c
         WHERE NOT EXISTS (
-	        SELECT 1 FROM customerassignments a
-	        JOIN excludedgroups e ON (a.customergroupid = e.customergroupid)
-	        WHERE e.userid = lms_current_user() AND a.customerid = c.id);
+	        SELECT 1 FROM customerassignments a 
+	        JOIN excludedgroups e ON (a.customergroupid = e.customergroupid) 
+	        WHERE e.userid = lms_current_user() AND a.customerid = c.id) 
+	        AND c.type IN ('0','1');
+
+CREATE VIEW contractorview AS
+SELECT c.* FROM customers c
+        WHERE c.type = '2' ;
 
 CREATE OR REPLACE FUNCTION int2txt(bigint) RETURNS text AS $$
 SELECT $1::text;
@@ -1704,7 +1794,7 @@ SELECT s.ident AS woj, d.ident AS pow, b.ident AS gmi, b.type AS rodz_gmi,
 
 CREATE VIEW teryt_ulic AS
 SELECT st.ident AS woj, d.ident AS pow, b.ident AS gmi, b.type AS rodz_gmi,
-        c.ident AS sym, s.ident AS sym_ul, s.name AS nazwa_1, t.name AS cecha, s.id
+        c.ident AS sym, s.ident AS sym_ul, s.name AS nazwa_1, s.name2 AS nazwa_2, t.name AS cecha, s.id
     FROM location_streets s
     JOIN location_street_types t ON (s.typeid = t.id)
     JOIN location_cities c ON (s.cityid = c.id)
@@ -1716,6 +1806,8 @@ SELECT st.ident AS woj, d.ident AS pow, b.ident AS gmi, b.type AS rodz_gmi,
 /* ---------------------------------------------------
  Data records
 ------------------------------------------------------*/
+INSERT INTO rtcategories (name, description)
+	VALUES ('default', 'default category');
 INSERT INTO uiconfig (section, var)
 	VALUES ('userpanel', 'data_consent_text');
 INSERT INTO uiconfig (section, var, value, description, disabled) 
@@ -1742,7 +1834,8 @@ INSERT INTO uiconfig (section, var, value, description, disabled)
 	VALUES ('userpanel', 'logout_url', '', '', 0);
 INSERT INTO uiconfig (section, var, value, description, disabled)
 	VALUES ('userpanel', 'owner_stats', '0', '', 0);
-INSERT INTO uiconfig (section, var) VALUES ('userpanel', 'default_categories');
+INSERT INTO uiconfig (section, var, value)
+	VALUES ('userpanel', 'default_categories', (SELECT MAX(id) FROM rtcategories));
 INSERT INTO up_rights(module, name, description)
 	VALUES ('info', 'edit_addr_ack', 'Customer can change address information with admin acknowlegment');
 INSERT INTO up_rights(module, name, description)
@@ -1772,4 +1865,4 @@ INSERT INTO nastypes (name) VALUES ('tc');
 INSERT INTO nastypes (name) VALUES ('usrhiper');
 INSERT INTO nastypes (name) VALUES ('other');
 
-INSERT INTO dbinfo (keytype, keyvalue) VALUES ('dbversion', '2011113000');
+INSERT INTO dbinfo (keytype, keyvalue) VALUES ('dbversion', '2012111100');

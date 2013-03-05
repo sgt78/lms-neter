@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -21,7 +21,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  *  USA.
  *
- *  $Id$
+ *  $Id: common.php,v 1.130 2012/01/02 11:01:28 alec Exp $
  */
 
 // Common functions, that making it in class would be nonsense :)
@@ -483,7 +483,12 @@ function get_producer($mac)
 
 function setunits($data)  // for traffic data
 {
-	if ( $data >= (1024*1024*1024))
+	if ( $data >= (1024*1024*1024*1024))
+	{
+		$number = $data / (1024*1024*1024*1024);
+		$unit = "TiB";
+	}
+	elseif ( $data >= (1024*1024*1024))
 	{
 		$number = $data / (1024*1024*1024);
 		$unit = "GiB";
@@ -574,28 +579,36 @@ function fetch_url($url)
 	$url_parsed = parse_url($url);
 	$host = $url_parsed['host'];
 	$path = $url_parsed['path'];
-        $port = isset($url_parsed['port']) ? $url_parsed['port'] : 0; //sometimes port is undefined
+	$port = isset($url_parsed['port']) ? $url_parsed['port'] : 0; //sometimes port is undefined
 
-        if ($port==0)
-	        $port = 80;
+	if ($port==0)
+		$port = 80;
 	if ($url_parsed['query'] != '')
-	         $path .= '?'.$url_parsed['query'];
-		 
+		$path .= '?'.$url_parsed['query'];
+
 	$request = "GET $path HTTP/1.0\r\nHost: $host\r\n\r\n";
 
 	$fp = @fsockopen($host, $port, $errno, $errstr, 5);
 
 	if(!$fp) return FALSE;
-	
+
+	if (!stream_set_timeout($fp, 3)) return FALSE;
+
 	fwrite($fp, $request);
+	$info = stream_get_meta_data($fp);
+	if ($info['timed_out']) return FALSE;
+
 	$body = FALSE;
 	$out = '';
-	
+
 	while(!feof($fp))
 	{
 		$s = fgets($fp, 1024);
+		$info = stream_get_meta_data($fp);
+		if ($info['timed_out']) return FALSE;
+
 		if($body)
-		        $out .= $s;
+			$out .= $s;
 		if($s == "\r\n")
 			$body = TRUE;
 	}
@@ -751,6 +764,141 @@ function register_plugin($handle, $plugin)
         global $PLUGINS;
 
         $PLUGINS[$handle][] = $plugin;
+}
+
+function html2pdf($content, $subject=NULL, $title=NULL, $type=NULL, $id=NULL, $orientation='P', $margins=array(5, 10, 5, 10), $save=false, $copy=false)
+{
+	global $layout, $DB;
+	require_once(LIB_DIR.'/html2pdf/html2pdf.class.php');
+
+	if (isset($margins))
+		if (!is_array($margins))
+			$margins = array(5, 10, 5, 10); /* default */
+
+	$html2pdf = new HTML2PDF($orientation, 'A4', 'en', true, 'UTF-8', $margins);
+	/* disable font subsetting to improve performance */
+	$html2pdf->pdf->setFontSubsetting(false);
+
+	if ($id) {
+		$info = $DB->GetRow('SELECT di.name, di.description FROM divisions di
+			LEFT JOIN documents d ON (d.divisionid = di.id)
+			WHERE d.id = ?', array($id));
+	}
+
+	$html2pdf->pdf->SetProducer('LMS Developers');
+	$html2pdf->pdf->SetCreator('LMS '.$layout['lmsv']);
+	if ($info)
+		$html2pdf->pdf->SetAuthor($info['name']);
+	if ($subject)
+		$html2pdf->pdf->SetSubject($subject);
+	if ($title)
+		$html2pdf->pdf->SetTitle($title);
+
+	$html2pdf->pdf->SetDisplayMode('fullpage', 'SinglePage', 'UseNone');
+	$html2pdf->AddFont('arial', '', 'arial.php');
+	$html2pdf->AddFont('arial', 'B', 'arialb.php');
+	$html2pdf->AddFont('arial', 'I', 'ariali.php');
+	$html2pdf->AddFont('arial', 'BI', 'arialbi.php');
+	$html2pdf->AddFont('times', '', 'times.php');
+
+	/* if tidy extension is loaded we repair html content */
+	if (extension_loaded('tidy')) {
+		$config = array(
+			'indent' => true,
+			'output-html' => true,
+			'indent-spaces' => 4,
+			'join-styles' => true,
+			'join-classes' => true,
+			'fix-bad-comments' => true,
+			'fix-backslash' => true,
+			'repeated-attributes' => 'keep-last',
+			'drop-proprietary-attribute' => true,
+			'sort-attributes' => 'alpha',
+			'hide-comments' => true,
+			'new-blocklevel-tags' => 'page, page_header, page_footer, barcode',
+			'wrap' => 200);
+
+		$tidy = new tidy;
+		$content = $tidy->repairString($content, $config, 'utf8');
+	}
+
+	$html2pdf->WriteHTML($content);
+
+	if ($copy) {
+		/* add watermark only for contract & annex */
+		if(($type == DOC_CONTRACT) || ($type == DOC_ANNEX)) {
+			$html2pdf->AddFont('courier', '', 'courier.php');
+			$html2pdf->AddFont('courier', 'B', 'courierb.php');
+			$html2pdf->pdf->SetTextColor(255, 0, 0);
+
+			$PageWidth = $html2pdf->pdf->getPageWidth();
+			$PageHeight = $html2pdf->pdf->getPageHeight();
+			$PageCount = $html2pdf->pdf->getNumPages();
+			$txt = trim(preg_replace("/(.)/i", "\${1} ", trans('COPY')));
+			$w = $html2pdf->pdf->getStringWidth($txt, 'courier', 'B', 120);
+			$x = ($PageWidth / 2) - (($w / 2) * sin(45));
+			$y = ($PageHeight / 2) + 50;
+
+			for($i = 1; $i <= $PageCount; $i++) {
+				$html2pdf->pdf->setPage($i);
+				$html2pdf->pdf->SetAlpha(0.2);
+				$html2pdf->pdf->SetFont('courier', 'B', 120);
+				$html2pdf->pdf->StartTransform();
+				$html2pdf->pdf->Rotate(45, $x, $y);
+				$html2pdf->pdf->Text($x, $y, $txt);
+				$html2pdf->pdf->StopTransform();
+			}
+			$html2pdf->pdf->SetAlpha(1);
+		}
+	}
+
+	if(($type == DOC_CONTRACT) || ($type == DOC_ANNEX)) {
+		/* set signature additional information */
+		$info = array(
+			'Name' => $info['name'],
+			'Location' => $subject,
+			'Reason' => $title,
+			'ContactInfo' => $info['description'],
+		);
+
+		/* setup your cert & key file */
+		$cert = 'file://'.LIB_DIR.'/tcpdf/config/lms.cert';
+		$key = 'file://'.LIB_DIR.'/tcpdf/config/lms.key';
+
+		/* set document digital signature & protection */
+		if (file_exists($cert) && file_exists($key)) {
+			$html2pdf->pdf->setSignature($cert, $key, 'lms-documents', '', 1, $info);
+		}
+	}
+
+	$html2pdf->pdf->SetProtection(array('modify', 'annot-forms', 'fill-forms', 'extract', 'assemble'), '', PASSWORD_CHANGEME, '1');
+
+	if ($save) {
+		if (function_exists('mb_convert_encoding'))
+			$filename = mb_convert_encoding($title, "ISO-8859-2", "UTF-8");
+		else
+			$filename = iconv("UTF-8", "ISO-8859-2//TRANSLIT", $title);
+		$html2pdf->Output($filename.'.pdf', 'D');
+	} else {
+		$html2pdf->Output();
+	}
+}
+
+function is_natural($var) {
+	return preg_match('/^[1-9][0-9]*$/', $var);
+}
+
+function check_password_strength($password) {
+	return (preg_match('/[a-z]/', $password) && preg_match('/[A-Z]/', $password)
+		&& preg_match('/[0-9]/', $password) && mb_strlen($password) >= 8);
+}
+
+function access_denied() {
+	global $SMARTY, $SESSION;
+
+	$SMARTY->display('noaccess.html');
+	$SESSION->close();
+	die;
 }
 
 ?>

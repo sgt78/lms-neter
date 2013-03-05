@@ -42,32 +42,11 @@ window.open('?m=invoice&id={$newinvoice.invoice}&original={$newinvoice.original}
 
 		document.setcustomer.submit();
 	}
-	
+
 	function reset_customer()
         {
 	        if (document.setcustomer.customerid.value)
 	                document.setcustomer.customer.value = document.setcustomer.customerid.value;
-	}
-	
-	function CheckAll()
-	{
-		for (var i=0; i<document.additemlist.elements.length; i++)
-		{
-			var e = document.additemlist.elements[i];
-		        if (e.name != 'allbox')
-				e.checked = document.additemlist.allbox.checked;
-		}
-	}
-
-	function CheckAll2()
-	{
-		document.additemlist.allbox.checked = !document.additemlist.allbox.checked;
-		CheckAll();
-	}
-
-	function setType(type)
-	{
-		document.additem.elements[type].checked = !document.additem.elements[type].checked;
 	}
 
 	function setPayTime(type)
@@ -111,6 +90,8 @@ window.open('?m=invoice&id={$newinvoice.invoice}&original={$newinvoice.original}
 	}
 //-->
 </script>
+{$default_printpage = get_conf('invoices.default_printpage')}
+{$default_taxrate   = get_conf('phpui.default_taxrate')}
 <FORM NAME="setcustomer" METHOD="POST" ACTION="?m=invoicenew&action=setcustomer">
 <INPUT type="submit" class="hiddenbtn">
 <TABLE WIDTH="100%" CELLPADDING="3">
@@ -161,8 +142,8 @@ window.open('?m=invoice&id={$newinvoice.invoice}&original={$newinvoice.original}
 			<B>{trans("Deadline:")}</B>
 		</TD>
 		<TD CLASS="fright" WIDTH="99%" NOWRAP>
-			<INPUT type="radio" name="invoice[paytime_default]" value="1" onclick="setPayTime(1)"{if !isset($invoice.paytime_default) || $invoice.paytime_default} checked{/if}><a href="javascript:setPayTime(1)">{trans("default")}</a>
-			<INPUT type="radio" name="invoice[paytime_default]" value="0" onclick="setPayTime(0)"{if isset($invoice.paytime_default) && !$invoice.paytime_default} checked{/if}><a href="javascript:setPayTime(0)">{trans("other")}</a>
+			<INPUT type="radio" name="invoice[paytime_default]" value="1" id="type1" onchange="setPayTime(1)"{if !isset($invoice.paytime_default) || $invoice.paytime_default} checked{/if}><label for="type1">{trans("default")}</label>
+			<INPUT type="radio" name="invoice[paytime_default]" value="0" id="type0" onchange="setPayTime(0)"{if isset($invoice.paytime_default) && !$invoice.paytime_default} checked{/if}><label for="type0">{trans("other")}</label>
 			<INPUT TYPE="TEXT" NAME="invoice[paytime]" VALUE="{$invoice.paytime}" SIZE="5" ID="paytime" onclick="deadline_calendar(this)"
 			{if !isset($invoice.paytime_default) || $invoice.paytime_default} style="visibility: hidden"{/if} {tip text="Enter deadline in days (optional)" trigger="paytime"}>
 		</TD>
@@ -265,8 +246,7 @@ window.open('?m=invoice&id={$newinvoice.invoice}&original={$newinvoice.original}
 							{/section}
 							<TR class="light">
 								<TD CLASS="ftop" colspan="2" nowrap>
-									<INPUT TYPE="checkbox" NAME="allbox" onClick="CheckAll();" VALUE="Check All Boxes">
-									<A HREF="javascript:CheckAll2();">{trans("Check All")}</A>
+									<INPUT TYPE="checkbox" NAME="allbox" id="allbox" onchange="CheckAll('additemlist', this)" VALUE="1"><label for="allbox"">{trans("Check All")}</label>
 								</TD>
 							        <TD CLASS="ftop" ALIGN="right" colspan="7" nowrap>
 									<A href="javascript:document.additemlist.submit();">{trans("Add items")} <IMG src="img/save.gif" ALT=""></A>
@@ -411,7 +391,7 @@ window.open('?m=invoice&id={$newinvoice.invoice}&original={$newinvoice.original}
 		<TD CLASS="ftop" ALIGN="RIGHT" NOWRAP>
 			<SELECT size="1" name="taxid" {tip text="Select Tax rate"}>
 			{foreach item=tax from=$taxeslist}
-				<OPTION value="{$tax.id}"{if $tax.value == $_config.phpui.default_taxrate} selected{/if}>{$tax.label}</OPTION>
+				<OPTION value="{$tax.id}"{if $tax.value == $default_taxrate} selected{/if}>{$tax.label}</OPTION>
 			{/foreach}
 			</SELECT>
 		</TD>
@@ -424,8 +404,8 @@ window.open('?m=invoice&id={$newinvoice.invoice}&original={$newinvoice.original}
 	</TR>
 	<TR CLASS="light">
 		<TD COLSPAN="9" CLASS="fbottomu" ALIGN="RIGHT">
-			<INPUT type="checkbox" name="original"{if preg_match('/original/i',$_config.invoices.default_printpage)} checked{/if}> <A HREF="javascript:setType('original');">{trans("original")}</A>
-        		<INPUT type="checkbox" name="copy"{if preg_match('/copy/i',$_config.invoices.default_printpage)} checked{/if}> <A HREF="javascript:setType('copy');">{trans("copy")}</A>&nbsp;
+			<INPUT type="checkbox" name="original" id="original"{if preg_match('/original/i', $default_printpage)} checked{/if}><label for="original">{trans("original")}</label>
+        	<INPUT type="checkbox" name="copy" id="copy"{if preg_match('/copy/i', $default_printpage)} checked{/if}><label for="copy">{trans("copy")}</label>&nbsp;
 			<A HREF="?m=invoicelist">{trans("Cancel")} <IMG SRC="img/cancel.gif" alt=""></A>
 			<A HREF="?m=invoicenew&action=init">{trans("Clear Contents")} <IMG SRC="img/delete.gif" alt=""></A> 
 			{if !$customer}

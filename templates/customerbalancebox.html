@@ -1,26 +1,6 @@
 <!--// $Id$ //-->
 <SCRIPT type="text/javascript">
 	<!--
-
-	function CheckAll()
-	{
-		for (var i=0; i<document.addbalance.elements.length; i++)
-		{
-			var e = document.addbalance.elements[i];
-			if (e.type == 'checkbox' && e.name != 'allbox' 
-				&& e.name != 'copy' && e.name != 'original' && e.name != 'duplicate') 
-			{
-				e.checked = document.addbalance.allbox.checked;
-			}
-		}
-	}
-
-	function CheckAll2()
-	{
-		document.addbalance.allbox.checked = !document.addbalance.allbox.checked;
-		CheckAll();
-	}
-
 	function AddBalance()
 	{
 		if(document.forms['addbalance'].elements['addbalance[value]'].value != '')
@@ -38,7 +18,7 @@
 			add = "&which=original";
 		else if(!document.addbalance.original.checked && document.addbalance.copy.checked)
 			add = "&which=copy";
-		
+
 		document.addbalance.action = "?m=receipt&print=cached&cash=1" + add;
 		document.addbalance.target = "_blank";
 		document.addbalance.submit();
@@ -79,9 +59,9 @@
 		location.href = document.getElementById('newdocselect').value;
 	}
 
-{if $_config.phpui.delete_link_in_customerbalancebox|chkconfig}
+{if check_conf('phpui.delete_link_in_customerbalancebox')}
 	function delpos()
-	{ 	 
+	{
 		if (!confirm('{trans("Are you sure, you want to delete selected operation(s) and document item(s)?")}'))
 			return;
 
@@ -92,6 +72,8 @@
 {/if}
 	//-->
 </SCRIPT>
+{$default_printpage = get_conf('invoices.default_printpage')}
+{$default_taxrate   = get_conf('phpui.default_taxrate')}
 <FORM name="addbalance" method="POST" action="?m=balanceadd&id={$balancelist.customerid}">
 <INPUT type="submit" class="hiddenbtn">
 <TABLE WIDTH="100%" CELLPADDING="3">
@@ -172,23 +154,23 @@
 				</TR>
 				{/section}
 				<TR class="light">
-					<TD CLASS="ftop" ALIGN="left" colspan="9">
-					    <TABLE cellpadding="0" cellspacing="0">
-						<TR><TD width="99%" NOWRAP>
-						{if $_config.phpui.delete_link_in_customerbalancebox|chkconfig}
-						<A href="javascript:delpos();">{trans("Delete")} <IMG src="img/delete.gif" alt="{trans("Delete")}"></A>&nbsp;
-						{/if}
-						{trans("Print")}:
-						<A href="javascript:print_doc('invoice');">{trans("invoices")} <IMG src="img/print.gif" alt=""></A>&nbsp;
-						<A href="javascript:printr();">{trans("cash receipts")} <IMG src="img/printr.gif" alt=""></A>&nbsp;
-						<A href="javascript:print_doc('note');">{trans("debit notes")} <IMG src="img/printd.gif" alt=""></A>&nbsp;
-						<INPUT type="checkbox" name="original" id="inv-original"{if preg_match('/original/i',$_config.invoices.default_printpage)} checked{/if}> <A HREF="javascript:checkElement('inv-original')">{trans("original")}&nbsp;</a>
-						<INPUT type="checkbox" name="copy" id="inv-copy"{if preg_match('/copy/i',$_config.invoices.default_printpage)} checked{/if}> <A HREF="javascript:checkElement('inv-copy')">{trans("copy")}</a>
-						<INPUT type="checkbox" name="duplicate" id="inv-duplicate"{if preg_match('/duplicate/i',$_config.invoices.default_printpage)} checked{/if}> <A HREF="javascript:checkElement('inv-duplicate')">{trans("duplicate")}</a>
-						</TD><TD width="1%" align="right" NOWRAP>
-						<A href="javascript:CheckAll2();">{trans("Check All")}</A><INPUT TYPE="checkbox" NAME="allbox" onClick="CheckAll();" VALUE="Check All Boxes">
-						</TD></TR>
-					    </TABLE>
+					<TD CLASS="ftop" style="text-align: left;" colspan="9">
+						<TABLE style="width: 100%" cellpadding="0" cellspacing="0">
+							<TR><TD style="width: 99%; white-space: nowrap;">
+							{if check_conf('phpui.delete_link_in_customerbalancebox')}
+							<A href="javascript:delpos();">{trans("Delete")} <IMG src="img/delete.gif" alt="{trans("Delete")}"></A>&nbsp;
+							{/if}
+							{trans("Print")}:
+							<A href="javascript:print_doc('invoice');">{trans("invoices")} <IMG src="img/print.gif" alt=""></A>&nbsp;
+							<A href="javascript:printr();">{trans("cash receipts")} <IMG src="img/printr.gif" alt=""></A>&nbsp;
+							<A href="javascript:print_doc('note');">{trans("debit notes")} <IMG src="img/printd.gif" alt=""></A>&nbsp;
+							<INPUT type="checkbox" name="original" id="inv-original"{if preg_match('/original/i', $default_printpage)} checked{/if}> <label for="inv-original">{trans("original")}</label>
+							<INPUT type="checkbox" name="copy" id="inv-copy"{if preg_match('/copy/i', $default_printpage)} checked{/if}> <label for="inv-copy">{trans("copy")}</label>
+							<INPUT type="checkbox" name="duplicate" id="inv-duplicate"{if preg_match('/duplicate/i', $default_printpage)} checked{/if}> <label for="inv-duplicate">{trans("duplicate")}</label>
+							</TD><TD style="width: 1%; text-align: right; white-space: nowrap;">
+							<label for="allboxb">{trans("Check All")}</label><INPUT TYPE="checkbox" NAME="allbox" id="allboxb" onchange="CheckAll('addbalance', this, ['copy', 'original', 'duplicate'])" VALUE="1">
+							</TD></TR>
+						</TABLE>
 					</TD>
 				</TR>
 				<TR class="light">
@@ -203,13 +185,13 @@
 						<INPUT TYPE="text" size="8" name="addbalance[value]" accesskey="s" {if $value}VALUE="{$value}"{/if} {tip text="Enter transaction value"}>&nbsp;
 						<SELECT SIZE="1" name="addbalance[taxid]" {tip text="Select Tax value"}>
 						{foreach item=tax from=$taxeslist}
-							<OPTION value="{$tax.id}" {if ($taxid && $tax.id == $taxid) || (!$taxid && $tax.value == $_config.phpui.default_taxrate)}selected{/if}>{$tax.label}</OPTION>
+							<OPTION value="{$tax.id}" {if ($taxid && $tax.id == $taxid) || (!$taxid && $tax.value == $default_taxrate)}selected{/if}>{$tax.label}</OPTION>
 						{/foreach}
 						</SELECT>
 					</TD>
 					<TD class="ftop" colspan="3" nowrap>
-						<INPUT TYPE="radio" NAME="addbalance[type]" ID="operation0" VALUE="0" {tip text="Select type of operation"}><A HREF="javascript:checkElement('operation0')">{trans("liability")}</a><BR>
-						<INPUT TYPE="radio" NAME="addbalance[type]" ID="operation1" VALUE="1" {tip text="Select type of operation"} checked><A HREF="javascript:checkElement('operation1')">{trans("income/expense")}</a>
+						<INPUT TYPE="radio" NAME="addbalance[type]" ID="operation0" VALUE="0" {tip text="Select type of operation"}><label for="operation0">{trans("liability")}</label><BR>
+						<INPUT TYPE="radio" NAME="addbalance[type]" ID="operation1" VALUE="1" {tip text="Select type of operation"} checked><label for="operation1">{trans("income/expense")}</label>
 						{if $sourcelist}
 						<BR><IMG src="img/isource.gif" alt="">
 						<SELECT name="addbalance[sourceid]" {tip text="Select import source (optional)" trigger="source"}>

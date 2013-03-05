@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -184,8 +184,10 @@ if(isset($_POST['assignment']))
 				if(checkdate($m, $d, $y))
 				{
 					$at = mktime(0, 0, 0, $m, $d, $y);
-					if($at < mktime(0,0,0))
+					if ($at < mktime(0, 0, 0) && !$a['atwarning']) {
+						$a['atwarning'] = TRUE;
 						$error['at'] = trans('Incorrect date!');
+					}
 				}
 				else
 					$error['at'] = trans('Incorrect date format! Enter date in YYYY/MM/DD format!');
@@ -302,8 +304,8 @@ if(isset($_POST['assignment']))
 					isset($a['settlement']) ? 1 : 0,
 					$from,
 					$to,
-					$a['pdiscount'],
-					$a['vdiscount'],
+					str_replace(',', '.', $a['pdiscount']),
+					str_replace(',', '.', $a['vdiscount']),
 					$a['liabilityid'],
 					!empty($a['numberplanid']) ? $a['numberplanid'] : NULL,
 					!empty($a['paytype']) ? $a['paytype'] : NULL,

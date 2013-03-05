@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -24,12 +24,18 @@
  *  $Id$
  */
 
+if (!check_conf('privileges.reports'))
+	access_denied();
+
 $type = isset($_GET['type']) ? $_GET['type'] : '';
 
 switch($type)
 {
 	case 'customerbalance': /********************************************/
-	
+
+		if (!check_conf('privileges.finances_management'))
+			access_denied();
+
 		$from = $_POST['from'];
 		$to = $_POST['to'];
 
@@ -37,7 +43,7 @@ switch($type)
 		if($from && preg_match('/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/', $from))
 		{
 			list($year, $month, $day) = explode('/',$from);
-    			$date['from'] = mktime(0, 0, 0, (int)$month, (int)$day, (int)$year);
+			$date['from'] = mktime(0, 0, 0, (int)$month, (int)$day, (int)$year);
 		}
 		else
 			$date['from'] = 0;
@@ -118,11 +124,19 @@ switch($type)
 		}
 		
 		$SMARTY->assign('balancelist', $list);
-		$SMARTY->display('printcustomerbalance.html');
-	break;	
+		if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+			$output = $SMARTY->fetch('printcustomerbalance.html');
+			html2pdf($output, trans('Reports'), $layout['pagetitle']);
+		} else {
+			$SMARTY->display('printcustomerbalance.html');
+		}
+	break;
 	
 	case 'balancelist': /********************************************/
-	
+
+		if (!check_conf('privileges.finances_management'))
+			access_denied();
+
 		$from = $_POST['balancefrom'];
 		$to = $_POST['balanceto'];
 		$net = intval($_POST['network']);
@@ -281,11 +295,19 @@ switch($type)
 		if($source)
 			$SMARTY->assign('source', $DB->GetOne('SELECT name FROM cashsources WHERE id = ?', array($source)));
 
-		$SMARTY->display('printbalancelist.html');
+		if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+			$output = $SMARTY->fetch('printbalancelist.html');
+			html2pdf($output, trans('Reports'), $layout['pagetitle']);
+		} else {
+			$SMARTY->display('printbalancelist.html');
+		}
 	break;
 
 	case 'incomereport': /********************************************/
-	
+
+		if (!check_conf('privileges.finances_management'))
+			access_denied();
+
 		$from = $_POST['from'];
 		$to = $_POST['to'];
 
@@ -314,10 +336,18 @@ switch($type)
 			array($date['from'], $date['to']));
 
 		$SMARTY->assign('incomelist', $incomelist);
-		$SMARTY->display('printincomereport.html');
+		if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+			$output = $SMARTY->fetch('printincomereport.html');
+			html2pdf($output, trans('Reports'), $layout['pagetitle']);
+		} else {
+			$SMARTY->display('printincomereport.html');
+		}
 	break;
 
 	case 'importlist': /********************************************/
+
+		if (!check_conf('privileges.finances_management'))
+			access_denied();
 
 		$from = $_POST['importfrom'];
 		$to = $_POST['importto'];
@@ -353,10 +383,18 @@ switch($type)
 		if ($source)
 			$SMARTY->assign('source', $DB->GetOne('SELECT name FROM cashsources WHERE id = ?', array($source)));
 		$SMARTY->assign('importlist', $importlist);
-		$SMARTY->display('printimportlist.html');
+		if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+			$output = $SMARTY->fetch('printimportlist.html');
+			html2pdf($output, trans('Reports'), $layout['pagetitle']);
+		} else {
+			$SMARTY->display('printimportlist.html');
+		}
 	break;
 
 	case 'invoices': /********************************************/
+
+		if (!check_conf('privileges.finances_management'))
+			access_denied();
 
 		$from = $_POST['invoicefrom'];
 		$to = $_POST['invoiceto'];
@@ -394,11 +432,15 @@ switch($type)
 			.(!empty($_POST['group']) ? '&groupid='.intval($_POST['group']) : '')
 			.(!empty($_POST['numberplan']) ? '&numberplanid='.intval($_POST['numberplan']) : '')
 			.(!empty($_POST['groupexclude']) ? '&groupexclude=1' : '')
+			.(!empty($_POST['autoissued']) ? '&autoissued=1' : '')
 		);
 	break;
 
 	case 'transferforms': /********************************************/
-	
+
+		if (!check_conf('privileges.finances_management'))
+			access_denied();
+
 		$from = $_POST['invoicefrom'];
 		$to = $_POST['invoiceto'];
 
@@ -431,11 +473,17 @@ switch($type)
 	break;	
 
 	case 'transferforms2': /********************************************/
-		
+
+		if (!check_conf('privileges.finances_management'))
+			access_denied();
+
 		require_once(MODULES_DIR.'/transferforms2.php');
 	break;
 
 	case 'liabilityreport': /********************************************/
+
+		if (!check_conf('privileges.finances_management'))
+			access_denied();
 
 		if (isset($_POST['day']) && $_POST['day']) 
 		{
@@ -488,7 +536,7 @@ switch($type)
 			{
 				$list1 = $DB->GetAllByKey('SELECT a.customerid AS id, '.$DB->Concat('UPPER(lastname)',"' '",'c.name').' AS customername, '
 					.$DB->Concat('city',"' '",'address').' AS address, ten, 
-					SUM(((((100 - a.pdiscount) * t.value) / 100) - a.vdiscount) *
+					SUM((((((100 - a.pdiscount) * t.value) / 100) - a.vdiscount) *
 						((CASE a.suspended WHEN 0 THEN 100.0 ELSE '.$suspension_percentage.' END) / 100))
 					* (CASE a.period
 						WHEN '.YEARLY.' THEN 12
@@ -504,7 +552,7 @@ switch($type)
 						ELSE 1 END)
 					) AS value
 					FROM assignments a, tariffs t, customersview c
-					WHERE a.customerid = c.id 
+					WHERE a.customerid = c.id AND status = 3 
 					AND a.tariffid = t.id AND t.taxid=?
 					AND c.deleted=0 
 					AND (a.datefrom<=? OR a.datefrom=0) AND (a.dateto>=? OR a.dateto=0) 
@@ -523,7 +571,7 @@ switch($type)
 					SUM(((((100 - a.pdiscount) * l.value) / 100) - a.vdiscount) *
 						((CASE a.suspended WHEN 0 THEN 100.0 ELSE '.$suspension_percentage.' END) / 100)) AS value
 					FROM assignments a, liabilities l, customersview c
-					WHERE a.customerid = c.id 
+					WHERE a.customerid = c.id AND status = 3 
 					AND a.liabilityid = l.id AND l.taxid=?
 					AND c.deleted=0
 					AND (a.datefrom<=? OR a.datefrom=0) AND (a.dateto>=? OR a.dateto=0) 
@@ -604,10 +652,18 @@ switch($type)
 			$SMARTY->assign('taxescount', sizeof($taxes));
 		}
 
-		$SMARTY->display('printliabilityreport.html');
+		if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+			$output = $SMARTY->fetch('printliabilityreport.html');
+			html2pdf($output, trans('Reports'), $layout['pagetitle']);
+		} else {
+			$SMARTY->display('printliabilityreport.html');
+		}
 	break;
 	
 	case 'receiptlist':
+
+		if (!check_conf('privileges.cash_operations'))
+			access_denied();
 
 		if($_POST['from'])
 		{
@@ -763,7 +819,7 @@ switch($type)
 				}
 
 				$rows++;
-			        $page = $x;
+				$page = $x;
 
 				if($row['value']>0)
 					$totals[$page]['income'] += $row['value'];
@@ -777,7 +833,7 @@ switch($type)
 			{
 				$pages[] = $page;
 
-			        $totals[$page]['totalincome'] = $totals[$page-1]['totalincome'] + $t['income'];
+				$totals[$page]['totalincome'] = $totals[$page-1]['totalincome'] + $t['income'];
 				$totals[$page]['totalexpense'] = $totals[$page-1]['totalexpense'] + $t['expense'];
 				$totals[$page]['rowstart'] = $totals[$page-1]['rowstart'] + $totals[$page-1]['rows'];
 			}
@@ -786,11 +842,21 @@ switch($type)
 			$SMARTY->assign('totals', $totals);
 			$SMARTY->assign('pagescount', sizeof($pages));
 			$SMARTY->assign('reccount', sizeof($list));
-			$SMARTY->display('printreceiptlist-ext.html');
+			if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+				$output = $SMARTY->fetch('printreceiptlist-ext.html');
+				html2pdf($output, trans('Reports'), $layout['pagetitle']);
+			} else {
+				$SMARTY->display('printreceiptlist-ext.html');
+			}
 		}
 		else
 		{
-			$SMARTY->display('printreceiptlist.html');
+			if (strtolower($CONFIG['phpui']['report_type']) == 'pdf') {
+				$output = $SMARTY->fetch('printreceiptlist.html');
+				html2pdf($output, trans('Reports'), $layout['pagetitle']);
+			} else {
+				$SMARTY->display('printreceiptlist.html');
+			}
 		}
 	break;
 case 'customercontract':
@@ -845,9 +911,9 @@ case 'printtariffsgroup':
 		$SMARTY->display('printttariffsgroup.html');
 	break;
 	default: /*******************************************************/
-	
+
 		$layout['pagetitle'] = trans('Reports');
-		
+
 		if(!isset($CONFIG['phpui']['big_networks']) || !chkconfig($CONFIG['phpui']['big_networks']))
 		{
 			$SMARTY->assign('customers', $LMS->GetCustomerNames());

@@ -1,8 +1,8 @@
 #!/usr/bin/perl -Tw
 #
-#  LMS version 1.11-cvs
+#  LMS version 1.11-git
 #
-#  Copyright (C) 2001-2012 LMS Developers
+#  Copyright (C) 2001-2013 LMS Developers
 #
 #  Please, see the doc/AUTHORS for more information about authors!
 #
@@ -31,7 +31,7 @@ use POSIX qw(strftime);
 use POSIX qw(mktime);
 use Time::Local;
 
-my $_version = '1.11-cvs';
+my $_version = '1.11-git';
 
 my %options = (
 	"--config-file|C=s"	=>	\$configfile,
@@ -48,7 +48,7 @@ if($help)
 {
 	print STDERR <<EOF;
 lms-payments, version $_version
-(C) 2001-2012 LMS Developers
+(C) 2001-2013 LMS Developers
 
 -C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
 -h, --help			print this help and exit;
@@ -64,7 +64,7 @@ if($version)
 {
 	print STDERR <<EOF;
 lms-payments, version $_version
-(C) 2001-2012 LMS Developers
+(C) 2001-2013 LMS Developers
 
 EOF
 	exit 0;
@@ -78,7 +78,7 @@ if(!$configfile)
 if(!$quiet)
 {
 	print STDOUT "lms-payments, version $_version\n";
-	print STDOUT "(C) 2001-2012 LMS Developers\n";
+	print STDOUT "(C) 2001-2013 LMS Developers\n";
 	print STDOUT "Using file $configfile as config.\n";
 }
 
@@ -159,6 +159,21 @@ use constant WEEK	=> 2;
 use constant DAY	=> 1;
 use constant DISPOSABLE	=> 0;
 
+use constant TARIFF_INTERNET	=> 1;
+use constant TARIFF_HOSTING	=> 2;
+use constant TARIFF_SERVICE	=> 3;
+use constant TARIFF_PHONE	=> 4;
+use constant TARIFF_TV		=> 5;
+use constant TARIFF_OTHER	=> -1;
+
+my %tarifftypes;
+$tarifftypes{+TARIFF_INTERNET}	= $ini->val('tarifftypes', 'internet') || 'internet',
+$tarifftypes{+TARIFF_HOSTING}	= $ini->val('tarifftypes', 'hosting') || 'hosting',
+$tarifftypes{+TARIFF_SERVICE}	= $ini->val('tarifftypes', 'service') || 'service',
+$tarifftypes{+TARIFF_PHONE}	= $ini->val('tarifftypes', 'phone') || 'phone',
+$tarifftypes{+TARIFF_TV}	= $ini->val('tarifftypes', 'tv') || 'tv',
+$tarifftypes{+TARIFF_OTHER}	= $ini->val('tarifftypes', 'other') || 'other',
+
 my @customergroupslist = split ' ', $customergroups;
 
 my $currtime = strftime("%s",localtime2());
@@ -224,6 +239,7 @@ $txts{+DISPOSABLE} = strftime("%Y/%m/%d", 0, 0, 12, $dom, $month - 1, $year - 19
 my $current_month = strftime("%Y/%m/%d", 0, 0, 12, 1, $month - 1, $year - 1900)." - ".strftime("%Y/%m/%d", 0, 0, 12, 0, $month, $year - 1900);
 my $current_period = strftime("%m/%Y", 0, 0, 12, 1, $month - 1, $year - 1900);
 my $next_period = strftime("%m/%Y", 0, 0, 12, 1, $month, $year - 1900);
+my $prev_period = strftime("%m/%Y", 0, 0, 12, 1, $month - 2, $year - 1900);
 
 # sale date setting
 my $saledate = $currtime;
@@ -345,6 +361,7 @@ $dbq = $dbase->prepare("SELECT a.tariffid, a.liabilityid, a.customerid,
 	a.invoice, t.description AS description, a.id AS assignmentid,
 	c.divisionid, c.paytype, a.paytype AS a_paytype, a.numberplanid,
 	d.inv_paytype AS d_paytype, t.period AS t_period,
+	(CASE a.liabilityid WHEN 0 THEN t.type ELSE -1 END) as tarifftype,
 	(CASE a.liabilityid WHEN 0 THEN t.name ELSE l.name END) AS name,
 	(CASE a.liabilityid WHEN 0 THEN t.taxid ELSE l.taxid END) AS taxid,
 	(CASE a.liabilityid WHEN 0 THEN t.prodid ELSE l.prodid END) AS prodid,
@@ -453,10 +470,12 @@ while(my $assign = $dbq->fetchrow_hashref())
 	}
 	$desc =~ s/\%tariff/$assign->{'name'}/g;
 	$desc =~ s/\%desc/$assign->{'description'}/g;
+	$desc =~ s/\%type/$tarifftypes{$assign->{'tarifftype'}}/g;
 	$desc =~ s/\%period/$txts{$assign->{'period'}}/g;
 	$desc =~ s/\%current_month/$current_month/g;
 	$desc =~ s/\%current_period/$current_period/g;
 	$desc =~ s/\%next_period/$next_period/g;
+	$desc =~ s/\%prev_period/$prev_period/g;
 
 	if ($suspension_percentage && ($assign->{'suspended'} || $suspended == $uid))
 	{
@@ -642,6 +661,7 @@ while(my $assign = $dbq->fetchrow_hashref())
 			my $sdesc = $s_comment;
 			$sdesc =~ s/\%tariff/$assign->{'name'}/g;
 			$sdesc =~ s/\%desc/$assign->{'description'}/g;
+			$sdesc =~ s/\%type/$tarifftypes{$assign->{'tarifftype'}}/g;
 			$sdesc =~ s/\%period/$period/g;
 			$sdesc =~ s/\%current_month/$current_month/g;
 

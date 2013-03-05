@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -28,7 +28,7 @@ $a = $DB->GetRow('SELECT a.invoice, a.settlement,
         a.numberplanid, a.paytype, n.template, n.period
 		FROM assignments a
 		LEFT JOIN numberplans n ON (n.id = a.numberplanid)
-		WHERE a.id = ?',array($_GET['id']));
+		WHERE a.id = ?',array(intval($_GET['id'])));
 
 if ($a['template']) {
     $a['numberplan'] = $a['template'].' ('.$NUM_PERIODS[$a['period']].')';

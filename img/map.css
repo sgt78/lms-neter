@@ -1,3 +1,19 @@
+div.map {
+	position: absolute;
+	width: 85%;
+	height: 85%;
+	width: expression((parseInt(document.body.clientWidth) - 200) + 'px');	/* IE fix */
+	height: expression((parseInt(document.body.clientHeight) - 150) + 'px');	/* IE fix */
+}
+
+div.smallmap {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	width: expression(parseInt(document.body.clientWidth) + 'px');	/* IE fix */
+	height: expression(parseInt(document.body.clientHeight) + 'px');	/* IE fix */
+}
+
 div.olPopup {
 	overflow: visible;
 }
@@ -38,8 +54,10 @@ div.lmsInfoPopupContents {
 	background-color: #DFD5BD;
 	padding: 6px;
 	border-color: black;
-	border: thin solid black;
-	width: auto; height: auto;
+	border: 1px solid black;
+	width: auto !important;
+	width: 100%;		/* IE fix */
+	height: auto;
 	white-space: nowrap;
 	overflow: visible;
 }
@@ -48,7 +66,9 @@ div.lmsInfoPopupName {
 	background-color: #DFD5BD;
 	font-weight: bold;
 	padding: 2px;
-	width: auto; height: auto;
+	width: auto !important;
+	width: 100%;		/* IE fix */
+	height: auto;
 	white-space: nowrap;
 	clear: both;
 }
@@ -57,7 +77,9 @@ div.lmsInfoPopupAddress {
 	background-color: #DFD5BD;
 	padding: 2px;
 	border: none;
-	width: auto; height: auto;
+	width: auto !important;
+	width: 100%;		/* IE fix */
+	height: auto;
 	white-space: nowrap;
 	clear: both;
 }
@@ -72,7 +94,7 @@ div.lmsInfoPopupDetails {
 }
 
 div.lmsMapPopupContents {
-	border: thin solid black;
+	border: 1px solid black;
 	background-color: #DFD5BD;
 	width: auto; height: auto;
 	white-space: nowrap;
@@ -95,9 +117,11 @@ div.lmsMapPopupAddress {
 }
 
 div.lmsIpPopupContents {
-	border: thin solid black;
+	border: 1px solid black;
 	background-color: #DFD5BD;
-	width: auto; height: auto;
+	width: auto !important;
+	width: 100%;		/* IE fix */
+	height: auto;
 	padding: 6px;
 	white-space: nowrap;
 	overflow: visible;
@@ -108,101 +132,21 @@ div.lmsIpPopupLabel {
 }
 
 div.lmsPingContentsFrame {
-	border: 1pt solid black;
+	border: 1px solid black;
 	padding: 0px;
+	width: 450px; height: 300px;
 	background-color: #DFD5BD;
 }
 
 div.lmsPingContents {
 	position: absolute;
 	left: 0px; width: 100%;
-	top: 0px; bottom: 44px;
+	top: 0px; bottom: 48px;
+	height: auto !important;
+	height: 250px;	/* IE fix */
 	overflow: auto;
 	padding: 0px;
-}
-
-div.lmsPingBottom {
-	background-color: #CEBD9B;
-	border-top-width: 1pt; border-top-style: solid;
-	position:absolute;
-	bottom: 0px; height: 44px; width: 100%;
-	left: 0px;
-	overflow: hidden;
-	padding: 0px;
-}
-
-div.lmsPingTotalSummary {
-	position: absolute;
-	left: 0px; bottom: 0px;
-	width: 62%; height: 40px;
-	font-weight: bold;
-	white-space: nowrap;
-	overflow: visible;
-	line-height: 40px;
-	vertical-align: middle;
-	padding: 0px;
-}
-
-div.lmsPingTotal {
-	position: absolute;
-	left: 0px; bottom: 20px;
-	width: auto; height: 20px;
-	font-weight: bold;
-	white-space: nowrap;
-	overflow: visible;
-	line-height: 20px;
-	vertical-align: middle;
-	padding: 0px;
-	padding-left: 2px;
-}
-
-div.lmsPingSummary {
-	position: absolute;
-	bottom: 0px;
-	width: auto; height: 20px;
-	font-weight: bold;
-	white-space: nowrap;
-	overflow: visible;
-	line-height: 20px;
-	vertical-align: middle;
-	padding: 0px;
-	padding-left: 2px;
-}
-
-div.lmsPingControls {
-	position: absolute;
-	right: 0px; bottom: 0px;
-	width: 38%; height: 40px;
-	white-space: nowrap;
-	overflow: visible;
-	line-height: 40px;
-	vertical-align: middle;
-	text-align: left;
-	padding: 0px;
-}
-
-div.lmsPingEnabled {
-	position: absolute;
-	left: 0px; bottom: 20px;
-	width: auto; height: 20px;
-	white-space: nowrap;
-	overflow: visible;
-	line-height: 20px;
-	vertical-align: middle;
-	padding: 0px;
-	padding-right: 2px;
-}
-
-div.lmsPingAutoScroll {
-	position: absolute;
-	left: 0px; bottom: 0px;
-	width: auto; height: 20px;
-	white-space: nowrap;
-	overflow: visible;
-	line-height: 20px;
-	vertical-align: middle;
-	padding: 0px;
-	padding-right: 2px;
+	margin-bottom: 5px;
 }
 
 div.olControlPanel {
@@ -214,7 +158,7 @@ div.olControlPanel {
 	display: block;
 	float: left;
 	width: 22px; height: 22px;
-	border: thin solid black;
+	border: 1px solid black;
 	margin: 1px;
 	background-position: center center;
 	background-repeat: no-repeat;

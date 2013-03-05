@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -31,7 +31,7 @@ $layout['pagetitle'] = 'LAN Management System';
 $layout['dbversion'] = $DB->GetDBVersion();
 $layout['dbtype'] = $CONFIG['database']['type'];
 
-if ($adminuser) {
+if (check_conf('privileges.superuser')) {
     $content = $LMS->CheckUpdates();
 
     if(isset($content['newer_version'])) {
@@ -47,13 +47,13 @@ if ($adminuser) {
 $SMARTY->assign('_dochref', is_dir('doc/html/'.$LMS->ui_lang) ? 'doc/html/'.$LMS->ui_lang.'/' : 'doc/html/en/');
 $SMARTY->assign('rtstats', $LMS->RTStats());
 
-if (!$CONFIG['phpui']['hide_sysinfo']) {
-    require_once LIB_DIR.'/Sysinfo.class.php';
-    $SI = new Sysinfo;
+if (!check_conf('privileges.hide_sysinfo')) {
+	require_once LIB_DIR.'/Sysinfo.class.php';
+	$SI = new Sysinfo;
 	$SMARTY->assign('sysinfo', $SI->get_sysinfo());
 }
 
-if (!$CONFIG['phpui']['hide_summaries']) {
+if (!check_conf('privileges.hide_summaries')) {
 	$SMARTY->assign('customerstats', $LMS->CustomerStats());
 	$SMARTY->assign('nodestats', $LMS->NodeStats());
 }

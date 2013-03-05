@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -26,7 +26,7 @@
 
 $id = $_GET['id'];
 
-$domain = $DB->GetRow('SELECT d.id, d.name, d.ownerid, d.description, d.type,
+$domain = $DB->GetRow('SELECT d.id, d.name, d.ownerid, d.description, d.mxbackup, d.type,
 		(SELECT COUNT(*) FROM passwd WHERE domainid = d.id) AS accountcnt, 
 		(SELECT COUNT(*) FROM records WHERE domain_id = d.id) AS recordscnt,
 		(SELECT COUNT(*) FROM aliases WHERE domainid = d.id) AS aliascnt, '

@@ -1,9 +1,9 @@
 <?php
 
 /*
- * LMS version 1.11-cvs
+ * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License Version 2 as
@@ -52,9 +52,9 @@ if (!empty($s_arr)) {
     }
 }
 
-$DB->Execute("ALTER TABLE promotionschemas ADD INDEX ctariffid (ctariffid)");
 $DB->Execute("ALTER TABLE promotionschemas ADD ctariffid int(11) DEFAULT NULL
     REFERENCES tariffs (id) ON DELETE RESTRICT ON UPDATE CASCADE");
+$DB->Execute("ALTER TABLE promotionschemas ADD INDEX ctariffid (ctariffid)");
 $DB->Execute("ALTER TABLE promotionschemas ADD continuation tinyint(1) DEFAULT NULL");
 $DB->Execute("UPDATE promotionschemas SET continuation = 1");
 

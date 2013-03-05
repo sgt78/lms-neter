@@ -23,8 +23,8 @@
 			<B>{trans("Submitter:")}</B>
 		</TD>
 		<TD WIDTH="99%" CLASS="fright">
-			<INPUT class="radio light" type="radio" name="message[sender]" id="sender0" value="user" CHECKED><A HREF="javascript:setSubmitter('sender0')">{trans("user")}</A></INPUT>
-			<INPUT class="radio light" type="radio" name="message[sender]" id="sender1" value="customer" {if $message.sender eq 'customer'}CHECKED{/if}><A HREF="javascript:setSubmitter('sender1')">{trans("customer")}</A></INPUT>
+			<INPUT class="radio light" type="radio" name="message[sender]" id="sender0" value="user" CHECKED><label for="sender0">{trans("user")}</label>
+			<INPUT class="radio light" type="radio" name="message[sender]" id="sender1" value="customer" {if $message.sender eq 'customer'}CHECKED{/if}><label for="sender1">{trans("customer")}</label>
 		</TD>
 	</TR>
 	<TR CLASS="light">
@@ -66,7 +66,7 @@
 	<TR CLASS="light">
 		<TD WIDTH="1%" CLASS="ftl" NOWRAP>
 			<IMG src="img/mail.gif" alt="">
-		        <A HREF="javascript:checkElement('notify');"><B>{trans("Notify users:")}</B></A>
+		        <label for="notify"><B>{trans("Notify users:")}</B></label>
 		</TD>
 		<TD WIDTH="99%" CLASS="ftr">
 			<INPUT type="checkbox" name="message[notify]" id="notify" value="1"{if $message.notify} CHECKED{/if}>
@@ -75,7 +75,7 @@
 	<TR CLASS="light">
 		<TD WIDTH="1%" CLASS="fleft" NOWRAP>
 			<IMG src="img/resolved.gif" alt="">
-		        <A HREF="javascript:checkElement('state');"><B>{trans("Resolve ticket:")}</B></A>
+		        <label for="state"><B>{trans("Resolve ticket:")}</B></label>
 		</TD>
 		<TD WIDTH="99%" CLASS="fright">
 			<INPUT type="checkbox" name="message[state]" id="state" value="{$smarty.const.RT_RESOLVED}"{if $message.state==$smarty.const.RT_RESOLVED} CHECKED{/if}>
@@ -99,11 +99,6 @@
 {include file="footer.html"}
 <SCRIPT type="text/javascript">
 <!--
-	function setSubmitter(id)
-	{
-		document.forms['message'].elements[id].checked = true;
-	}
-
 document.forms['message'].elements['message[subject]'].focus();
 //-->
 </SCRIPT>
