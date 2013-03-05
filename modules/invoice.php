@@ -113,7 +113,7 @@ elseif(isset($_GET['fetchallinvoices']))
 			SELECT 1 FROM customerassignments a
 		        JOIN excludedgroups e ON (a.customergroupid = e.customergroupid)
 			WHERE e.userid = lms_current_user() AND a.customerid = d.customerid)' 
-		.' ORDER BY CEIL(d.cdate/86400), d.id',
+		.' ORDER BY d.customerid, CEIL(d.cdate/86400), d.id',
 		array($_GET['from'], $_GET['to'], DOC_INVOICE, DOC_CNOTE));
 
 	if(!$ids)
