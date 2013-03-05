@@ -1,0 +1,144 @@
+{include file="header.html"}
+<center>
+
+<h3>
+Dane operatorów
+</h3>
+<br>
+Dodaj nowego
+<br>
+{$kom}
+<br>
+<hr>
+<form action="?m=v_ops" method="POST">
+<input type="hidden" name="id_op_add" value='{$dane.id}' id="id_op">
+<table width=40%> 
+<tr style="font-weight:bold">
+<td>
+Nazwa
+</td>
+<td>
+Adres
+</td>
+<td>
+Kod
+</td>
+<td>
+Poczta
+</td>
+<td>
+Operacje
+</td>
+</tr>
+<tr>
+<td id="uz">
+<input type="text" name="nazwa" value='' id="nazwa">
+</td>
+<td>
+<input type="text" name="adres" value='' id="adres">
+</td>
+<td id="uz">
+<input type="text" name="kod" value='' id="kod">
+</td>
+<td>
+<input type="text" name="poczta" value='' id="poczta">
+</td>
+
+<td>
+
+<input type="submit" value="Dodaj">
+
+</td>
+</tr>
+</table>
+</form>
+<hr>
+<br>
+{if $dane}
+<form action="?m=v_ops" method="POST">
+<input type="hidden" name="id_op" value='{$dane.id}' id="id_op">
+<table width=40%> 
+<tr style="font-weight:bold">
+<td>
+Nazwa
+</td>
+<td>
+Adres
+</td>
+<td>
+Kod
+</td>
+<td>
+Poczta
+</td>
+<td>
+Operacje
+</td>
+</tr>
+<tr>
+<td id="uz">
+<input type="text" name="nazwa" value='{$dane.nazwa}' id="nazwa">
+</td>
+<td>
+<input type="text" name="adres" value='{$dane.adres}' id="adres">
+</td>
+<td id="uz">
+<input type="text" name="kod" value='{$dane.kod}' id="kod">
+</td>
+<td>
+<input type="text" name="poczta" value='{$dane.poczta}' id="poczta">
+</td>
+
+<td>
+
+<input type="submit" value="OK">
+
+</td>
+</tr>
+</table>
+</form>
+<hr>
+{/if}
+<br><br>
+<table border=2 cellpadding=3 cellspacing=3 width=80%>
+<tr style="font-weight:bold">
+<td>
+Nazwa
+</td>
+<td>
+Adres
+</td>
+<td>
+Kod
+</td>
+<td>
+Poczta
+</td>
+<td>
+Operacje
+</td>
+</tr>
+
+
+{foreach from=$ops item=op name=dd}
+	
+	<tr >
+		<td>
+		{$op.nazwa}
+		</td>
+		
+		<td>{$op.adres}</td>
+		<td >{$op.kod}</td>
+		<td >{$op.poczta}</td>
+		<td>
+		
+		<a href="?m=v_ops&id={$op.id}">Edytuj</a> &nbsp;&nbsp;&nbsp;
+		<a href="?m=v_ops&del={$op.id}" onclick="if(!confirm('Czy napewno chcesz usunąć tego operatora?')) return false;">Usuń</a> 
+	</tr>
+	
+	{/foreach}
+	
+	
+</table>
+</center>
+{include file="footer.html"}

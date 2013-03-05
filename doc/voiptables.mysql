@@ -1,0 +1,109 @@
+-- 
+-- Struktura tabeli dla  `billing_details`
+-- 
+
+CREATE TABLE `billing_details` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `documents_id` int(10) unsigned NOT NULL,
+  `name` varchar(40) NOT NULL,
+  `value` decimal(9,2) unsigned NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `documents_id` (`documents_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+-- 
+-- Struktura tabeli dla  `v_fax`
+-- 
+
+CREATE TABLE `v_fax` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `nr_from` char(10) NOT NULL,
+  `nr_to` char(10) NOT NULL,
+  `data` int(10) unsigned NOT NULL,
+  `user` int(10) unsigned NOT NULL,
+  `uniqueid` char(8) NOT NULL,
+  `filename` varchar(30) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin2;
+
+-- --------------------------------------------------------
+
+-- 
+-- Struktura tabeli dla  `v_netlist`
+-- 
+
+CREATE TABLE `v_netlist` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `name` varchar(30) NOT NULL,
+  `start` char(10) NOT NULL,
+  `count` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+-- 
+-- Struktura tabeli dla  `v_tempuser`
+-- 
+
+CREATE TABLE `v_tempuser` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `dane` text NOT NULL,
+  `nr` char(10) NOT NULL,
+  `kod` char(32) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+-- 
+-- Struktura tabeli dla  `voip_finances`
+-- 
+
+CREATE TABLE `voip_finances` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `user` int(10) unsigned NOT NULL,
+  `date` int(10) unsigned NOT NULL,
+  `value` decimal(9,2) NOT NULL,
+  `desc` varchar(255) collate utf8_polish_ci NOT NULL,
+  `invoiceid` int(10) unsigned NOT NULL default '0',
+  `dead_in` int(10) unsigned NOT NULL default '0',
+  `dead_out` int(10) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+
+CREATE TABLE `platnosci` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `user` int(10) unsigned NOT NULL,
+  `date` int(10) unsigned NOT NULL,
+  `sid` char(32) collate utf8_polish_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+
+CREATE TABLE `v_exportedusers` (
+  `lmsid` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`lmsid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+
+CREATE TABLE `user_mov` (
+  `id` int(11) NOT NULL auto_increment,
+  `id_user` int(11) NOT NULL,
+  `numery` varchar(300) NOT NULL,
+  `nr_ewid` varchar(100) NOT NULL,
+  `oper` varchar(1000) NOT NULL,
+  `status` int(11) NOT NULL,
+  `data` date NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE `operators` (
+  `id` int(11) NOT NULL auto_increment,
+  `nazwa` varchar(122) NOT NULL,
+  `adres` varchar(122) NOT NULL,
+  `kod` varchar(11) NOT NULL,
+  `poczta` varchar(22) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+

@@ -26,7 +26,8 @@
 
 // REPLACE THIS WITH PATH TO YOUR CONFIG FILE
 
-$CONFIG_FILE = '/etc/lms/lms.ini';
+//$CONFIG_FILE = '/etc/lms/lms.ini';
+$CONFIG_FILE = '';
 
 // PLEASE DO NOT MODIFY ANYTHING BELOW THIS LINE UNLESS YOU KNOW
 // *EXACTLY* WHAT ARE YOU DOING!!!
@@ -139,6 +140,8 @@ require_once(LIB_DIR.'/LMS.class.php');
 require_once(LIB_DIR.'/Auth.class.php');
 require_once(LIB_DIR.'/accesstable.php');
 require_once(LIB_DIR.'/Session.class.php');
+require_once(LIB_DIR.'/LMSVOIP.class.php');
+require_once(LIB_DIR.'/floAPI.php');
 
 // Initialize Session, Auth and LMS classes
 
@@ -147,6 +150,7 @@ $AUTH = new Auth($DB, $SESSION);
 $LMS = new LMS($DB, $AUTH, $CONFIG);
 $LMS->ui_lang = $_ui_language;
 $LMS->lang = $_language;
+$voip=new LMSVOIP(&$DB,$CONFIG['phpui']);
 
 // Set some template and layout variables
 

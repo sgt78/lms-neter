@@ -1,0 +1,27 @@
+<!--// $Id: userbalancebox.html,v 1.9 2005/09/29 10:29:42 alec Exp $ //-->
+{box title="Usługi"}
+<table style="width: 100%;" cellpadding="3">
+{if $serv_err}
+<tr class="dark"><td colspan="4" style="color:#FF0000;">{$serv_err}</td></tr>
+{/if}
+	<tr class="darkest">
+		<td width="1%">Aktywna usługa</td>
+		<td width="1%">Data zakończenia</td>
+		<td width="1%">Pozostało zł</td>
+		<td width="98%" align="center">Wykup nową usługę</td>
+	</tr>
+	<tr class="dark">
+		<td class="nobr">{$service.name}</td>
+		<td class="nobr">{$service.deadline|date_format:'%Y-%m-%d %H:%M:%S'}</td>
+		<td class="nobr">{$service.left}</td>
+		<td align="center">
+		<form action="?m=voip" method="post">
+		{section name=dd loop=$service.new}
+		<label><input type="radio" name="new" value="{$service.new[dd].id}"{if $smarty.section.dd.index == 1} checked="checked"{/if}>{$service.new[dd].name}</label>
+		{/section}
+		<br><input type="submit" value="Wykup">
+		</form>
+		</td>
+	</tr>
+</table>
+{/box}

@@ -13,6 +13,13 @@
 			{include file="customernodesbox.html"}
 		</TD>
 	</TR>
+{if $isvoip}
+	<TR>
+		<TD WIDTH="100%">
+			{include file="customersipbox.html"}
+		</TD>
+	</TR>
+{/if}
 	<TR>
 		<TD WIDTH="100%">
 			{include file="customervoipaccountsbox.html"}
@@ -55,5 +62,17 @@
 			{include file="customeractions.html"}
 		</TD>
 	</TR>
+{if $isvoip}
+<TR>
+                <TD WIDTH="100%" COLSPAN="2">
+{include file="v_customerbalancebox.html" limit=-10}
+                </TD>
+        </TR>
+        <TR>
+                <TD WIDTH="100%" COLSPAN="2">
+{include file="v_customercdr.html"}
+                </TD>
+        </TR>
+{/if}
 </TABLE>
 {include file="footer.html"}
