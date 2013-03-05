@@ -95,17 +95,17 @@ function invoice_main_form_fill($x,$y,$scale)
 
 function invoice_dates($x,$y)
 {
-    global $invoice,$pdf;
-    $font_size=12;
-    text_align_right($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Settlement date:')).' ');
-    $y=$y-text_align_left($x,$y,$font_size,date("Y/m/d",$invoice['cdate']));
-    text_align_right($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Sale date:')).' ');
-    $y=$y-text_align_left($x,$y,$font_size,date("Y/m/d",$invoice['cdate']));
-    text_align_right($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Deadline:')).' ');
-    $y=$y-text_align_left($x,$y,$font_size,date("Y/m/d",$invoice['pdate']));
-    text_align_right($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Payment type:')).' ');
-    $y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['paytypename']));
-    return $y;
+	global $invoice, $pdf;
+	$font_size = 12;
+	text_align_right($x, $y, $font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", trans('Settlement date:')).' ');
+	$y = $y - text_align_left($x, $y, $font_size, date("Y/m/d", $invoice['cdate']));
+	text_align_right($x, $y, $font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", trans('Sale date:')).' ');
+	$y = $y - text_align_left($x, $y, $font_size, date("Y/m/d", $invoice['sdate']));
+	text_align_right($x, $y, $font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", trans('Deadline:')).' ');
+	$y = $y - text_align_left($x, $y, $font_size, date("Y/m/d", $invoice['pdate']));
+	text_align_right($x, $y, $font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", trans('Payment type:')).' ');
+	$y = $y - text_align_left($x, $y, $font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", $invoice['paytypename']));
+	return $y;
 }
 
 function invoice_buyer($x,$y) 
@@ -172,24 +172,28 @@ function invoice_title($x,$y)
 
 function invoice_address_box($x,$y) 
 {
-    global $invoice,$pdf;
-    $font_size=12;
+	global $invoice, $pdf;
+	$font_size = 12;
 /*
-    $invoice_name = $invoice['name'];
-    if (strlen($invoice_name)>25) 
-        $invoice_name = preg_replace('/(.{25})/',"$1<i>&gt;</i>\n",$invoice_name);
-    $tmp = preg_split('/\r?\n/', iconv("UTF-8","ISO-8859-2",$invoice_name));
-    foreach ($tmp as $line) $y=$y-text_align_left($x,$y,$font_size,"<b>".$line."</b>");
+	$invoice_name = $invoice['name'];
+	if (strlen($invoice_name)>25) 
+		$invoice_name = preg_replace('/(.{25})/',"$1<i>&gt;</i>\n",$invoice_name);
+	$tmp = preg_split('/\r?\n/', iconv("UTF-8","ISO-8859-2",$invoice_name));
+	foreach ($tmp as $line) $y=$y-text_align_left($x,$y,$font_size,"<b>".$line."</b>");
 */
-    $y = text_wrap($x, $y, 160, $font_size, '<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['name'].'</b>'), 'left');
-    if ($invoice['post_address']) {
-	    $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv('UTF-8','ISO-8859-2//TRANSLIT',$invoice['post_address']).'</b>');
-    	$y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv('UTF-8','ISO-8859-2//TRANSLIT',$invoice['post_zip']." ".$invoice['post_city']).'</b>');
-    } else {
-	    $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv('UTF-8','ISO-8859-2//TRANSLIT',$invoice['address']).'</b>');
-    	$y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv('UTF-8','ISO-8859-2//TRANSLIT',$invoice['zip']." ".$invoice['city']).'</b>');
-    }
-    return $y;
+	if ($invoice['post_name'] || $invoice['post_address']) {
+		if ($invoice['post_name'])
+			$y = text_wrap($x, $y, 160, $font_size, '<b>'.iconv('UTF-8', 'ISO-8859-2//TRANSLIT', $invoice['post_name']).'</b>', 'left');
+		else
+			$y = text_wrap($x, $y, 160, $font_size, '<b>'.iconv('UTF-8', 'ISO-8859-2//TRANSLIT', $invoice['name']).'</b>', 'left');
+		$y = $y - text_align_left($x, $y, $font_size, '<b>'.iconv('UTF-8','ISO-8859-2//TRANSLIT',$invoice['post_address']).'</b>');
+		$y = $y - text_align_left($x, $y, $font_size, '<b>'.iconv('UTF-8','ISO-8859-2//TRANSLIT',$invoice['post_zip']." ".$invoice['post_city']).'</b>');
+	} else {
+		$y = text_wrap($x, $y, 160, $font_size, '<b>'.iconv('UTF-8', 'ISO-8859-2//TRANSLIT', $invoice['name']).'</b>', 'left');
+		$y = $y - text_align_left($x, $y, $font_size, '<b>'.iconv('UTF-8','ISO-8859-2//TRANSLIT',$invoice['address']).'</b>');
+		$y = $y - text_align_left($x, $y, $font_size, '<b>'.iconv('UTF-8','ISO-8859-2//TRANSLIT',$invoice['zip']." ".$invoice['city']).'</b>');
+	}
+	return $y;
 }
 
 function invoice_data_row($x,$y,$width,$font_size,$margin,$data,$t_width,$t_justify) 

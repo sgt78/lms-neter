@@ -730,8 +730,8 @@ void reload(GLOBAL *g, struct payments_module *p)
 
 					// prepare insert to 'invoices' table
 					g->db_pexec(g->conn, "INSERT INTO documents (number, numberplanid, type, countryid, divisionid, "
-						"customerid, name, address, zip, city, ten, ssn, cdate, paytime, paytype) "
-						"VALUES (?, ?, 1, ?, ?, ?, '? ?', '?', '?', '?', '?', '?', ?, ?, ?)",
+						"customerid, name, address, zip, city, ten, ssn, cdate, sdate, paytime, paytype) "
+						"VALUES (?, ?, 1, ?, ?, ?, '? ?', '?', '?', '?', '?', '?', ?, ?, ?, ?)",
 						itoa(number),
 						numberplanid,
 						countryid,
@@ -744,6 +744,7 @@ void reload(GLOBAL *g, struct payments_module *p)
 						g->db_get_data(res,i,"city"),
 						g->db_get_data(res,i,"ten"),
 						g->db_get_data(res,i,"ssn"),
+						currtime,
 						currtime,
 						paytime,
 						paytype_str
@@ -773,7 +774,7 @@ void reload(GLOBAL *g, struct payments_module *p)
 					    "WHERE docid = ? AND itemid = ?",
 					    value, invoiceid, g->db_get_data(result,0,"itemid"));
 				}
-				else 
+				else if (docid)
 				{
 					itemid++;
 
@@ -864,7 +865,7 @@ void reload(GLOBAL *g, struct payments_module *p)
 						    "WHERE docid = ? AND itemid = ?",
 						    value, invoiceid, g->db_get_data(result,0,"itemid"));
 					}
-					else
+					else if (docid)
 					{
 						itemid++;
 

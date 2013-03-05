@@ -88,6 +88,7 @@ switch($type)
 				$SMARTY->assign('customerlist', $LMS->GetCustomerList($_POST['order'].','.$_POST['direction'], $_POST['filter'], $_POST['network'], $_POST['customergroup'], $search, $date, 'AND', $_POST['nodegroup']));
 			break;
 			case 6:
+			case 11:
 				$layout['pagetitle'] = trans('Indebted Customers List $0$1',($_POST['network'] ? trans(' (Net: $0)',$LMS->GetNetworkName($_POST['network'])) : ''),($_POST['customergroup'] ? trans('(Group: $0)',$LMS->CustomergroupGetName($_POST['customergroup'])) : ''));
 				$SMARTY->assign('customerlist', $LMS->GetCustomerList($_POST['order'].','.$_POST['direction'], $_POST['filter'], $_POST['network'], $_POST['customergroup'], $search, $date, 'AND', $_POST['nodegroup']));
 			break;
@@ -101,7 +102,7 @@ switch($type)
 					unset($customerlist['below']);
 					unset($customerlist['over']);
 					unset($customerlist['direction']);
-	
+
 					foreach($customerlist as $idx => $row)
 						if(! $row['account'])
 							$ncustomerlist[] = $customerlist[$idx];
@@ -133,11 +134,13 @@ switch($type)
 			$date['to'] = mktime(23,59,59); //koniec dnia dzisiejszego
 		}
 
-		$layout['pagetitle'] = trans('Customer $0 Balance Sheet ($1 to $2)',$LMS->GetCustomerName($_POST['customer']), ($from ? $from : ''), $to);
-		
+		$layout['pagetitle'] = trans('Customer $0 Balance Sheet ($1 to $2)',
+		    $LMS->GetCustomerName($_POST['customer']), ($from ? $from : ''), $to);
+
 		$id = $_POST['customer'];
 
-		if($tslist = $DB->GetAll('SELECT cash.id AS id, time, cash.value AS value, taxes.label AS taxlabel, customerid, comment, name AS username 
+		if($tslist = $DB->GetAll('SELECT cash.id AS id, time, cash.value AS value,
+		        taxes.label AS taxlabel, customerid, comment, name AS username 
 				    FROM cash 
 				    LEFT JOIN taxes ON (taxid = taxes.id)
 				    LEFT JOIN users ON users.id=userid 

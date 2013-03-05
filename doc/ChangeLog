@@ -1,5 +1,24 @@
 $Id$
 
+version 1.11.13 Dira (2011-04-07)
+
+  - contrib/cutoff2: Fixed "Column 'period' in where clause is ambiguous" [alec]
+  - BTS#0000862: Fixed bug in SQL query on MySQL [alec]
+  - customers: add post name [chilan]
+  - receipts: replaced stamp by division/company data [chilan]
+  - documents: added sale date [chilan]
+  - BTS#0000863: changed temporary referenced $number variable to actual variable [chilan]
+  - Fixed performance of nodes quick-searching on MySQL [alec]
+  - Fix regression where wasn't possible to view information about deleted customer [alec]
+  - Added searching by option name in configuration options list [alec]
+  - Fixed popups height on Internet Explorer [alec]
+  - Added possibility to select invoices paytime from calendar popup [alec]
+  - lms-payments: Added option for setting sale date to the 1st day of next month [alec]
+  - Added sale date and deadline date on Sale Registry printouts with possibility
+    to choose which date will be used to sort the list [alec]
+  - Enable possibility to edit/note of accounted invoices [alec]
+  - Added 'in debt above 100%' filter on customer list [alec]
+
 version 1.11.12 Aris (2011-03-18)
 
   - Don't send mail to deleted users [alec]

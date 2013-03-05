@@ -57,17 +57,19 @@ switch($action)
 {
 	case 'init':
 
-    		unset($invoice);
-    		unset($contents);
-    		unset($customer);
-    		unset($error);
+		unset($invoice);
+		unset($contents);
+		unset($customer);
+		unset($error);
 
 		// get default invoice's numberplanid and next number
-		$invoice['cdate'] = time();
+		$currtime = time();
+		$invoice['cdate'] = $currtime;
+		$invoice['sdate'] = $currtime;
 		$invoice['paytime'] = $CONFIG['invoices']['paytime'];
 //		$invoice['paytype'] = $CONFIG['invoices']['paytype'];
 
-		if(isset($_GET['customerid']) && $_GET['customerid'] != '' && $LMS->CustomerExists($_GET['customerid']))
+		if(!empty($_GET['customerid']) && $LMS->CustomerExists($_GET['customerid']))
 		{
 			$customer = $LMS->GetCustomer($_GET['customerid'], true);
 
@@ -115,7 +117,7 @@ switch($action)
 	break;
 
 	case 'additemlist':
-	
+
 		if($marks = $_POST['marks'])
 		{
 			foreach($marks as $id)
@@ -154,25 +156,45 @@ switch($action)
 		unset($invoice); 
 		unset($customer);
 		unset($error);
-		
+
 		if($invoice = $_POST['invoice'])
 			foreach($invoice as $key => $val)
 				$invoice[$key] = $val;
 
 		$invoice['customerid'] = $_POST['customerid'];
-		
+
+		$currtime = time();
+
+		if($invoice['sdate'])
+		{
+			list($syear, $smonth, $sday) = explode('/', $invoice['sdate']);
+			if(checkdate($smonth, $sday, $syear)) 
+			{
+				$invoice['sdate'] = mktime(date('G', $currtime), date('i', $currtime), date('s', $currtime), $smonth, $sday, $syear);
+				$scurrmonth = $smonth;
+			}
+			else
+			{
+				$error['sdate'] = trans('Incorrect date format!');
+				$invoice['sdate'] = $currtime;
+				break;
+			}
+		}
+		else
+			$invoice['sdate'] = $currtime;
+
 		if($invoice['cdate'])
 		{
 			list($year, $month, $day) = explode('/', $invoice['cdate']);
 			if(checkdate($month, $day, $year)) 
 			{
-				$invoice['cdate'] = mktime(date('G',time()),date('i',time()),date('s',time()),$month,$day,$year);
+				$invoice['cdate'] = mktime(date('G', $currtime), date('i', $currtime), date('s', $currtime), $month, $day, $year);
 				$currmonth = $month;
 			}
 			else
 			{
 				$error['cdate'] = trans('Incorrect date format!');
-				$invoice['cdate'] = time();
+				$invoice['cdate'] = $currtime;
 				break;
 			}
 		}
@@ -184,12 +206,13 @@ switch($action)
 
 			if($invoice['cdate'] < $maxdate)
 			{
-				$error['cdate'] = trans('Last date of invoice settlement is $0. If sure, you want to write invoice with date of $1, then click "Submit" again.',date('Y/m/d H:i', $maxdate), date('Y/m/d H:i', $invoice['cdate']));
+				$error['cdate'] = trans('Last date of invoice settlement is $0. If sure, you want to write invoice with date of $1, then click "Submit" again.',
+					date('Y/m/d H:i', $maxdate), date('Y/m/d H:i', $invoice['cdate']));
 				$invoice['cdatewarning'] = 1;
 			}
 		}
 		elseif(!$invoice['cdate'])
-			$invoice['cdate'] = time();
+			$invoice['cdate'] = $currtime;
 
 		if($invoice['number'])
 		{
@@ -224,80 +247,81 @@ switch($action)
 
 	case 'save':
 
-		if($contents && $customer)
+		if (empty($contents) || empty($customer))
+		    break;
+
+        unset($error);
+
+		// set paytime
+		if(!empty($invoice['paytime_default']))
 		{
-            unset($error);
-
-			// set paytime
-			if(!empty($invoice['paytime_default']))
-			{
-				if($customer['paytime'] != -1)
-					$invoice['paytime'] = $customer['paytime'];
-				elseif(($paytime = $DB->GetOne('SELECT inv_paytime FROM divisions 
-					WHERE id = ?', array($customer['divisionid']))) !== NULL)
-					$invoice['paytime'] = $paytime;
-				else
-					$invoice['paytime'] = $CONFIG['invoices']['paytime'];
-			}
-			// set paytype
-			if(empty($invoice['paytype']))
-			{
-				if($customer['paytype'])
-					$invoice['paytype'] = $customer['paytype'];
-				elseif($paytype = $DB->GetOne('SELECT inv_paytype FROM divisions 
-					WHERE id = ?', array($customer['divisionid'])))
-					$invoice['paytype'] = $paytype;
-				else if (($paytype = intval($CONFIG['invoices']['paytype'])) && isset($PAYTYPES[$paytype]))
-					$invoice['paytype'] = $paytype;
-			    else
-			        $error['paytype'] = trans('Default payment type not defined!');
-			}
-
-            if ($error)
-                break;
-
-			$DB->BeginTrans();
-			$DB->LockTables(array('documents', 'cash', 'invoicecontents', 'numberplans', 'divisions'));
-
-			if(!$invoice['number'])
-				$invoice['number'] = $LMS->GetNewDocumentNumber(DOC_INVOICE, $invoice['numberplanid'], $invoice['cdate']);
+			if($customer['paytime'] != -1)
+				$invoice['paytime'] = $customer['paytime'];
+			elseif(($paytime = $DB->GetOne('SELECT inv_paytime FROM divisions 
+				WHERE id = ?', array($customer['divisionid']))) !== NULL)
+				$invoice['paytime'] = $paytime;
 			else
-			{
-				if(!preg_match('/^[0-9]+$/', $invoice['number']))
-					$error['number'] = trans('Invoice number must be integer!');
-				elseif($LMS->DocumentExists($invoice['number'], DOC_INVOICE, $invoice['numberplanid'], $invoice['cdate']))
-					$error['number'] = trans('Invoice number $0 already exists!', $invoice['number']);
-
-				if($error) {
-					$invoice['number'] = $LMS->GetNewDocumentNumber(DOC_INVOICE, $invoice['numberplanid'], $invoice['cdate']);
-					$error = null;
-			    }
-			}
-
-			$invoice['type'] = DOC_INVOICE;
-			$iid = $LMS->AddInvoice(array('customer' => $customer, 'contents' => $contents, 'invoice' => $invoice));
-
-			// usuwamy wczesniejsze zobowiazania bez faktury
-			// @todo: można to zrobić jednym zapytaniem
-			foreach($contents as $item)
-				if(isset($item['cashid']))
-					$DB->Execute('DELETE FROM cash WHERE id = ?', array($item['cashid']));
-
-			$DB->UnLockTables();
-			$DB->CommitTrans();
-
-			$SESSION->remove('invoicecontents');
-			$SESSION->remove('invoicecustomer');
-			$SESSION->remove('invoice');
-			$SESSION->remove('invoicenewerror');
-
-			if(isset($_GET['print']))
-				$SESSION->save('invoiceprint', array('invoice' => $iid,
-					'original' => !empty($_GET['original']) ? 1 : 0,
-					'copy' => !empty($_GET['copy']) ? 1 : 0));
-
-			$SESSION->redirect('?m=invoicenew&action=init');
+				$invoice['paytime'] = $CONFIG['invoices']['paytime'];
 		}
+		// set paytype
+		if(empty($invoice['paytype']))
+		{
+			if($customer['paytype'])
+				$invoice['paytype'] = $customer['paytype'];
+			elseif($paytype = $DB->GetOne('SELECT inv_paytype FROM divisions 
+				WHERE id = ?', array($customer['divisionid'])))
+				$invoice['paytype'] = $paytype;
+			else if (($paytype = intval($CONFIG['invoices']['paytype'])) && isset($PAYTYPES[$paytype]))
+				$invoice['paytype'] = $paytype;
+		    else
+		        $error['paytype'] = trans('Default payment type not defined!');
+		}
+
+        if ($error)
+            break;
+
+		$DB->BeginTrans();
+		$DB->LockTables(array('documents', 'cash', 'invoicecontents', 'numberplans', 'divisions'));
+
+		if(!$invoice['number'])
+			$invoice['number'] = $LMS->GetNewDocumentNumber(DOC_INVOICE, $invoice['numberplanid'], $invoice['cdate']);
+		else {
+			if(!preg_match('/^[0-9]+$/', $invoice['number']))
+				$error['number'] = trans('Invoice number must be integer!');
+			elseif($LMS->DocumentExists($invoice['number'], DOC_INVOICE, $invoice['numberplanid'], $invoice['cdate']))
+				$error['number'] = trans('Invoice number $0 already exists!', $invoice['number']);
+
+			if($error) {
+				$invoice['number'] = $LMS->GetNewDocumentNumber(DOC_INVOICE, $invoice['numberplanid'], $invoice['cdate']);
+				$error = null;
+			}
+		}
+
+		$invoice['type'] = DOC_INVOICE;
+		$iid = $LMS->AddInvoice(array('customer' => $customer, 'contents' => $contents, 'invoice' => $invoice));
+
+		// usuwamy wczesniejsze zobowiazania bez faktury
+		foreach ($contents as $item)
+			if (!empty($item['cashid']))
+			    $ids[] = intval($item['cashid']);
+
+        if (!empty($ids))
+				$DB->Execute('DELETE FROM cash WHERE id IN ('.implode(',', $ids).')');
+
+		$DB->UnLockTables();
+		$DB->CommitTrans();
+
+		$SESSION->remove('invoicecontents');
+		$SESSION->remove('invoicecustomer');
+		$SESSION->remove('invoice');
+		$SESSION->remove('invoicenewerror');
+
+		if(isset($_GET['print']))
+			$SESSION->save('invoiceprint', array('invoice' => $iid,
+				'original' => !empty($_GET['original']) ? 1 : 0,
+				'copy' => !empty($_GET['copy']) ? 1 : 0));
+
+		$SESSION->redirect('?m=invoicenew&action=init');
 	break;
 }
 

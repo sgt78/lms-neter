@@ -28,7 +28,7 @@ if(!empty($_POST['marks']))
 {
 	$marks = array();
         foreach($_POST['marks'] as $id => $mark)
-		$marks[] = intval($mark);
+    		$marks[] = intval($mark);
 
         if ($list = $DB->GetAll('SELECT c.filename, c.md5sum, c.contenttype
 		FROM documentcontents c
@@ -39,7 +39,7 @@ if(!empty($_POST['marks']))
 		ORDER BY d.customerid', array($AUTH->id)))
 	{
 		$ctype = $list[0]['contenttype'];
-		
+
 		if (!preg_match('/^text/i', $ctype))
 		{
 			if (sizeof($list))

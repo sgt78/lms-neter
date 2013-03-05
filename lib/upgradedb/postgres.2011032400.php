@@ -5,8 +5,6 @@
  *
  *  (C) Copyright 2001-2011 LMS Developers
  *
- *  Please, see the doc/AUTHORS for more information about authors!
- *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License Version 2 as
  *  published by the Free Software Foundation.
@@ -21,28 +19,23 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  *  USA.
  *
- *  $Id$
  */
 
-if(isset($_GET['is_sure']))
-{
-	$regid = $DB->GetOne('SELECT regid FROM cashreglog WHERE id = ?', array(intval($_GET['id'])));
+$DB->BeginTrans();
 
-	if(!$regid)
-	{
-    		$SESSION->redirect('?m=cashreglist');
-	}
+$DB->Execute("
+    DROP VIEW customersview;
+    ALTER TABLE customers ADD post_name varchar(255) DEFAULT NULL;
+    CREATE VIEW customersview AS
+        SELECT c.* FROM customers c
+        WHERE NOT EXISTS (
+            SELECT 1 FROM customerassignments a
+            JOIN excludedgroups e ON (a.customergroupid = e.customergroupid)
+            WHERE e.userid = lms_current_user() AND a.customerid = c.id);
+");
 
-	if($DB->GetOne('SELECT rights FROM cashrights WHERE userid=? AND regid=?', array($AUTH->id, $regid))<256)
-	{
-	        $SMARTY->display('noaccess.html');
-		$SESSION->close();
-		die;
-	}
+$DB->Execute("UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?", array('2011032400', 'dbversion'));
 
-	$DB->Execute('DELETE FROM cashreglog WHERE id = ?', array(intval($_GET['id'])));
-}
-
-$SESSION->redirect('?'.$SESSION->get('backto'));
+$DB->CommitTrans();
 
 ?>

@@ -24,7 +24,7 @@
 		</TD>
 		<TD WIDTH="1%" NOWRAP ALIGN="LEFT" VALIGN="TOP" CLASS="sdr">
 			{$invoice.cdate|date_format:"%Y/%m/%d"}{if $invoice.division_cplace neq ""}, {$invoice.division_cplace}{/if}<BR>
-			{$invoice.cdate|date_format:"%Y/%m/%d"}<BR>
+			{$invoice.sdate|date_format:"%Y/%m/%d"}<BR>
 			{$invoice.pdate|date_format:"%Y/%m/%d"}<BR>
 			{$invoice.paytypename}
 		</TD>
@@ -54,12 +54,14 @@
 			<BR>
 			<BR>
 			<BR>
-			<B>{$invoice.name}<BR>
-			{if $invoice.post_address}
+			<B>
+			{if $invoice.post_name || $invoice.post_address}
+    			{if $invoice.post_name}{$invoice.post_name}{else}{$invoice.name}{/if}<BR>
     			{$invoice.post_address}<BR>
 	    		{$invoice.post_zip} {$invoice.post_city}
 			{else}
-    			{$invoice.address}<BR>
+			{$invoice.name}<BR>
+			{$invoice.address}<BR>
 	    		{$invoice.zip} {$invoice.city}
 			{/if}</B>
 		</TD>

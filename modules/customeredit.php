@@ -41,8 +41,11 @@ elseif(isset($_POST['customerdata']) && !isset($_GET['newcontact']))
 		if($key != 'uid' && $key != 'contacts')
 			$customerdata[$key] = trim($value);
 
-	if($customerdata['lastname']=='')
-		$error['customername'] = trans('\'Last/Company Name\' and \'First Name\' fields cannot be empty!');
+	if($customerdata['lastname'] == '')
+		$error['lastname'] = trans('Last/Company name cannot be empty!');
+
+    if($customerdata['name'] == '' && !$customerdata['type'])
+        $error['name'] = trans('First name cannot be empty!');
 
 	if($customerdata['address']=='')
 		$error['address'] = trans('Address required!');
@@ -128,12 +131,13 @@ elseif(isset($_POST['customerdata']) && !isset($_GET['newcontact']))
 		if($customerdata['cutoffstop'])
 			$customerdata['cutoffstop'] = mktime(23,59,59,date('m'), date('d') + $customerdata['cutoffstop']);
 
-		$consent = $DB->GetOne('SELECT consentdate FROM customers WHERE id = ?', array($customerdata['id']));
-
 		if(!isset($customerdata['consentdate']))
 			$customerdata['consentdate'] = 0;
-		elseif($consent)
-			$customerdata['consentdate'] = $consent;
+		else {
+    		$consent = $DB->GetOne('SELECT consentdate FROM customers WHERE id = ?', array($customerdata['id']));
+            if ($consent)
+			    $customerdata['consentdate'] = $consent;
+        }
 
 		if(!isset($customerdata['divisionid']))
 			$customerdata['divisionid'] = 0;

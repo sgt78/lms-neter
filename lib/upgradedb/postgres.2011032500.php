@@ -5,8 +5,6 @@
  *
  *  (C) Copyright 2001-2011 LMS Developers
  *
- *  Please, see the doc/AUTHORS for more information about authors!
- *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License Version 2 as
  *  published by the Free Software Foundation.
@@ -21,28 +19,16 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  *  USA.
  *
- *  $Id$
  */
 
-if(isset($_GET['is_sure']))
-{
-	$regid = $DB->GetOne('SELECT regid FROM cashreglog WHERE id = ?', array(intval($_GET['id'])));
+$DB->BeginTrans();
 
-	if(!$regid)
-	{
-    		$SESSION->redirect('?m=cashreglist');
-	}
+$DB->Execute("ALTER TABLE documents ADD sdate integer DEFAULT 0 NOT NULL");
 
-	if($DB->GetOne('SELECT rights FROM cashrights WHERE userid=? AND regid=?', array($AUTH->id, $regid))<256)
-	{
-	        $SMARTY->display('noaccess.html');
-		$SESSION->close();
-		die;
-	}
+$DB->Execute("UPDATE documents SET sdate = cdate WHERE type IN (1, 3)"); // DOC_INVOICE/DOC_CNOTE
 
-	$DB->Execute('DELETE FROM cashreglog WHERE id = ?', array(intval($_GET['id'])));
-}
+$DB->Execute("UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?", array('2011032500', 'dbversion'));
 
-$SESSION->redirect('?'.$SESSION->get('backto'));
+$DB->CommitTrans();
 
 ?>
