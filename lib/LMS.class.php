@@ -2223,7 +2223,7 @@ class LMS {
 			$result['pesel'] = $result['ssn'];
 			$result['nip'] = $result['ten'];
 			if ($result['post_name'] || $result['post_address']) {
-				$reulst['serviceaddr'] = $result['post_name'];
+				$result['serviceaddr'] = $result['post_name'];
 				if ($result['post_address'])
 					$result['serviceaddr'] .= "\n" . $result['post_address'];
 				if ($result['post_zip'] && $result['post_city'])
@@ -3942,11 +3942,13 @@ class LMS {
 		}
 
 		$error = $mail_object = & Mail::factory('smtp', $params);
-		if (PEAR::isError($error))
+		//if (PEAR::isError($error))
+		if (is_a($error, 'PEAR_Error'))
 			return $error->getMessage();
 
 		$error = $mail_object->send($recipients, $headers, $buf);
-		if (PEAR::isError($error))
+		//if (PEAR::isError($error))
+		if (is_a($error, 'PEAR_Error'))
 			return $error->getMessage();
 		else
 			return MSG_SENT;

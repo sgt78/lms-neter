@@ -32,6 +32,16 @@ use LWP::UserAgent;
 use Time::Local;
 use MIME::QuotedPrint;
 use Mail::Sender;
+use IO::Socket::SSL;
+use Net::SSLeay;
+
+# set CA.cert file for self signed certification - fix problems with new version IO::Socket::SSL
+BEGIN {
+	IO::Socket::SSL::set_ctx_defaults(
+		verify_mode => Net::SSLeay->VERIFY_PEER(),
+		ca_file => "/etc/ssl/certs/ca.cert"
+	);
+}
 
 my $_version = '1.11-git';
 
@@ -256,6 +266,7 @@ while(my $row = $dbq->fetchrow_hashref())
 			authid => $smtp_user,
 			authpwd => $smtp_pass,
 			on_errors => undef,
+			tls_allowed => 1,
 #			debug_level => 4,
 #			debug => './log.txt',
 	        })) {
@@ -277,7 +288,6 @@ while(my $row = $dbq->fetchrow_hashref())
 				        ctype => $ftype,
 				        encoding => $fencoding,
 					disposition => 'attachment; filename="invoice_'.$row->{'id'}.'.'.$fext.'"',
-					charset => 'UTF-8',
 					msg => $response->content,
 				});
 				$sender->EndPart($ftype);
