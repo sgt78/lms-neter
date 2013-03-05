@@ -356,6 +356,12 @@ $menu = array(
 					'tip' => trans('Lists and reports printing'),
 					'prio' => 130,
 				),
+				array(
+					'name' => 'Wczytaj raport PKO',
+					'link' => '?m=raportpko',
+					'tip' => 'Pozwala wczytać wyciąg z banku',
+					'prio' => 140,
+				),
 			),
 		),
 

@@ -108,7 +108,7 @@ if(isset($_POST['document']))
 	switch($_POST['filter'])
 	{
 		case 0:
-			$customerlist = $LMS->GetCustomerList(NULL, $_POST['filter'], $_POST['network'], $_POST['customergroup']);
+			$customerlist = $LMS->GetCustomerList(NULL, $_POST['filter'], $_POST['network'], $_POST['customergroup'],NULL,NULL,"AND",NULL,NULL,$_POST['tariffs']);
 		break;
 		case 1:
 			$customerlist = $LMS->GetCustomerList(NULL, $_POST['filter']);
@@ -312,6 +312,7 @@ if($dirs = getdir(DOC_DIR.'/templates', '^[a-z0-9_-]+$'))
 if($docengines) asort($docengines);
 
 $SMARTY->assign('networks', $LMS->GetNetworks());
+$SMARTY->assign('tariffs', $LMS->GetTariffs());
 $SMARTY->assign('customergroups', $LMS->CustomergroupGetAll());
 $SMARTY->assign('error', $error);
 $SMARTY->assign('numberplans', $numberplans);

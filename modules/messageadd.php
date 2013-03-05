@@ -27,13 +27,15 @@
 function GetRecipients($filter, $type=MSG_MAIL)
 {
 	global $DB, $LMS, $CONFIG, $LANGDEFS, $_language;
-	
+
 	$group = $filter['group'];
 	$network = $filter['network'];
 	$customergroup = $filter['customergroup'];
 	$nodegroup = $filter['nodegroup'];
 	$linktype = $filter['linktype'];
-	
+	$consent = $filter['consent'];
+ 	$frombalance =  $filter['frombalance'];
+ 	$tobalance =  $filter['tobalance'];
 	if($group == 4)
 	{
 		$deleted = 1;
@@ -60,17 +62,18 @@ function GetRecipients($filter, $type=MSG_MAIL)
 		else
 			$smswhere = "WHERE REPLACE(REPLACE(phone, '-', ''), ' ', '') REGEXP '^(\\\\+[0-9]{2}|0)?"
 				.$LANGDEFS[$_language]['mobile'].'$\'';
-	
-		$smstable = 'JOIN (SELECT MIN(phone) AS phone, customerid
+	#Zdanowski $smstable = 'JOIN (SELECT MIN(phone) AS phone, customerid
+	#FROM customercontacts '.$smswhere.'
+	#GROUP BY customerid
+		$smstable = 'JOIN (SELECT phone AS phone, customerid
 				FROM customercontacts '.$smswhere.'
-				GROUP BY customerid
-			) x ON (x.customerid = c.id)';
+			AND name NOT LIKE "%#no_sms%") x ON (x.customerid = c.id)';
 	}
 	
 	$recipients = $DB->GetAll('SELECT c.id, email, pin, '
 		.($type==MSG_SMS ? 'x.phone, ': '')
 		.$DB->Concat('c.lastname', "' '", 'c.name').' AS customername,
-		COALESCE(b.value, 0) AS balance
+		COALESCE(b.value, 0) AS balance, divisionid
 		FROM customersview c 
 		LEFT JOIN (
 			SELECT SUM(value) AS value, customerid
@@ -78,6 +81,9 @@ function GetRecipients($filter, $type=MSG_MAIL)
 		) b ON (b.customerid = c.id) '
 		.(!empty($smstable) ? $smstable : '')
 		.'WHERE deleted = '.$deleted
+ 		.($frombalance ? ' AND value >'.$frombalance : '')
+ 		.($tobalance ? ' AND value <'.$tobalance : '')
+		.($consent ? ' AND mailingnotice=1' : '')
 		.($type == MSG_MAIL ? ' AND email != \'\'' : '')
 		.($group!=0 ? ' AND status = '.$group : '')
 		.($network ? ' AND c.id IN (SELECT ownerid FROM nodes WHERE 
@@ -115,11 +121,12 @@ function GetRecipient($customerid, $type=MSG_MAIL)
 			$smswhere = " AND REPLACE(REPLACE(phone, '-', ''), ' ', '') REGEXP '^(\\\\+[0-9]{2}|0)?"
 				.$LANGDEFS[$_language]['mobile'].'$\'';
 		}
+#ZDANOWSKI ORDER BY phone LIMIT 1
 		
 		$smstable = 'JOIN (SELECT phone, customerid
 				FROM customercontacts 
 				WHERE customerid = '.$customerid . $smswhere
-				.' ORDER BY phone LIMIT 1
+				.'AND name NOT LIKE "%#no_sms%" ORDER BY phone 
 			) x ON (x.customerid = c.id)';
 	}
 	
@@ -139,6 +146,8 @@ function BodyVars(&$body, $data)
 	$body = str_replace('%balance', $data['balance'], $body);
 	$body = str_replace('%cid', $data['id'], $body);
 	$body = str_replace('%pin', $data['pin'], $body);
+	$body = str_replace('%balance', $data['balance'], $body);
+	$body = str_replace('%account', bankaccount($data['id'], $data['divisionid']), $body);
 
 	if(!(strpos($body, '%last_10_in_a_table') === FALSE))
 	{
@@ -221,10 +230,11 @@ if(isset($_POST['message']))
 	if(!$error)
 	{
 		if(empty($message['customerid']))
+			{
 			$recipients = GetRecipients($message, $message['type']);
-		else
+	}	else{
 			$recipients = GetRecipient($message['customerid'], $message['type']);
-
+}
 		if(!$recipients)
 			$error['subject'] = trans('Unable to send message. No recipients selected!');
 	}
@@ -234,7 +244,7 @@ if(isset($_POST['message']))
 		set_time_limit(0);
 
 		$message['body'] = str_replace("\r", '', $message['body']);
-		
+
 		if($message['type'] == MSG_MAIL)
 			$message['body'] = wordwrap($message['body'],76,"\n");
 
@@ -295,7 +305,7 @@ if(isset($_POST['message']))
 
 			if(!empty($CONFIG['mail']['debug_email']))
 				echo '<B>'.trans('Warning! Debug mode (using address $0).',$CONFIG['mail']['debug_email']).'</B><BR>';
-			
+			#$message['sender']='';
 			$headers['From'] = '"'.$message['from'].'" <'.$message['sender'].'>';
 			$headers['Subject'] = $message['subject'];
 			$headers['Reply-To'] = $headers['From'];
@@ -304,7 +314,6 @@ if(isset($_POST['message']))
 		foreach($recipients as $key => $row)
 		{
 			$body = $message['body'];
-				
 			BodyVars($body, $row);
 			
 			if($message['type'] == MSG_MAIL)
@@ -325,9 +334,10 @@ if(isset($_POST['message']))
 			
 			if($message['type'] == MSG_MAIL)
 				$result = $LMS->SendMail($row['destination'], $headers, $body, $files);
-			else
+			else{ 
+				
 				$result = $LMS->SendSMS($row['destination'], $body, $msgid);
-			
+			}
 			if (is_string($result))
 				echo " <font color=red>$result</font>";
 			else if ($result == MSG_SENT)
@@ -354,10 +364,12 @@ if(isset($_POST['message']))
 	}
 	else if (!empty($message['customerid']))
 	{
+		
 		$message['customer'] = $DB->GetOne('SELECT '
 			.$DB->Concat('UPPER(lastname)',"' '",'name').'
 			FROM customersview
 			WHERE id = ?', array($message['customerid']));
+		
 	}
 
 	$SMARTY->assign('error', $error);

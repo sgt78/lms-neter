@@ -152,7 +152,8 @@
 					<TD width="5%">&nbsp;</TD>
 					<TD width="1%">
 						<NOBR><IMG src="img/network.gif" alt=""> <B>{t}Network:{/t}</B></NOBR><BR><BR>
-						<NOBR><IMG src="img/group.gif" alt=""> <B>{t}Group:{/t}</B></NOBR>
+						<NOBR><IMG src="img/group.gif" alt=""> <B>{t}Group:{/t}</B></NOBR><BR><BR>
+<NOBR><IMG src="img/group.gif" alt=""> <B>{t}Taryfa Klienta:{/t}</B></NOBR>
 					</TD>
 					<TD width="97%">
 						<SELECT size="1" name="network" {tip text="Select network" trigger="customer"}>
@@ -165,6 +166,12 @@
 							<OPTION value="0" SELECTED>{t}- all groups -{/t}</OPTION>
 							{section name="customergroups" loop=$customergroups}
 							<OPTION value="{$customergroups[customergroups].id}">{$customergroups[customergroups].name|truncate:40:"...":true}</OPTION>
+							{/section}
+						</SELECT><BR><BR>
+						<SELECT size="1" name="tariffs" {tip text="Select group" trigger="customer"}>
+							<OPTION value="0" SELECTED>{t}- all groups -{/t}</OPTION>
+							{section name="tariffs" loop=$tariffs}
+							<OPTION value="{$tariffs[tariffs].id}">{$tariffs[tariffs].name|truncate:110:"...":true}</OPTION>
 							{/section}
 						</SELECT>
 					</TD>

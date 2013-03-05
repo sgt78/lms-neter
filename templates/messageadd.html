@@ -19,17 +19,28 @@
 		if(elem == 'typesms') {
 			document.getElementById('mailbody').style.display = 'none';
 			document.getElementById('mailfrom').style.display = 'none';
+			document.getElementById('mails').style.display = 'none';
+			document.getElementById('smss').style.display = '';
 			document.getElementById('mailsender').style.display = 'none';
 			document.getElementById('attachment').style.display = 'none';
 			document.getElementById('smsbody').style.display = 'table-row';
 		} else {
 			document.getElementById('mailbody').style.display = '';
 			document.getElementById('mailfrom').style.display = '';
+			document.getElementById('mails').style.display = '';
+			document.getElementById('smss').style.display = 'none';
 			document.getElementById('mailsender').style.display = '';
 			document.getElementById('attachment').style.display = '';
 			document.getElementById('smsbody').style.display = 'none';
 		}
 	}
+function settresc(objDropDown)
+{
+var objHidden = document.getElementById("tresc");
+objHidden.value = objDropDown.value;
+var objHidden = document.getElementById("trescb");
+objHidden.value = objDropDown.value;
+}
 -->
 </SCRIPT>
 {/literal}
@@ -81,12 +92,19 @@
 			</SELECT>
 				</TD>
 				<TD width="1%" nowrap>{t}Network:{/t}</TD>
-				<TD width="95%">
+				<TD width="1%">
 			<SELECT NAME="message[network]" {tip trigger="network" text="Select IP network"}>
 				<option value="0">{t}- all networks -{/t}</option>
 				{section name="networks" loop=$networks}
 				<option value="{$networks[networks].id}"{if $message.network == $networks[networks].id} SELECTED{/if}>{$networks[networks].name|truncate:"30":"...":true}</option>
 				{/section}
+			</SELECT>
+				</TD>
+				<TD width="1%" nowrap>{t}consent{/t}:</TD>
+				<TD width="40%">
+			<SELECT NAME="message[consent]" {tip trigger="consent" text="Zgoda na wysyłanie"}>
+				<option value="0">{t}Ignore{/t}</option>
+				<option value="1">{t}consent{/t}</option>
 			</SELECT>
 				</TD>
 			    </TR>
@@ -101,7 +119,7 @@
 			</SELECT>
 				</TD>
 				<TD width="1%" nowrap>{t}Link type:{/t}</TD>
-				<TD width="95%">
+				<TD width="1%">
                         <SELECT SIZE="1" NAME="message[linktype]" {tip trigger="linktype" text="Select link type"}>
                                 <OPTION VALUE="">{t}- all -{/t}</OPTION>
 	                        <OPTION VALUE="0">{t}wire{/t}</OPTION>
@@ -109,6 +127,16 @@
 	                </SELECT>
 				</TD>
 			    </TR>
+<tr>
+ 	<TD width="1%" nowrap>od:</TD>
+ 				<TD width="1%">
+ 			<INPUT size="10" type="text" NAME="message[frombalance]" {tip trigger="frombalance" text="od kwoty"}>
+				</TD>
+ 	<TD width="1%" nowrap>do:</TD>
+ 				<TD width="1%">
+ 			<INPUT size="10" type="text" NAME="message[tobalance]" {tip trigger="tobalance" text="do kwoty"}>
+ 				</TD>
+  			    </TR>
 			</TABLE>
 		</TD>
 	</TR>
@@ -133,7 +161,7 @@
 			<B>{t}Sender E-mail:{/t}</B>
 		</TD>
 		<TD CLASS="FRIGHT" WIDTH="98%">
-			<INPUT type="text" NAME="message[sender]" SIZE="40" value="{if $message.sender}{$message.sender}{elseif $userinfo.email}{$userinfo.email}{/if}" {tip trigger="sender" text="Enter sender e-mail address"}>
+			<INPUT type="text" NAME="message[sender]" SIZE="40" value="biuro@openway.pl" {tip trigger="sender" text="Enter sender e-mail address"}>
 		</TD>
 	</TR>
 	<TR CLASS="LIGHT" ID="mailfrom"{if $message.type == $smarty.const.MSG_SMS} style="display: none"{/if}>
@@ -144,7 +172,7 @@
 			<B>{t}Sender:{/t}</B>
 		</TD>
 		<TD CLASS="FRIGHT" WIDTH="98%">
-			<INPUT type="text" NAME="message[from]" SIZE="40"  VALUE="{if $message.from}{$message.from}{elseif $userinfo.name}{$userinfo.name}{/if}" {tip trigger="from" text="Enter sender name"}>
+			<INPUT type="text" NAME="message[from]" SIZE="40"  VALUE="Open Way Lukasz Jankowiak" {tip trigger="from" text="Enter sender name"}>
 		</TD>
 	</TR>
 	<TR CLASS="LIGHT">
@@ -155,9 +183,31 @@
 			<B>{t}Subject:{/t}</B>
 		</TD>
 		<TD CLASS="FRIGHT" WIDTH="98%">
-			<INPUT type="text" NAME="message[subject]" SIZE="60" VALUE="{$message.subject}" {tip trigger="subject" text="Enter message subject"}>
+			<INPUT type="text" NAME="message[subject]" SIZE="60" VALUE="Informacja" {tip trigger="subject" text="Enter message subject"}>
 		</TD>
 	</TR>
+	<TR CLASS="LIGHT" ID="mails" {if $message.type == $smarty.const.MSG_SMS} style="display: none"{/if}>
+<TD CLASS="FLEFT" WIDTH="1%">
+			<IMG SRC="img/mail.gif" ALT=""> 
+		</TD>
+		<TD WIDTH="1%">
+			<B>Szablon</B>
+		</TD>
+		<TD CLASS="FRIGHT" WIDTH="98%">
+{include file="/etc/lms/templates/select.html"}
+		</TD>
+	</tr>
+	<TR CLASS="LIGHT" ID="smss" {if $message.type != $smarty.const.MSG_SMS} style="display: none"{/if}>
+<TD CLASS="FLEFT" WIDTH="1%">
+			<IMG SRC="img/mail.gif" ALT=""> 
+		</TD>
+		<TD WIDTH="1%">
+			<B>Szablon</B>
+		</TD>
+		<TD CLASS="FRIGHT" WIDTH="98%">
+{include file="/etc/lms/templates/selectsms.html"}
+		</TD>
+	</tr>
 	<TR CLASS="LIGHT" ID="mailbody"{if $message.type == $smarty.const.MSG_SMS} style="display: none"{/if}>
 		<TD CLASS="FLEFT" WIDTH="1%">
 			<IMG SRC="img/edit.gif" ALT=""> 
@@ -166,7 +216,7 @@
 			<B>{t}Message body:{/t}</B>
 		</TD>
 		<TD CLASS="FRIGHT" WIDTH="98%">
-			<TEXTAREA NAME="message[mailbody]" COLS="80" ROWS="20" {tip text="Use carriage return for indentation only. LMS will reformat paragraphs and break long lines." trigger="body"}>{$message.body}</TEXTAREA>
+			<TEXTAREA id="tresc" NAME="message[mailbody]" COLS="80" ROWS="20" {tip text="Use carriage return for indentation only. LMS will reformat paragraphs and break long lines." trigger="body"}>{$message.body}</TEXTAREA>
 		</TD>
 	</TR>
 	<TR CLASS="LIGHT" ID="smsbody"{if $message.type != $smarty.const.MSG_SMS} style="display: none"{/if}>
@@ -177,7 +227,7 @@
 			<B>{t}Message body:{/t}</B>
 		</TD>
 		<TD CLASS="FRIGHT" WIDTH="98%">
-			<TEXTAREA NAME="message[smsbody]" COLS="60" ROWS="5" {tip text="Enter message body" trigger="body"}>{$message.body}</TEXTAREA>
+			<TEXTAREA id="trescb" NAME="message[smsbody]" COLS="60" ROWS="5" {tip text="Enter message body" trigger="body"}>{$message.body}</TEXTAREA>
 		</TD>
 	</TR>
 	<TR CLASS="LIGHT" ID="attachment"{if $message.type == $smarty.const.MSG_SMS} style="display: none"{/if}>

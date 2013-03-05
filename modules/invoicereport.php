@@ -164,7 +164,7 @@ if($items)
 		}
 		
 		$sum = $row['value'] * $row['count'];
-		$val = round($sum / ($taxes[$taxid]['value']+100) * 100, 2);
+		$val = round($sum / ($taxes[$taxid]['value']+100) * 100, 4);
 		$tax = $sum - $val;
 
 		$invoicelist[$idx][$taxid]['tax'] += $tax;

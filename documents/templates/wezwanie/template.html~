@@ -1,0 +1,341 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--// $Id: header.html,v 1.121 2008/03/05 19:47:40 alec Exp $ //-->
+<html>
+<head>
+<title>Wezwanie</title>
+<meta http-equiv="Content-Language" content="{$LANGDEFS.$_language.html}">
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+<link href="{if $_config.phpui.style}{$_config.phpui.style}{else}img/style_print.css{/if}" rel="stylesheet" type="text/css">
+</head>
+<TABLE WIDTH="100%" CELLSPACING="3">
+	<TR>
+		<TD WIDTH="98%" CLASS="hdf" VALIGN="TOP">
+			    <B>{$engine.title} {$document.nr}</B><BR>
+			<B>&nbsp;</B>
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" VALIGN="TOP">
+			<I>{t}Draw-up date:{/t}</I><BR>
+			<BR>
+			<BR>
+			
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="LEFT" VALIGN="TOP">
+			{$smarty.now|date_format:"%Y-%m-%d"}, Szczecin<BR>
+			<BR>
+			<BR>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN="3" ALIGN="CENTER" WIDTH="100%">
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<TABLE WIDTH="100%" CELLSPACING="3">
+	<TR>
+		<TD WIDTH="66%" VALIGN="TOP">
+			<I>Wystawca:</I><BR>
+			<BR>
+			{$_config.invoices.header|replace:"\\n":"<BR>"}
+			<BR><BR>
+			<I>Otrzymuje:</I><BR>
+			<BR>
+			<B>{$customerinfo.customername}</B><BR>
+			{if $customerinfo.serviceaddr}
+			{$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+			Adres instalacji: {$customerinfo.address} {$customerinfo.zip} {$customerinfo.city}<BR>
+			{else}
+			{$customerinfo.address}<BR>
+			{$customerinfo.zip} {$customerinfo.city}<BR>
+			{/if}
+			<BR>
+		</TD>
+		<TD WIDTH="34%" VALIGN="TOP" CLASS="sdr">
+			<BR>
+			<BR>
+			<BR>
+			<B>{$customerinfo.customername}<BR>
+			{if $customerinfo.serviceaddr}
+			{$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+			{else}
+			{$customerinfo.address}<BR>
+			{$customerinfo.zip} {$customerinfo.city}<BR>
+			{/if}</B>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH="100%" COLSPAN="2">
+			&nbsp;<BR>
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+&nbsp;&nbsp;&nbsp;Na podstawie art. 476 Kodeksu cywilnego (Dz. U. z 1964 r. nr 16, poz. 93, z późn. zmianami) wzywamy do natychmiastowego uregulowania należnej sumy, zgodnie z poniższym zestawieniem:<br><br>
+
+<TABLE WIDTH="100%" CELLSPACING="3" border = "1">
+    <TR>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Numer faktury:</B>
+    </TD>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Data wystawienia:</B>
+    </TD>
+    </TD>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Termin płatności:</B>
+    </TD>
+    <TD WIDTH="20%" CLASS="fall" ALIGN="CENTER">
+	<B>Opis:</B>
+    </TD>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Wartość brutto:</B>
+    </TD>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Pozostało:</B>
+    </TD>
+    </TR>
+{section name=customerdocuments loop=$customerdocuments}
+
+    <TR>
+        <TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].number}/FV/{$customerdocuments[customerdocuments].cdate|date_format:"%m/%Y"}</TD>
+        <TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].cdate|date_format:"%Y/%m/%d"}</TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].paytime} dni</TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].description}</TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].value|money_format}</TD>
+<TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].reszta|money_format}</TD>
+	
+    </TR>
+{/section}
+{if $noticecost !=0}
+    <TR>
+	<TD COLSPAN="4" CLASS="FLR">&nbsp;<B>Koszty wystawienia i dostarczenia wezwań:</B></TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$noticecost|money_format}</TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$noticecost|money_format}</TD>
+    </TR>
+{/if}
+</TABLE>
+<br>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR>
+		<TD ALIGN="RIGHT" CLASS="hdf">
+			{t}To pay:{/t} {$customerinfo.balance|money_format|replace:"-":""}
+		</TD>
+	</TR>
+</TABLE>
+<B><center>Proszę odwrócić !</center></B>
+<p style="page-break-after:always"></p>
+<BR>
+&nbsp;&nbsp;&nbsp;Wymienioną sumę prosimy przekazać na nasz rachunek bankowy nr <B>{$customerinfo.bankaccount}</B> w ciągu 7 dni od
+daty otrzymania niniejszego wezwania. W przypadku nie przekazania należnej sumy w wyznaczonym terminie, 
+nastąpi ograniczenie świadczonych na rzecz Państwa usług, do czasu uregulowania należnych zobowiązań łącznie z odsetkami 
+za zwłokę oraz kosztami windykacyjnymi. 
+Ponowne wznowienie świadczenia usług będzie możliwe po dokonaniu opłaty za wznowienie świadczenia usług zgodnie z obowiązującym cennikiem.
+<BR>
+<B>Jeżeli wpłata została dokonana, prosimy o przesłanie kopii dowodu wpłaty pocztą, faxem pod nr 913507696 lub e-mailem na adres: biuro@infolan.net.pl</B>
+<BR><BR>
+&nbsp;&nbsp;&nbsp;Informujemy również, iż działając na podstawie Ustawy z dnia 14 lutego 2003r. „o udostępnianiu informacji gospodarczych” w przypadku braku zapłaty, po upływie miesiąca od daty wysłania niniejszego wezwania informacja o Państwa zobowiązaniach zostanie przekazana do:<BR>
+<B>Krajowego Rejestru Długów</B> Biura Informacji Gospodarczej S.A. z siedzibą we Wrocławiu przy ul. Armii Ludowej 21.
+<BR><BR>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR>
+		<TD WIDTH="100%" ALIGN="CENTER" COLSPAN="2">
+		Rachunki prosimy regulować do 13 dnia każdego miesiąca na rachunek: <BR> 
+				    Bank Zachodni WBK S.A. III O/Szczecin <BR>
+				Numer konta bankowego:  <h2><b> {$customerinfo.bankaccount}</b></h2>
+				    Dziękujemy za terminowe uiszczanie opłat.			
+		</TD>
+	</TR>
+</TABLE>
+
+</DIV>
+<p style="page-break-after:always"></p>
+</br>
+</br>
+<TABLE WIDTH="100%" CELLSPACING="3">
+	<TR>
+		<TD WIDTH="98%" CLASS="hdf" VALIGN="TOP">
+			    <B>{$engine.title} {$document.nr}</B><BR>
+			<B>&nbsp;</B>
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" VALIGN="TOP">
+			<I>{t}Draw-up date:{/t}</I><BR>
+			<BR>
+			<BR>
+			
+		</TD>
+		<TD WIDTH="1%" NOWRAP ALIGN="LEFT" VALIGN="TOP">
+			{$smarty.now|date_format:"%Y-%m-%d"}, Szczecin<BR>
+			<BR>
+			<BR>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN="3" ALIGN="CENTER" WIDTH="100%">
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+<BR>
+<BR>
+<BR>
+<BR>
+<BR>
+<TABLE WIDTH="100%" CELLSPACING="3">
+	<TR>
+		<TD WIDTH="66%" VALIGN="TOP">
+			<I>Wystawca:</I><BR>
+			<BR>
+			{$_config.invoices.header|replace:"\\n":"<BR>"}
+			<BR><BR>
+			<I>Otrzymuje:</I><BR>
+			<BR>
+			<B>{$customerinfo.customername}</B><BR>
+			{if $customerinfo.serviceaddr}
+			{$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+			Adres instalacji: {$customerinfo.address} {$customerinfo.zip} {$customerinfo.city}<BR>
+			{else}
+			{$customerinfo.address}<BR>
+			{$customerinfo.zip} {$customerinfo.city}<BR>
+			{/if}
+			<BR>
+		</TD>
+		<TD WIDTH="34%" VALIGN="TOP" CLASS="sdr">
+			<BR>
+			<BR>
+			<BR>
+			<B>{$customerinfo.customername}<BR>
+			{if $customerinfo.serviceaddr}
+			{$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+			{else}
+			{$customerinfo.address}<BR>
+			{$customerinfo.zip} {$customerinfo.city}<BR>
+			{/if}</B>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH="100%" COLSPAN="2">
+			&nbsp;<BR>
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+&nbsp;&nbsp;&nbsp;Na podstawie art. 476 Kodeksu cywilnego (Dz. U. z 1964 r. nr 16, poz. 93, z późn. zmianami) wzywamy do natychmiastowego uregulowania należnej sumy, zgodnie z poniższym zestawieniem:<br><br>
+
+<TABLE WIDTH="100%" CELLSPACING="3" border = "1">
+    <TR>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Numer faktury:</B>
+    </TD>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Data wystawienia:</B>
+    </TD>
+    </TD>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Termin płatności:</B>
+    </TD>
+    <TD WIDTH="20%" CLASS="fall" ALIGN="CENTER">
+	<B>Opis:</B>
+    </TD>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Wartość brutto:</B>
+    </TD>
+    <TD WIDTH="5%" CLASS="fall" ALIGN="CENTER">
+	<B>Pozostało:</B>
+    </TD>
+    </TR>
+{section name=customerdocuments loop=$customerdocuments}
+
+    <TR>
+        <TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].number}/FV/{$customerdocuments[customerdocuments].cdate|date_format:"%m/%Y"}</TD>
+        <TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].cdate|date_format:"%Y/%m/%d"}</TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].paytime} dni</TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].description}</TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].value|money_format}</TD>
+<TD CLASS="FLR" ALIGN="CENTER">{$customerdocuments[customerdocuments].reszta|money_format}</TD>
+	
+    </TR>
+{/section}
+{if $noticecost !=0}
+    <TR>
+	<TD COLSPAN="4" CLASS="FLR">&nbsp;<B>Koszty wystawienia i dostarczenia wezwań:</B></TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$noticecost|money_format}</TD>
+	<TD CLASS="FLR" ALIGN="CENTER">{$noticecost|money_format}</TD>
+    </TR>
+{/if}
+</TABLE>
+<br>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR>
+		<TD ALIGN="RIGHT" CLASS="hdf">
+			{t}To pay:{/t} {$customerinfo.balance|money_format|replace:"-":""}
+		</TD>
+	</TR>
+</TABLE>
+<B><center>Proszę odwrócić !</center></B>
+<p style="page-break-after:always"></p>
+<BR>
+&nbsp;&nbsp;&nbsp;Wymienioną sumę prosimy przekazać na nasz rachunek bankowy nr <B>{$customerinfo.bankaccount}</B> w ciągu 7 dni od
+daty otrzymania niniejszego wezwania. W przypadku nie przekazania należnej sumy w wyznaczonym terminie, 
+nastąpi ograniczenie świadczonych na rzecz Państwa usług, do czasu uregulowania należnych zobowiązań łącznie z odsetkami 
+za zwłokę oraz kosztami windykacyjnymi. 
+Ponowne wznowienie świadczenia usług będzie możliwe po dokonaniu opłaty za wznowienie świadczenia usług zgodnie z obowiązującym cennikiem.
+<BR>
+<B>Jeżeli wpłata została dokonana, prosimy o przesłanie kopii dowodu wpłaty pocztą, faxem pod nr 0918864401 lub e-mailem na adres: biuro@infolan.net.pl</B>
+<BR><BR>
+&nbsp;&nbsp;&nbsp;Informujemy również, iż działając na podstawie Ustawy z dnia 14 lutego 2003r. „o udostępnianiu informacji gospodarczych” w przypadku braku zapłaty, po upływie miesiąca od daty wysłania niniejszego wezwania informacja o Państwa zobowiązaniach zostanie przekazana do:<BR>
+<B>Krajowego Rejestru Długów</B> Biura Informacji Gospodarczej S.A. z siedzibą we Wrocławiu przy ul. Armii Ludowej 21.
+<BR><BR>
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR>
+		<TD WIDTH="100%" ALIGN="CENTER" COLSPAN="2">
+		Rachunki prosimy regulować do 13 dnia każdego miesiąca na rachunek: <BR> 
+				    Bank Zachodni WBK S.A. III O/Szczecin <BR>
+				Numer konta bankowego:  <h2><b> {$customerinfo.bankaccount}</b></h2>
+				    Dziękujemy za terminowe uiszczanie opłat.			
+		</TD>
+	</TR>
+</TABLE>
+
+</DIV>
+<p style="page-break-after:always"></p>
+</br>
+</br>
+<table width="60%" border="0">
+<tr>
+<td align="center" colspan="2"><b>POTWIERDZENIE NADANIA</b><br>przesyłki listowej poleconej nr .............<br></td>
+</tr>
+<tr>
+	<td>NADAWCA:<br>
+		Krzysztof Szwaba<br>
+		oś Kasztanowe 94E/3<br>
+		70-895 Szczecin<br>
+	</td>
+	<td><br>
+	Opłata............zł.....gr<br><br>
+	...........................<br>
+	Uwagi.........................<br>
+	..............................<br>
+	..............................<br>
+	</td>
+</tr>
+<tr>
+	<td>ADRESAT:<br><br>
+	{$customerinfo.customername}<BR>
+			{if $customerinfo.serviceaddr}
+			{$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+			{else}
+			{$customerinfo.address}<BR>
+			{$customerinfo.zip} {$customerinfo.city}<BR>
+			{/if}
+	</td>
+	<td valign="bottom">Podpis przyjmującego</td>
+		
+</tr>
+</table>
+
+</HTML>

@@ -33,6 +33,7 @@ function module_main()
 		    array($SESSION->id));
 
     $userinfo = $LMS->GetCustomer($SESSION->id);
+$userinfo['account'] = bankaccount($SESSION->id, $division['divisionid']);
     $usernodes = $LMS->GetCustomerNodes($SESSION->id);
     $balancelist = $LMS->GetCustomerBalanceList($SESSION->id);
 

@@ -1,0 +1,78 @@
+{include file="clearheader.html"}
+<!--// $Id: printcustomerbalance.html,v 1.7 2006/03/12 16:50:19 alec Exp $ //-->
+<TABLE WIDTH="100%">
+	<TR>
+		<TD WIDTH="99%" VALIGN="TOP">
+			<H1>{$layout.pagetitle}</H1>
+		</TD>
+		<TD WIDTH="1%" ALIGN="RIGHT" NOWRAP>
+			LMS {$layout.lmsv} @ {$layout.hostname}<BR>
+			{$smarty.now|date_format:"%A, %x"}<BR>
+			{t 0=$layout.logname}Prepared by: $0{/t}
+		</TD>
+	</TR>
+</TABLE>
+<TABLE WIDTH="640" CELLPADDING="3" BORDER="1" ALIGN="CENTER">
+	<TR>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			{t}No.{/t}
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			ID Klienta:
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			Klient:
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			Adres:
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			telefon:
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			nazwa:
+		</TD>	
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			Wartość
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			Data:
+		</TD>	
+
+	</TR>
+{foreach from=$customer item=customer}
+	<TR class="{cycle}">
+		<TD ALIGN="CENTER">
+			{counter}
+		</TD>
+		<TD ALIGN="CENTER" NOWRAP>
+			{$customer.id}
+		</TD>
+		<TD ALIGN="CENTER" NOWRAP>
+			{$customer.name} {$customer.lastname}
+		</TD>
+		<TD ALIGN="CENTER" NOWRAP>
+			{$customer.address}<br>{$customer.city}
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			{$customer.phone|replace:',':'<br>'}
+
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			{$customer.tname|replace:'czas':'czas<br>'}
+
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			{$customer.tvalue|money_format}
+
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			{$customer.data}
+
+		</TD>
+
+	</TR>
+	{/foreach}
+
+</TABLE>
+{include file="clearfooter.html"}

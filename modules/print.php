@@ -787,7 +787,57 @@ switch($type)
 			$SMARTY->display('printreceiptlist.html');
 		}
 	break;
+case 'customercontract':
+		$days = intval($_POST['days']);
+ 		$fromdate =$_POST['fromdate'];
+ 		if($fromdate && preg_match('/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/', $fromdate))
+ 		{ 
+ 			list($year, $month, $day) = explode('/',$fromdate);
+			print $year." ".$month." ".$day;
+     			$fromdate = mktime(0, 0, 0, (int)$month, (int)$day, (int)$year)+86399;
+ 			#$fromdate=" b.dateto > $fromdate";
+ 			$days=NULL;
+ 		}
+ 		$todate =$_POST['todate'];
+ 		if($todate && preg_match('/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$/', $todate))
+ 		{
+ 			list($year, $month, $day) = explode('/',$todate);
+     			$todate = mktime(0, 0, 0, (int)$month, (int)$day, (int)$year)+86399;
+ 			#$todate=" AND b.dateto < $todate)";
+ 		}
+		
+ 		$data= $DB->GetAll("SELECT  a.id, a.lastname, a.name,a.address, a.city, 
+			GROUP_CONCAT(cus.phone) as phone, from_unixtime(b.dateto,'%d-%m-%Y') as data, 
+			(SELECT name FROM tariffs t WHERE t.id=b.tariffid ) as tname,
+			(SELECT (CASE discount WHEN 0 THEN value ELSE value-(value*(discount/100)) END) 
+			FROM tariffs t WHERE t.id=b.tariffid ) as tvalue FROM  customercontacts cus, customers a 
+			LEFT JOIN assignments b ON (a.id=b.customerid) WHERE a.id=cus.customerid "
+			.($days ? "AND DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL $days DAY) > from_unixtime(b.dateto) 
+			AND from_unixtime(b.dateto)>CURRENT_TIMESTAMP()" : "")." "
+			.($fromdate ? "AND $fromdate < b.dateto AND b.dateto < $todate" : "")
+			." AND b.tariffid!=0 GROUP BY a.id ORDER BY b.dateto");
+		$SMARTY->assign('customer', $data);
+		$SMARTY->display('printcustomercontract.html');
+	break;
+case 'printtariffsgroup':
+		$tariffgroup = intval($_POST['tariffgroup']);
+		$customergroup = intval($_POST['customergroup']);
+ 		$uprate = intval($_POST['uprate']);
+ 		$downrate = intval($_POST['downrate']);
+		$data= $DB->GetAll("SELECT GROUP_CONCAT(DISTINCT ass.id) as assid, a.id, a.name, a.lastname, a.address, a.city, GROUP_CONCAT(DISTINCT con.phone) as phone, GROUP_CONCAT(DISTINCT from_unixtime(ass.datefrom,'%d-%m-%Y')) as datefrom, GROUP_CONCAT(DISTINCT from_unixtime(ass.dateto,'%d-%m-%Y')) as dateto, GROUP_CONCAT(DISTINCT tar.name) as tarname FROM customers a LEFT JOIN customerassignments cus ON (a.id=cus.customerid), assignments ass, customercontacts con, tariffs as tar WHERE a.id=ass.customerid AND a.id=con.customerid AND tar.id=ass.tariffid AND (ass.dateto>UNIX_TIMESTAMP() OR ass.dateto=0)"
+.($tariffgroup ? ' AND ass.tariffid='.$tariffgroup.'' : '') 
+.($customergroup ? ' AND cus.customergroupid='.$customergroup.'' : '')
+.($downrate ? ' AND tar.downrate='.$downrate.'' : '') 
+.($uprate ? ' AND tar.uprate='.$uprate.'' : '') 
+." GROUP BY a.id ORDER by a.lastname ASC");
 
+		$tarifname=$DB->GetRow("SELECT * FROM tariffs WHERE id=$tariffgroup");
+		$groupname=$DB->GetRow("SELECT * FROM customergroups WHERE id=$customergroup");
+		$SMARTY->assign('tarifname', $tarifname['name']);
+		$SMARTY->assign('groupname', $groupname['name']);
+		$SMARTY->assign('customer', $data);
+		$SMARTY->display('printttariffsgroup.html');
+	break;
 	default: /*******************************************************/
 	
 		$layout['pagetitle'] = trans('Reports');

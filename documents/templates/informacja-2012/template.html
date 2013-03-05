@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--// $Id: header.html,v 1.121 2008/03/05 19:47:40 alec Exp $ //-->
+<html>
+<head>
+<title>Informacja-2012</title>
+
+<meta http-equiv="Content-Language" content="{$LANGDEFS.$_language.html}">
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+<link href="{if $_config.phpui.style}{$_config.phpui.style}{else}img/style_print.css{/if}" rel="stylesheet" type="text/css">
+</head>
+<body size="2">
+<TABLE WIDTH="100%" CELLSPACING="3">
+	<TR>
+		<TD WIDTH="1%" NOWRAP ALIGN="RIGHT" VALIGN="TOP">
+			Władysławów, dn. 27.02.2012r.<BR>
+
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN="3" ALIGN="CENTER" WIDTH="100%">
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+
+<TABLE WIDTH="100%" >
+	<TR>
+		<TD WIDTH="55%" VALIGN="TOP">
+			{$_config.invoices.header|replace:"\\n":"<BR>"}
+			<BR><BR>
+			<BR>
+		</TD>
+		<TD WIDTH="45%" VALIGN="TOP" >
+			<BR>
+			<BR>
+			<BR>
+			<BR>
+			<BR>
+			<BR>
+			<BR>
+			<BR>
+			<B>{$customerinfo.customername}<BR>
+			{if $customerinfo.serviceaddr}
+			{$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+			{else}
+			{$customerinfo.address}<BR>
+			{$customerinfo.zip} {$customerinfo.city}<BR>
+			{/if}</B>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH="100%" COLSPAN="2">
+			&nbsp;<BR>
+			&nbsp;
+		</TD>
+	</TR>
+</TABLE>
+<br><br><br>
+<h3 align="center">Szanowni Państwo !</h3>
+
+W związku z rosnącą ilością danych zamieszczanych na stronach internetowych (takich jak filmy, reklamy, zdjęcia wysokiej rozdzielczości itp.) jakość i komfort korzystania z internetu przy prędkości 0,5 Megabita jaką Państwo posiadają ulega spadkowi.<br>
+Mając to na uwadze przygotowaliśmy dla Państwa specjalną ofertę szybszego internetu na promocyjnych warunkach.<br>
+Promocja ta obejmuje korzystanie z internetu w szybszej prędkości przez pierwszy miesiąc w cenie 1 zł, a przez kolejne miesiące w cenie zależnej od wybranej przez Państwa prędkości:<br><br>
+
+<b>PRĘDKOŚĆ - CENA</b><br>
+1 Megabit  - 40 zł<br> 
+2 Megabity - 50 zł<br> 
+3 Megabity - 55 zł<br> 
+4 Megabity - 60 zł<br> 
+5 Megabitów - 65 zł<br> 
+6 Megabitów - 70 zł<br><br> 
+
+*umowa na okres - 18 miesięcy<br>
+*uruchomienie szybszego internetu - 1 zł<br>
+*router bezprzewodowy (wifi) z konfiguracją - 100 zł<br><br>
+
+Ponadto posiadamy w swojej ofercie usługę telefonu stacjonarnego w bardzo atrakcyjnej cenie 12,30 zł  na miesiąc.<br>
+W abonamencie: 60 darmowych minut na telefony stacjonarne w Polsce; połączenia na telefony stacjonarne i zagranicę po 10 groszy  za minutę; połączenia na komórki po 40 groszy; możliwość zachowania dotychczasowego numeru telefonicznego (np. z TP, NETIA czy MULTIMEDIA).<br><br>
+
+Osoby zainteresowane ofertą prosimy o kontakt telefoniczny pod numerem tel. 693 033 225<br>
+
+<TABLE WIDTH="100%" CELLPADDING="3">
+        <TR>
+                <TD WIDTH="100%" ALIGN="RIGHT" COLSPAN="2">
+		<br>Łukasz Jankowiak<br>Open Way<br>
+                </TD>
+        </TR>
+</TABLE>
+			<BR>
+			<BR>
+			<BR>
+			<BR>
+			<BR>
+<TABLE WIDTH="100%" CELLPADDING="3">
+        <TR>
+                <TD WIDTH="100%" ALIGN="CENTER" COLSPAN="2">
+                        {$_config.invoices.footer|replace:"\\n":"<BR>"}
+					<br><br><b>www.openway.pl</b>
+                </TD>
+        </TR>
+</TABLE>
+
+</body>
+</HTML>

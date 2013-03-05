@@ -195,6 +195,8 @@ switch($type)
 		{
 			$SMARTY->assign('customers', $LMS->GetCustomerNames());
 		}
+		$tariffs=$DB->GetAllByKey('SELECT id, name FROM tariffs
+				ORDER BY name ASC', 'id');
 		$SMARTY->assign('currmonth', date('n'));
 		$SMARTY->assign('curryear', date('Y'));
 		$SMARTY->assign('statyears', $statyears);
@@ -202,6 +204,7 @@ switch($type)
 		$SMARTY->assign('networks', $LMS->GetNetworks());
 		$SMARTY->assign('customergroups', $LMS->CustomergroupGetAll());
 		$SMARTY->assign('nodegroups', $LMS->GetNodeGroupNames());
+		$SMARTY->assign('tariffslist', $tariffs);
 		$SMARTY->assign('cstateslist', $LMS->GetCountryStates());
 		$SMARTY->assign('printmenu', 'customer');
 		$SMARTY->display('printindex.html');

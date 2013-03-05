@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--// $Id: header.html,v 1.121 2008/03/05 19:47:40 alec Exp $ //-->
+<html>
+<head>
+<title>List powitalny</title>
+<meta http-equiv="Content-Language" content="{$LANGDEFS.$_language.html}">
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+<link href="{if $_config.phpui.style}{$_config.phpui.style}{else}img/style_print.css{/if}" rel="stylesheet" type="text/css">
+</head>
+
+<TABLE WIDTH="100%" ALIGN="RIGHT" CELLSPACING="3">
+        <TR>
+                 <TD WIDTH="1%" NOWRAP ALIGN="RIGHT" VALIGN="TOP">
+                        <B></B>
+                </TD>
+        </TR>
+</TABLE>
+<TABLE WIDTH="100%" CELLSPACING="3">
+        <TR>
+                <TD WIDTH="60%" VALIGN="TOP">
+                       <BR>                
+						"Open Way" Łukasz Jankowiak<br>
+						ul. Orla 28, 62-710 Władysławów<br><br>
+						
+						Telefon stacjonarny: +48 63 300 11 11<br>
+						Telefon zgłoszeniowy: +48 63 300 11 13<br>
+						Telefon komórkowy: +48 693 033 225<br>
+						Faks: +48 63 300 11 15<br><br>
+						Adres e-mail: biuro@openway.pl<br>
+						Adres strony internetowej: www.openway.pl<br>
+						Wirtualne Biuro Obsługi Klienta: <br>
+						www.bok.openway.pl<br>
+                       <BR><BR><BR>
+					    <b>{$customerinfo.customername}<BR>
+                        {if $customerinfo.serviceaddr}
+                        {$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+                        Adres instalacji: {$customerinfo.address} {$customerinfo.zip} {$customerinfo.city}<BR>
+                        {else}
+                        {$customerinfo.address}<BR>
+                        {$customerinfo.zip} {$customerinfo.city}<BR><BR></b>
+						Indywidualny numer rachunku bankowego (PKO BP):<br>
+						<b>{$customerinfo.bankaccount}</b><br><br>
+						Numer ID Klienta: <b>{$customerinfo.id}</b><br>
+						PIN Klienta: <b>{$customerinfo.pin}</b><br><br>
+                        {/if}
+                        <BR>
+                </TD>
+                <TD WIDTH="40%" VALIGN="TOP" CLASS="sdr">
+                        <BR>
+                        <BR>
+                        <BR><BR><BR>
+			<BR>
+			<BR><B>
+                        {$customerinfo.customername}<BR>
+                        {if $customerinfo.serviceaddr}
+                        {$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+                        {else}
+                        {$customerinfo.address}<BR>
+                        {$customerinfo.zip} {$customerinfo.city}<BR>
+                        {/if}</B>
+                </TD>
+                </TD>
+		</TD>
+        </TR>
+</TABLE>
+
+<BR>
+
+<h2 align="center">Witamy w Open Way !</h2>
+
+Cieszymy się, że zdecydowali się Państwo na skorzystanie z oferty naszej firmy. Dołożymy wszelkich starań, aby usługi oferowane przez nas były świadczone zawsze na wysokim poziomie.<br><br>
+
+Informujemy, iż na stronie internetowej <b> www.bok.openway.pl </b> mogą Państwo sprawdzić stan swoich płatności, zaktualizować dane kontaktowe lub skorzystać z helpdesk.
+Po wejściu na stronę należy zalogować się na swoje konto podając <b>Numer ID Klienta: {$customerinfo.id}</b> oraz <b>PIN Klienta: {$customerinfo.pin}</b> <br>
+Po zalogowaniu na zakładce Finanse dostępne są wszystkie operacje na koncie Klienta, a także aktualny stan salda; istnieje możliwość odczytu, a także wydruku wystawionych faktur. <br>
+Istnieje możliwość otrzymywania faktur co miesiąc w formie papierowej za opłatą 2,50 zł/miesiąc lub otrzymanie druków przelewu za opłatą 5 zł (jednorazowo) - prosimy zgłosić telefonicznie chęć otrzymywania faktur jak i druków.<br><br>
+
+Przypominamy, iż zgodnie z regulaminem świadczenia usług płatności za usługi telekomunikacyjne powinny być uiszczane do 15-tego każdego miesiąca na Państwa indywidualny numer rachunku bankowego: <b>{$customerinfo.bankaccount}.</b> W przypadku nieuregulowania należności w terminie nastąpi odłączenie od Internetu do momentu uregulowania płatności.<br><br>
+
+Kontakt telefoniczny możliwy jest w godzinach pracy biura od poniedziałku do piątku w godzinach od 10.00 do 18.00. Po godzinach pracy biura można skorzystać z telefonu zgłoszeniowego (automat), wysłać SMS lub e-mail podając dane kontaktowe (takie jak na umowie).<br>
+<TABLE WIDTH="100%" CELLPADDING="3">
+        <TR>
+                <TD WIDTH="100%" ALIGN="RIGHT" COLSPAN="2">
+		<br>Open Way<br>
+                </TD>
+        </TR>
+</TABLE>
+
+
+<TABLE WIDTH="100%" CELLPADDING="3">
+        <TR>
+                <TD WIDTH="100%" ALIGN="CENTER" COLSPAN="2">
+                        {$_config.invoices.footer|replace:"\\n":"<BR>"}
+					<br><br><b>www.openway.pl</b>
+                </TD>
+        </TR>
+</TABLE>
+
+</DIV>
+
+</HTML>

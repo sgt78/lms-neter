@@ -42,9 +42,16 @@ function GetDocumentList($order='cdate,asc', $type=NULL, $customer=NULL, $from=0
 		case 'title':
 			$sqlord = ' ORDER BY title '.$direction.', d.name';
 		break;
+		
 		case 'customer':
-			$sqlord = ' ORDER BY d.name '.$direction.', title';
+			$sqlord = ' ORDER BY d.customerid '.$direction.', title';
 		break;
+		
+		//case 'customer':
+		//	$sqlord = ' ORDER BY d.name '.$direction.', title';
+		//break;
+		
+		
 		default:
 			$sqlord = ' ORDER BY d.cdate '.$direction.', d.name';
 		break;

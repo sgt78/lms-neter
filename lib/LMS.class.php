@@ -584,7 +584,7 @@ class LMS
 			return FALSE;
 	}
 
-	function GetCustomerList($order='customername,asc', $state=NULL, $network=NULL, $customergroup=NULL, $search=NULL, $time=NULL, $sqlskey='AND', $nodegroup=NULL, $division=NULL)
+	function GetCustomerList($order='customername,asc', $state=NULL, $network=NULL, $customergroup=NULL, $search=NULL, $time=NULL, $sqlskey='AND', $nodegroup=NULL, $division=NULL, $tariffs=NULL)
 	{
 		list($order,$direction) = sscanf($order, '%[^,],%s');
 
@@ -734,8 +734,9 @@ class LMS
 					FROM cash'
 					.($time ? ' WHERE time < '.$time : '').'
 					GROUP BY customerid
-				) b ON (b.customerid = c.id)
-				LEFT JOIN (SELECT customerid, 
+				) b ON (b.customerid = c.id) '
+				.($tariffs ? 'LEFT JOIN assignments ON (c.id = assignments.customerid) ' : '')
+				.'LEFT JOIN (SELECT customerid, 
 					SUM((CASE suspended
 						WHEN 0 THEN (CASE discount WHEN 0 THEN (CASE WHEN t.value IS NULL THEN l.value ELSE t.value END)
 							ELSE ((100 - discount) * (CASE WHEN t.value IS NULL THEN l.value ELSE t.value END)) / 100 END) 
@@ -775,6 +776,7 @@ class LMS
 							((ipaddr > '.$net['address'].' AND ipaddr < '.$net['broadcast'].') 
 							OR (ipaddr_pub > '.$net['address'].' AND ipaddr_pub < '.$net['broadcast'].')))' : '')
 				.($customergroup ? ' AND customergroupid='.$customergroup : '')
+				.($tariffs ? ' AND tariffid='.$tariffs : '')
 				.($nodegroup ? ' AND EXISTS (SELECT 1 FROM nodegroupassignments na
 							JOIN nodes n ON (n.id = na.nodeid) 
 							WHERE n.ownerid = c.id AND na.nodegroupid = '.intval($nodegroup).')' : '')

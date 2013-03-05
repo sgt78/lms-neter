@@ -1,0 +1,85 @@
+{include file="clearheader.html"}
+<!--// $Id: printcustomerbalance.html,v 1.7 2006/03/12 16:50:19 alec Exp $ //-->
+<TABLE WIDTH="100%">
+	<TR>
+		<TD WIDTH="99%" VALIGN="TOP">
+			<H1>{$layout.pagetitle}</H1>
+		</TD>
+		<TD WIDTH="1%" ALIGN="RIGHT" NOWRAP>
+			LMS {$layout.lmsv} @ {$layout.hostname}<BR>
+			{$smarty.now|date_format:"%A, %x"}<BR>
+			{t 0=$layout.logname}Prepared by: $0{/t}
+		</TD>
+	</TR>
+</TABLE>{if $tarifname}
+<center>Taryfa: {$tarifname}</center>
+{/if}
+{if $groupname}
+<center>Grupa: {$groupname}</center>
+{/if}
+<TABLE WIDTH=100% CELLPADDING="3" BORDER="1" ALIGN="CENTER">
+	<TR>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			{t}No.{/t}
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="1%">
+			ID Klienta:
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="20%">
+			Nazwa klienta
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="10%">
+			Adres:
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="10%">
+			Telefon:
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="10%">
+			Data od:
+		</TD>	
+		<TD CLASS="HEAD" ALIGN="CENTER" width="10%">
+			Data do:
+		</TD>
+		<TD CLASS="HEAD" ALIGN="CENTER" width="20%">
+			Taryfa:
+		</TD>	
+
+	</TR>
+{foreach from=$customer item=customer}
+	<TR class="{cycle}">
+		<TD ALIGN="CENTER">
+			{counter}
+		</TD>
+		<TD ALIGN="CENTER" >
+			{$customer.id}
+		</TD>
+		<TD ALIGN="CENTER" >
+			{$customer.name} {$customer.lastname}
+		</TD>
+		<TD ALIGN="CENTER" >
+			{$customer.address}<br>{$customer.city}
+		</TD>
+		<TD ALIGN="RIGHT" >
+			{$customer.phone|replace:',':'<br>'}
+
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+			 
+			{$customer.datefrom|replace:',':'<br>'|replace:'01-01-1970':'<center>-</center>'}
+
+		</TD>
+		<TD ALIGN="RIGHT" NOWRAP>
+	 
+			{$customer.dateto|replace:',':'<br>'|replace:'01-01-1970':'<center>-</center>'}
+
+		</TD>
+		<TD ALIGN="left" >
+			{$customer.tarname}
+
+		</TD>
+
+	</TR>
+	{/foreach}
+
+</TABLE>
+{include file="clearfooter.html"}

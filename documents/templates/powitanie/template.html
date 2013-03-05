@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--// $Id: header.html,v 1.121 2008/03/05 19:47:40 alec Exp $ //-->
+<html>
+<head>
+<title>List powitalny</title>
+<meta http-equiv="Content-Language" content="{$LANGDEFS.$_language.html}">
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+<link href="{if $_config.phpui.style}{$_config.phpui.style}{else}img/style_print.css{/if}" rel="stylesheet" type="text/css">
+</head>
+
+<TABLE WIDTH="100%" ALIGN="RIGHT" CELLSPACING="3">
+        <TR>
+                 <TD WIDTH="1%" NOWRAP ALIGN="RIGHT" VALIGN="TOP">
+                        <B></B>
+                </TD>
+        </TR>
+</TABLE>
+<TABLE WIDTH="100%" CELLSPACING="3">
+        <TR>
+                <TD WIDTH="60%" VALIGN="TOP">
+                       <BR>                
+						<b>"Open Way" Łukasz Jankowiak<br>
+						ul. Orla 28, 62-710 Władysławów<br><br></b>
+						
+						telefon stacjonarny: +48 63 300 11 11<br>
+						telefon zgłoszeniowy: +48 63 300 11 13<br>
+						telefon komórkowy: +48 693 033 225<br>
+						faks: +48 63 300 11 15<br><br>
+						adres e-mail: biuro@openway.pl<br>
+						adres strony internetowej: www.openway.pl<br>
+						<BR><BR>
+					    <b>{$customerinfo.customername}<BR>
+                        {if $customerinfo.serviceaddr}
+                        {$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+                        Adres instalacji: {$customerinfo.address} {$customerinfo.zip} {$customerinfo.city}<BR>
+                        {else}
+                        {$customerinfo.address}<BR>
+                        {$customerinfo.zip} {$customerinfo.city}<BR><BR></b>
+						Indywidualny numer rachunku bankowego (PKO BP):<br>
+						<b>{$customerinfo.bankaccount}</b><br><br>
+						
+						Wirtualne Biuro Obsługi Klienta: <br>
+						www.bok.openway.pl<br><br>
+						Numer ID Klienta: <b>{$customerinfo.id}</b><br>
+						PIN Klienta: <b>{$customerinfo.pin}</b><br><br>
+                        {/if}
+                        <BR>
+                </TD>
+                <TD WIDTH="40%" VALIGN="TOP" CLASS="sdr">
+                        <BR>
+                        <BR>
+                        <BR><BR><BR><BR><BR><BR><BR><B>
+                        {$customerinfo.customername}<BR>
+                        {if $customerinfo.serviceaddr}
+                        {$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+                        {else}
+                        {$customerinfo.address}<BR>
+                        {$customerinfo.zip} {$customerinfo.city}<BR>
+                        {/if}</B>
+                </TD>
+                </TD>
+		</TD>
+        </TR>
+</TABLE>
+
+
+<h3 align="center">Witamy w sieci Open Way !</h3>
+
+Cieszymy się, że wybrali Państwo ofertę naszej firmy. Dołożymy wszelkich starań, aby usługi oferowane przez nas były świadczone zawsze na wysokim poziomie.<br><br>
+
+Informujemy, iż na stronie internetowej <b> www.bok.openway.pl </b> mogą Państwo wysłać do nas zapytanie, zaktualizować dane kontaktowe oraz sprawdzić stan swoich płatności.
+Po wejściu na stronę należy podać <b>Numer ID Klienta: {$customerinfo.id}</b> oraz <b>PIN Klienta: {$customerinfo.pin}.</b> Po zalogowaniu na zakładce Finanse dostępne są wszystkie operacje na Państwa koncie (wpłaty oraz zobowiązania) a także aktualny stan salda. Mają Państwo możliwość odczytu i wydruku wystawionych faktur.<br>
+Chęć otrzymywania faktur w formie papierowej (opłata 2,50 zł/miesiąc) lub druków przelewu (opłata 5 zł/rok) prosimy zgłaszać telefonicznie.<br><br>
+
+Płatności za usługi telekomunikacyjne powinny być uiszczane do 15-tego każdego miesiąca na Państwa indywidualny numer rachunku bankowego: <b>{$customerinfo.bankaccount}</b> w kwocie z poniższego zestawienia:<br><br>
+
+<TABLE cellpadding="3" cellspacing="0" border="1">
+    <TR>
+	<TD NOWRAP>Nazwa usługi</TD>
+	<TD NOWRAP>Okres obowiązywania umowy:</TD>
+	<TD NOWRAP ALIGN="RIGHT">Kwota:</TD>
+	</TR>
+    {foreach from=$assignments item=a}
+    <TR>
+	<TD NOWRAP>{$a.name}</TD>
+	<TD>
+	od: {if $a.datefrom}{$a.datefrom|date_format:"%Y/%m/%d"}{else}-{/if}
+	do: {if $a.dateto}{$a.dateto|date_format:"%Y/%m/%d"}{else}-{/if}
+	</TD>
+	<TD NOWRAP ALIGN="RIGHT">{$a.value|money_format}</TD>
+	</TR>
+    {/foreach}
+    <TR>
+	<TD colspan="2" ALIGN="RIGHT">Razem:</TD>
+	<TD NOWRAP ALIGN="RIGHT">{sum array=$assignments column="value" string_format="%01.2f"} zł</TD>
+	</TR>
+</TABLE>
+<br>
+Brak należności w terminie spowoduje ograniczenie w działaniu usług do momentu uregulowania płatności.<br><br>
+
+Wszelkie problemy techniczne, ograniczenia usług oraz awarie prosimy zgłaszać telefonicznie w godzinach pracy biura od poniedziałku do piątku w godzinach od 10.00 do 18.00.
+Po godzinach pracy biura można skorzystać z telefonu zgłoszeniowego (automat), wysłać SMS lub e-mail podając swoje dane kontaktowe.<br>
+Usterki na łączach Klienckich usuwane są w dni robocze w przeciągu 24 godzin od zgłoszenia awarii. 
+<TABLE WIDTH="100%" CELLPADDING="3">
+        <TR>
+                <TD WIDTH="100%" ALIGN="RIGHT" COLSPAN="2">
+		<br>Łukasz Jankowiak<br>Open Way<br>
+                </TD>
+        </TR>
+</TABLE>
+
+
+<TABLE WIDTH="100%" CELLPADDING="3">
+        <TR>
+                <TD WIDTH="100%" ALIGN="CENTER" COLSPAN="2">
+                        {$_config.invoices.footer|replace:"\\n":"<BR>"}
+					<br><br><b>www.openway.pl</b>
+                </TD>
+        </TR>
+</TABLE>
+
+</DIV>
+
+</HTML>

@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--// $Id: header.html,v 1.121 2008/03/05 19:47:40 alec Exp $ //-->
+<html>
+<head>
+<title>ksiazeczka</title>
+<meta http-equiv="Content-Language" content="{$LANGDEFS.$_language.html}">
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_language.charset}">
+<link href="{if $_config.phpui.style}{$_config.phpui.style}{else}img/style_print.css{/if}" rel="stylesheet" type="text/css">
+</head>
+
+
+<TABLE WIDTH="100%" CELLSPACING="3">
+        <TR>
+                <TD WIDTH="31%" VALIGN="TOP">             
+						{$customerinfo.bankaccount}
+						<br>
+						<br>
+						<br>
+						<br>
+						<br>
+						<br>
+						"Open Way" Łukasz Jankowiak<br>
+						ul. Orla 28, 62-710 Władysławów<br>
+						<br>
+						<b><br>-----
+						{foreach from=$assignments item=a}
+    					{$a.value|money_format}
+						{/foreach}-----</b>
+						<br>
+						<br>					   
+					    <b>{$customerinfo.customername}<BR>
+                        {if $customerinfo.serviceaddr}
+                        {$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+                        Adres instalacji: {$customerinfo.address} {$customerinfo.zip} {$customerinfo.city}<BR>
+                        {else}
+                        {$customerinfo.address}<BR>
+                        {$customerinfo.zip} {$customerinfo.city}<BR></b>
+						<br>
+						opłata za usługi telekomunikacyjne
+						<br>				
+						<br>
+						Numer ID Klienta: {$customerinfo.id}<br>
+						PIN Klienta: {$customerinfo.pin}<br>
+                        {/if}
+                        www.bok.openway.pl<BR>
+                </TD>
+                <TD WIDTH="69%" VALIGN="TOP" CLASS="sdr">
+				"Open Way" Łukasz Jankowiak<br><br>
+				ul. Orla 28, 62-710 Władysławów<br><br>
+				<b>{$customerinfo.bankaccount}</b><br>
+				
+				<TABLE WIDTH="100%" CELLPADDING="3">
+					<TR>
+						<TD WIDTH="32%" ALIGN="RIGHT" COLSPAN="2">
+                        <br><b>X</b>
+						</TD>
+						<TD WIDTH="68%" ALIGN="CENTER" COLSPAN="2">
+                        <b><br>-----
+						{foreach from=$assignments item=a}
+    					{$a.value|money_format}
+						{/foreach}-----</b>
+						</TD>
+					</TR>
+				</TABLE>	
+                        <br><br><br>
+						<B>{$customerinfo.customername}<BR><br>
+                        {if $customerinfo.serviceaddr}
+                        {$customerinfo.serviceaddr|replace:"\n":"<BR>"}<BR>
+                        {else}
+                        {$customerinfo.address}
+                        {$customerinfo.zip} {$customerinfo.city}<BR>
+                        {/if}</B><br><br>
+						<br>opłata za usługi telekomunikacyjne<br>
+                </TD>
+                </TD>
+		</TD>
+        </TR>
+</TABLE>
+</DIV>
+</HTML>
+						

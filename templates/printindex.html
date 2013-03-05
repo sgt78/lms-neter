@@ -1184,4 +1184,126 @@ cal24.time_comp = false;
 </FORM>
 </P>
 {/if}
+{if $printmenu=="customer"}
+<P><FORM method="post" name="printcustomercontract" id="printcustomercontract" action="?m=print&type=customercontract" target="_blank">
+<INPUT type="submit" class="hiddenbtn">
+<TABLE width="100%" CELLPADDING="3">
+	<TR class="DARK">
+		<TD class="fleftu" width="1%">
+			<IMG src="img/money.gif" alt="">
+		</TD>
+		<TD class="frightu" width="99%">
+			<B>Kończące się umowy</B>
+		</TD>
+	</TR>
+<TR class="LIGHT">
+		<TD class="flr" width="100%" colspan="2">
+			<TABLE width="100%">
+						<TR>    
+						    <TD width="1%" nowrap><IMG src="img/calendar.gif" alt=""></TD>
+						    <TD width="1%" nowrap><B>ilość dni</B></TD>
+						    <TD width="98%" nowrap>
+							<SELECT size="1" name="days" {tip text="Select days"}>
+							    <OPTION value="0" SELECTED>{t}- all groups -{/t}</OPTION>
+							    <OPTION value="7">7</OPTION>
+							    <OPTION value="14">14</OPTION>
+							    <OPTION value="30">30</OPTION>
+							</SELECT>
+						    </TD>
+						</TR>
+<tr>
+ 							<TD width="1%">
+ 						<IMG src="img/calendar.gif" alt="">
+ 					</TD>
+ 					
+ 						<td width="1%"><B>od:</B></td><td width="10%">
+ 						&nbsp;<INPUT TYPE="text" NAME="fromdate" SIZE="10" MAXSIZE="10" OnClick="javascript:cal26.popup();" {tip text="Enter date in 'yyyy/mm/dd' format (empty field means 1970/01/01) or click to choose it from calendar"}>
+ 					       <B>do:</B>
+ 						&nbsp;<INPUT TYPE="text" NAME="todate" SIZE="10" MAXSIZE="10" OnClick="javascript:cal27.popup();" {tip text="Enter date in 'yyyy/mm/dd' format (empty field means 1970/01/01) or click to choose it from calendar"}>
+ 					</TD>
+ 	</TR>
+			</TABLE>
+		</TD>
+	</TR>
+
+	<TR class="LIGHT">
+		<TD class="fbottomu" width="100%" colspan="2" align="right">
+			<A href="javascript:document.printcustomercontract.submit();">{t}Print{/t} <IMG src="img/print.gif" alt="" hspace="2"></A>
+		</TD>
+	</TR>
+</TABLE>
+</FORM>
+ <SCRIPT type="text/javascript">
+ <!--
+ var cal26 = new calendar(document.printcustomercontract.elements['fromdate']);
+ cal26.time_comp = false;
+ var cal27 = new calendar(document.printcustomercontract.elements['todate']);
+ cal27.time_comp = false;
+ //-->
+ </SCRIPT>
+</P>
+{/if}
+{if $printmenu=="customer"}
+<P><FORM method="post" name="printtariffsgroup" id="printtariffsgroup" action="?m=print&type=printtariffsgroup" target="_blank">
+<INPUT type="submit" class="hiddenbtn">
+<TABLE width="100%" CELLPADDING="3">
+	<TR class="DARK">
+		<TD class="fleftu" width="1%">
+			<IMG src="img/money.gif" alt="">
+		</TD>
+		<TD class="frightu" width="99%">
+			<B>taryfa</B>
+		</TD>
+	</TR>
+<TR class="LIGHT">
+		<TD class="flr" width="100%" colspan="2">
+			<TABLE width="100%">
+						<TR>    
+						    <TD width="1%" nowrap><IMG src="img/money.gif" alt=""></TD>
+						    <TD width="1%" nowrap><B>Taryfy</B></TD>
+						    <TD width="98%" nowrap colspan="4">
+							<SELECT size="1" name="tariffgroup" {tip text="Select group"}>
+							    <OPTION value="0" SELECTED>wszystkie taryfy</OPTION>
+        						    {foreach from=$tariffslist item=tariff}
+							    <OPTION value="{$tariff.id}">{$tariff.name|truncate:30:"...":true}</OPTION>
+	        					    {/foreach}
+							</SELECT>
+						    </TD>
+						</TR>
+<TR>    
+						    <TD width="1%" nowrap><IMG src="img/group.gif" alt=""></TD>
+						    <TD width="1%" nowrap><B>{t}Group:{/t}</B></TD>
+						    <TD width="98%" nowrap colspan="4">
+							<SELECT size="1" name="customergroup" {tip text="Select group"}>
+							    <OPTION value="0" SELECTED>{t}- all groups -{/t}</OPTION>
+							    {section name="customergroups" loop=$customergroups}
+							    <OPTION value="{$customergroups[customergroups].id}">{$customergroups[customergroups].name|truncate:40:"...":true}</OPTION>
+							    {/section}
+							</SELECT>
+						    </TD>
+						</TR>
+<TR>    
+						    <TD width="1%" nowrap><IMG src="img/downrate.gif" alt=""></TD>
+						    <TD width="1%" nowrap><B>Downrate:</B></TD>
+						    <TD width="1%" nowrap>
+							<INPUT size="5" type="text" size="1" name="downrate" {tip text="Downrate"}></td>
+						    <TD width="1%" nowrap><IMG src="img/uprate.gif" alt=""></TD>
+						    <td width="1%"><B>uprate:</B></td>
+						 <td>
+							<INPUT size="5" type="text" size="1" name="uprate" {tip text="Uprate"}>						  
+						    </TD>
+						</TR>
+			</TABLE>
+		</TD>
+	</TR>
+
+	<TR class="LIGHT">
+		<TD class="fbottomu" width="100%" colspan="2" align="right">
+			<A href="javascript:document.printtariffsgroup.submit();">{t}Print{/t} <IMG src="img/print.gif" alt="" hspace="2"></A>
+		</TD>
+	</TR>
+</TABLE>
+</FORM>
+</P>
+{/if}
 {include file="footer.html"}

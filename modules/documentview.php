@@ -35,7 +35,8 @@ if(!empty($_POST['marks']))
 		JOIN documents d ON (d.id = c.docid)
 		JOIN docrights r ON (r.doctype = d.type)
 		WHERE c.docid IN ('.implode(',', $marks).')
-			AND r.userid = ? AND (r.rights & 1) = 1', array($AUTH->id)))
+			AND r.userid = ? AND (r.rights & 1) = 1
+		ORDER BY d.customerid', array($AUTH->id)))
 	{
 		$ctype = $list[0]['contenttype'];
 		
