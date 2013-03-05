@@ -3,7 +3,7 @@
 <html><head>
 <meta name="GENERATOR" content="LMS {$layout.lmsv}">
 <meta http-equiv="Content-Language" content="{$LANGDEFS.$_ui_language.html}">
-<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_ui_language.html}">
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_ui_language.charset}">
 <title>::: LMS :{if $layout.pagetitle neq ""} {$layout.pagetitle} :{/if}::</title>
 <link href="img/style.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="img/common.js"> </script>
@@ -47,11 +47,11 @@
 	{sectionelse}
 	</table>
 	<table width="100%" height="100%">
-		<TR title="{t}Click to close window{/t}" onclick="parent.window.close();">
+		<TR title="{trans("Click to close window")}" onclick="parent.window.close();">
 			<TD align="center">
-				<FONT class="alert">{t}That server hasn't seen any MAC addresses!{/t}</FONT>
+				<FONT class="alert">{trans("That server hasn't seen any MAC addresses!")}</FONT>
 				<BR><BR>
-				{t}Or, most likely, can't get MAC addresses table on that host.{/t}
+				{trans("Or, most likely, can't get MAC addresses table on that host.")}
 			</TD>
 		</TR>
 	{/section}
@@ -63,7 +63,7 @@
 <table cellpadding="5" width="100%">
 	<tr>
 		<td class="fall dark" align="center">
-			<B>{t}Select MAC address:{/t}</B>
+			<B>{trans("Select MAC address:")}</B>
 		</td>
 	</tr>
 </table>

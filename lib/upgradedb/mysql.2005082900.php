@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -32,7 +32,7 @@ $DB->Execute("CREATE TABLE hosts (
     reload tinyint(1) default '0' NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY name (name)
-) TYPE=MyISAM");
+) ENGINE=MyISAM");
 $DB->Execute("INSERT INTO hosts (id, name, description, lastreload, reload) SELECT id, name, description, lastreload, reload FROM daemonhosts");
 $DB->Execute("DROP TABLE daemonhosts");
 

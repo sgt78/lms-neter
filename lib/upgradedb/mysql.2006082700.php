@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -34,7 +34,7 @@ $DB->Execute("CREATE TABLE nodeassignments (
 	assignmentid int(11) NOT NULL DEFAULT '0',
 	PRIMARY KEY (id),
 	UNIQUE KEY nodeid (nodeid, assignmentid)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 ");
 
 if($assign = $DB->GetAll('SELECT id, nodeid FROM assignments WHERE nodeid!=0'))

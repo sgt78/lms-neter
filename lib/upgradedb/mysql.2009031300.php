@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -37,7 +37,7 @@ $DB->Execute("CREATE TABLE messages (
         PRIMARY KEY (id),
 	INDEX cdate (cdate, type),
 	INDEX userid (userid)
-) TYPE=MyISAM");
+) ENGINE=MyISAM");
 
 $DB->Execute("CREATE TABLE messageitems (
         id 		int(11) 	NOT NULL auto_increment,
@@ -50,7 +50,7 @@ $DB->Execute("CREATE TABLE messageitems (
         PRIMARY KEY (id),
 	INDEX messageid (messageid),
 	INDEX customerid (customerid)
-) TYPE=MyISAM");
+) ENGINE=MyISAM");
 
 $DB->Execute('UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?', array('2009031300', 'dbversion'));
 

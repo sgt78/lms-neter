@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -26,11 +26,7 @@
 
 function smarty_function_gentime($params, $template)
 {
-	$time = microtime();
-	return sprintf('%.4f',((substr($time,0,9))
-				+ (substr($time,-10))
-				- (substr(START_TIME,0,9))
-				- (substr(START_TIME,-10))));
+	return sprintf('%.4f', microtime(true) - START_TIME);
 }
 
 ?>

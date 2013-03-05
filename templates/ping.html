@@ -1,0 +1,143 @@
+{if $part eq "titlebar"}
+<div class="lmsPopupTitleBar">
+	<div class="lmsPopupTitle">{t a=$ipaddr}Ping to $a{/t}</div>
+	<div id="{$popupid}_popupCloseBox" class="olPopupCloseBox lmsPopupCloseBox">&nbsp;</div>
+</div>
+<div class="lmsPingContentsFrame">
+	<iframe id="autoiframe_{$popupid}" width=100 height=10 frameborder=0 scrolling=no src="?m=ping&ip={$ipaddr}&type={$type}"></iframe>
+</div>
+{elseif $part eq "ipform"}
+<div class="lmsPopupTitleBar">
+	<div class="lmsPopupTitle">&nbsp;</div>
+	<div id="{$popupid}_popupCloseBox" class="olPopupCloseBox lmsPopupCloseBox">&nbsp;</div>
+</div>
+<div class="lmsIpPopupContents">
+	<div class="lmsIpPopupLabel">{trans("Enter IP address:")}</div>
+	<div class="lmsIpPopupForm">
+		<form name="{$popupid}_ipform" id="ipform" method="GET" action="?m=ping" onsubmit="return ping_any_host('{$popupid}');">
+			<input type="text" name="ip"><br>
+			<input type="radio" id="type1" name="type" value="1" checked><a href="javascript:checkElement('type1')">icmp</a>
+			<input type="radio" id="type2" name="type" value="2"><a href="javascript:checkElement('type2')">arp</a>
+			<input type="submit" class="hiddenbtn">
+		</form>
+	</div>
+</div>
+{else}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--// $Id$ //-->
+<html><head>
+<meta name="GENERATOR" content="LMS {$layout.lmsv}">
+<meta http-equiv="Content-Language" content="{$LANGDEFS.$_ui_language.html}">
+<meta http-equiv="Content-Type" content="text/html; charset={$LANGDEFS.$_ui_language.charset}">
+<title>::: LMS :{if $layout.pagetitle neq ""} {$layout.pagetitle} :{/if}::</title>
+<link href="img/style.css" rel="stylesheet" type="text/css">
+<link href="img/map.css" rel="stylesheet" type="text/css">
+{$xajax}
+</head>
+{if !$part}
+<frameset name="all" frameborder="0" framespacing="0" ROWS="*">
+	<frame scrolling="always" frameborder="0" marginheight="0" marginwidth="0" name="m" noresize src="?m=ping&p=main&ip={$ipaddr}&type={$type}">
+</frameset>
+{else}
+<script type="text/javascript" src="img/common.js"></script>
+<body>
+	<div id="data" class="lmsPingContents"></div>
+	<div class="lmsPingBottom">
+		<div class="lmsPingTotalSummary">
+			<div id="total" class="lmsPingTotal">
+				{t a="0" b="0" c="0"}Total: $a% ($b/$c){/t}
+			</div>
+			<div id="summary" class="lmsPingSummary">
+				mix/avg/max = -/-/- ms
+			</div>
+		</div>
+		<div class="lmsPingControls">
+			<form id="params">
+				<input type="hidden" name="type" value="{$type}">
+				<input type="hidden" name="interface" value="{$interface}">
+				<input type="hidden" name="ipaddr" value="{$ipaddr}">
+				<input type="hidden" id="transmitted" name="transmitted" value="0">
+				<input type="hidden" id="received" name="received" value="0">
+				<input type="hidden" id="times" name="times" value="">
+				<div class="lmsPingEnabled">
+					<input type="checkbox" id="enabled" name="enabled" onclick="javascript:ping_toggle()" checked><a href="javascript:enabled_toggle();">{trans("Enabled")}</a>
+				</div>
+				<div class="lmsPingAutoScroll">
+					<input type="checkbox" id="autoscroll" name="autoscroll" checked><a href="javascript:checkElement('autoscroll');">{trans("Auto Scroll")}</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+<!--
+	var reqTime = 0;
+	var minTime = 1000.0, maxTime = 0.0, sumTime = 0.0;
+
+	function time_to_fixed(time)
+	{
+		if (time < 1.0)
+			return time.toFixed(3);
+		if (time < 10.0)
+			return time.toFixed(2);
+		return time.toFixed(1);
+	}
+
+	function ping_reply()
+	{
+		elem = document.getElementById('data');
+		if (elem && document.getElementById('autoscroll').checked)
+			elem.scrollTop = elem.scrollHeight;
+		try {
+			var times = JSON.parse(document.getElementById('times').value);
+			if (times.length) {
+				for (var i in times) {
+					var chunks = times[i].split(' ');
+					var currentTime = parseFloat(chunks[0]);
+					sumTime += currentTime;
+					if (currentTime > maxTime)
+						maxTime = currentTime;
+					if (currentTime < minTime)
+						minTime = currentTime;
+				}
+				var avgTime = sumTime / parseFloat(document.getElementById('received').value);
+				document.getElementById('summary').innerHTML = 'min/avg/max = '
+					+ [time_to_fixed(minTime), time_to_fixed(avgTime), time_to_fixed(maxTime)].join('/') + ' ms';
+			}
+		} catch(e) {}
+		if (document.getElementById('enabled').checked) {
+			var d = new Date();
+			var waitTime = 1000 - d.getTime() + reqTime;
+			if (waitTime < 10)
+				ping_refresh();
+			else
+				setTimeout("ping_refresh()", waitTime);
+		}
+	}
+
+	function ping_refresh()
+	{
+		xajax_refresh(xajax.getFormValues('params'));
+
+		var d = new Date();
+		reqTime = d.getTime();
+	}
+
+	function ping_toggle()
+	{
+		if (document.getElementById('enabled').checked)
+			ping_refresh();
+	}
+
+	function enabled_toggle()
+	{
+		checkElement('enabled');
+		ping_toggle();
+	}
+
+	ping_refresh();
+//-->
+</script>
+{/if}
+</html>
+{/if}

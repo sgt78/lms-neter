@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -316,7 +316,30 @@ if($links = $DB->GetAll('SELECT src, dst FROM netlinks'))
 	}
 }
 
-if($graph == '')
+$type = strtolower(isset($CONFIG['phpui']['map_type']) ? $CONFIG['phpui']['map_type'] : '');
+
+if ($type == 'openlayers')
+{
+	include(MODULES_DIR.'/map.inc.php');
+
+	if (isset($_GET['netdevid']))
+	{
+		$netdevid = intval($_GET['netdevid']);
+		$SMARTY->assign('lon', $devices[$netdevid]['lon']);
+		$SMARTY->assign('lat', $devices[$netdevid]['lat']);
+	}
+	else
+		if (isset($_GET['nodeid']))
+		{
+			$nodeid = intval($_GET['nodeid']);
+			$SMARTY->assign('lon', $nodes[$nodeid]['lon']);
+			$SMARTY->assign('lat', $nodes[$nodeid]['lat']);
+		}
+
+	$SMARTY->assign('type', $type);
+	$SMARTY->display('netdevmap.html');
+}
+elseif($graph == '')
 {
 	makemap($map,$seen,$start);
 	if($map)
@@ -387,7 +410,7 @@ if($graph == '')
 	$SMARTY->assign('deviceslist', $deviceslist);
 	$SMARTY->assign('start', $start);
 	$SMARTY->assign('mini', $mini);
-	$SMARTY->assign('type', strtolower(isset($CONFIG['phpui']['map_type']) ? $CONFIG['phpui']['map_type'] : ''));
+	$SMARTY->assign('type', $type);
 	$SMARTY->assign('emptydb', sizeof($deviceslist) ? FALSE : TRUE);
 	$SMARTY->assign('gd', function_exists('imagepng'));
 	$SMARTY->assign('ming', function_exists('ming_useswfversion'));

@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -144,7 +144,7 @@ $_LANG['Are you sure, you want to drop user $a from that event?'] = 'Jesteś pew
 $_LANG['Are you sure, you want to generate new password?'] = 'Jesteś pewien, że chcesz wygenerować nowe hasło?';
 $_LANG['Are you sure, you want to generate new PIN?'] = 'Jesteś pewien, że chcesz wygenerować nowy PIN?';
 $_LANG['Are you sure, you want to irreversibly delete that user account?'] = 'Jesteś pewien, że chcesz nieodwracalnie usunąć to konto?';
-$_LANG['Are you sure, you want to move customers to tariff \'+getText(document.tmove.to.value)+\'?'] = 'Jesteś pewien, że chcesz przesunąć klientów do taryfy \'+getText(document.tmove.to.value)+\'?';
+$_LANG['Are you sure, you want to move customers to selected tariff?'] = 'Jesteś pewien, że chcesz przesunąć klientów do wybranej taryfy?';
 $_LANG['Are you sure, you want to readdress network $a to network $b ?'] = 'Jesteś pewien, że chcesz przeadresować sieć $a do sieci $b ?';
 $_LANG['Are you sure, you want to recover database created at $a?'] = 'Czy jesteś pewien, że chcesz odtworzyć bazę danych z kopii stworzonej $a?';
 $_LANG['Are you sure, you want to remove customer \\\'$a\\\' from database?\\n\\nIf that customer have some nodes, they will be also removed and data definitely lost!'] = 'Jesteś pewien, że chcesz usunąć klienta \\\'$a\\\' z bazy danych?\\n\\nJeżeli klient posiada jakieś komputery zostaną one również usunięte, a ich dane bezpowrotnie utracone!';
@@ -171,7 +171,7 @@ $_LANG['Attachment:'] = 'Załącznik:';
 $_LANG['Attachments:'] = 'Załączniki:';
 $_LANG['Avg. monthly income:'] = 'Śr. mies. przychód:';
 $_LANG['awaiting'] = 'oczekujący';
-$_LANG['List of awaiting customers'] = 'Lista klientów oczekujących';
+$_LANG['List of awaiting customers $a'] = 'Lista klientów oczekujących $a';
 $_LANG['<B>$a</B>'] = '<B>$a</B>';
 $_LANG['Backup Delete'] = 'Backup Delete';
 $_LANG['Backups'] = 'Kopie zapasowe';
@@ -253,7 +253,7 @@ $_LANG['List of Connected Nodes'] = 'Lista podłączonych komputerów';
 $_LANG['Connection limit:'] = 'Limit połączeń:';
 $_LANG['Content:'] = 'Treść:';
 $_LANG['Customer notice content'] = 'Treść powiadomienia dla klienta';
-$_LANG['Content-type for document. If you enter "application/octet-stream", browser will send file to save on disk, instead of displaying it. It\'s useful if you use your own template which generate e.g. rtf or xls file. Default: "text/html".'] = 'Content-type dokumentu. Jeżeli wpiszecie tutaj \"application/octet-stream\", to przeglądarka zechce wam wysłać plik do zapisania na dysku, zamiast go wyświetlić. Przydatne jeżeli użyjecie własnego template\'a który wygeneruje np. rtf\'a czy xls\'a. Domyślnie: "text/html"';
+$_LANG['Content-type for document. If you enter "application/octet-stream", browser will send file to save on disk, instead of displaying it. It\'s useful if you use your own template which generate e.g. rtf or xls file. Default: "text/html".'] = 'Content-type dokumentu. Jeżeli wpiszecie tutaj "application/octet-stream", to przeglądarka zechce wam wysłać plik do zapisania na dysku, zamiast go wyświetlić. Przydatne jeżeli użyjecie własnego template\'a który wygeneruje np. rtf\'a czy xls\'a. Domyślnie: "text/html"';
 $_LANG['Contract'] = 'Umowa';
 $_LANG['Contractor'] = 'Klient';
 $_LANG['copy'] = 'kopia';
@@ -459,7 +459,7 @@ $_LANG['Enter device name'] = 'Wprowadź nazwę urządzenia';
 $_LANG['Enter device producer (optional)'] = 'Wprowadź producenta urządzenia (opcjonalnie)';
 $_LANG['Enter device purchase date in \'yyyy/mm/dd\' format or click to choose date from calendar (optional)'] = 'Wprowadź datę zakupu urządzenia w formacie RRRR/MM/DD lub kliknij by wybrać ją z kalendarza (opcjonalnie)';
 $_LANG['Enter device serial number (optional)'] = 'Wprowadź numer seryjny urządzenia (opcjonalnie)';
-$_LANG['Enter discount percentage'] = 'Wprowadź procent rabatu';
+$_LANG['Enter discount percentage or amount'] = 'Wprowadź procent lub kwotę rabatu';
 $_LANG['Enter domain name'] = 'Wprowadź nazwę domeny';
 $_LANG['Enter e-mail address'] = 'Wprowadź adres e-mail';
 $_LANG['Enter e-mail address (optional)'] = 'Wprowadź adres e-mail (opcjonalnie)';
@@ -689,7 +689,7 @@ $_LANG['Integer value expected!'] = 'Spodziewano się wartości całkowitej!';
 $_LANG['interested<!plural>'] = 'zainteresowani';
 $_LANG['interested<!singular>'] = 'zainteresowany';
 $_LANG['Interested:'] = 'Zainteresowani:';
-$_LANG['Interested Customers List'] = 'Lista zainteresowanych klientów';
+$_LANG['Interested Customers List $a'] = 'Lista zainteresowanych klientów $a';
 $_LANG['Interface:'] = 'Interfejs:';
 $_LANG['Invalid chars in group name!'] = 'Niedozwolone znaki w nazwie grupy!';
 $_LANG['Invalid date format!'] = 'Nieprawidłowy format daty!';
@@ -2079,15 +2079,15 @@ $_LANG['Voip account owner is not connected!'] = 'Właściciel konta VoIP nie je
 $_LANG['Selected numbering plan doesn\'t match customer\'s division!'] = 'Wybrany plan numeracyjny nie należy do firmy klienta!';
 $_LANG['with document'] = 'z dokumentem';
 $_LANG['without document'] = 'bez dokumentu';
+$_LANG['comment'] = 'komentarz';
 $_LANG['$a records for deleted nodes has been removed.<BR>'] = '$a rekordów nieistniejących komputerów zostało usuniętych.<BR>';
 $_LANG['- select category -'] = '- wybierz kategorię -';
 $_LANG['Available<!plural>:'] = 'Dostępne:';
 $_LANG['Selected<!plural>:'] = 'Wybrane:';
-$_LANG['AVG:'] = 'ŚREDNIA:';
-$_LANG['LAST:'] = 'OSTATNI:';
-$_LANG['MAX:'] = 'MAX:';
-$_LANG['DOWNLOAD'] = 'DOWNLOAD';
-$_LANG['UPLOAD'] = 'UPLOAD';
+$_LANG['Avg [bit/s]'] = 'Średnio [bit/s]';
+$_LANG['Last [bit/s]'] = 'Ostatnio [bit/s]';
+$_LANG['Max [bit/s]'] = 'Maks. [bit/s]';
+$_LANG['Transmitted [B]'] = 'Przesłane dane [B]';
 $_LANG['Customer Timetable:'] = 'Terminarz klienta:';
 $_LANG['last $a events'] = 'ostatnie $a zdarzeń';
 $_LANG['There are no events in timetable.'] = 'Brak zdarzeń w kalendarzu.';
@@ -2459,6 +2459,7 @@ $_LANG['Option'] = 'Opcja';
 $_LANG['by date'] = 'wg daty';
 $_LANG['Select date type'] = 'Wybierz typ daty';
 $_LANG['in debt above 100%'] = 'zadłużeni ponad 100%';
+$_LANG['in debt above 200%'] = 'zadłużeni ponad 200%';
 $_LANG['<!borough_abbr>'] = 'gm.';
 $_LANG['<!district_abbr>'] = 'pow.';
 $_LANG['City'] = 'Miejscowość';
@@ -2492,8 +2493,8 @@ $_LANG['Categories:'] = 'Kategorie:';
 $_LANG['Category'] = 'Kategoria';
 $_LANG['Category:'] = 'Kategoria';
 $_LANG['Owners'] = 'Właściciele';
-$_LANG['There are no categories.'] = 'Nie ma kategorii';
-$_LANG['Category name must be defined!'] = 'Kategoria musi posiadać swoją nazwę!';
+$_LANG['There are no categories.'] = 'Brak kategorii w bazie danych.';
+$_LANG['Category name must be defined!'] = 'Kategoria musi posiadać nazwę!';
 $_LANG['Category with specified name already exists!'] = 'Kategoria o podanej nazwie już istnieje!';
 $_LANG['New Category'] = 'Nowa kategoria';
 $_LANG['Remove category ID: $a'] = 'Usuń kategorię: $a';
@@ -2503,5 +2504,33 @@ $_LANG['Category Info: $a'] = 'Informacje o kategorii: $a';
 $_LANG['Categories List'] = 'Lista kategorii';
 $_LANG['List of categories'] = 'Lista kategorii';
 $_LANG['Add new category'] = 'Utworzenie nowej kategorii';
+
+$_LANG['Enter device latitude (optional)'] = 'Podaj szerokość geograficzną dla urządzenia (opcjonalne)';
+$_LANG['Enter device longitude (optional)'] = 'Podaj długość geograficzną dla urządzenia (opcjonalne)';
+$_LANG['GPS coordinates:'] = 'Współrzędne geograficzne:';
+$_LANG['GPS latitude:'] = 'Szerokość geograficzna:';
+$_LANG['GPS longitude:'] = 'Długość geograficzna:';
+$_LANG['Click to select gps coordinates from map'] = 'Kliknij w celu wybrania współrzędnych geograficznych z mapy';
+$_LANG['Select gps coordinates'] = 'Wybierz współrzędne geograficzne';
+$_LANG['Select gps coordinates:'] = 'Wybierz współprzędne geograficzne:';
+$_LANG['Show on map'] = 'Pokaż na mapie';
+
+$_LANG['$a bytes from $b: icmp_req=$c ttl=$d time=$e'] = '$a bajtów od $b: icmp_req=$c ttl=$d czas=$e';
+$_LANG['Unicast reply from $a [$b]: time=$c'] = 'Odpowiedź unicast od $a [$b]: czas=$c';
+$_LANG['Destination Host Unreachable'] = 'Urządzenie docelowe jest nieosiągalne';
+$_LANG['Total: $a% ($b/$c)'] = 'Razem: $a% ($b/$c)';
+$_LANG['Auto Scroll'] = 'Automatyczne przewijanie';
+$_LANG['Enter IP address:'] = 'Podaj adres IP:';
+$_LANG['Ping to $a'] = 'Ping do $a';
+$_LANG['Enabled'] = 'Włączony';
+
+$_LANG['any sms'] = 'dowolny sms';
+$_LANG['Enter phone numbers separated by commas'] = 'Podaj numery telefonów oddzielone przecinkami';
+$_LANG['Specified phone number is not correct!'] = 'Podany numer telefonu nie jest poprawny!';
+$_LANG['Characters:'] = 'Znaków:';
+$_LANG['Select users'] = 'Wybierz użytkowników';
+$_LANG['Enter discount percentage or value'] = 'Wprowadź wartość kwotową lub procentową rabatu';
+$_LANG['Min [bit/s]'] = 'Min [bit/s]';
+$_LANG['Ping'] = 'Ping';
 
 ?>

@@ -32,26 +32,36 @@ function removeClass(theElem, theClass)
 }
 
 // LMS: function to autoresize iframe and parent div container (overlib)
-function autoiframe_setsize(width, height)
+function autoiframe_setsize(id, width, height)
 {
-    var doc = window.parent ? parent.document : document,
-        frame = doc.getElementById('autoiframe');
+	var doc = window.parent ? parent.document : document,
+		frame = doc.getElementById(id);
 
-    if (width) {
-        frame.style.width = width + 'px';
-        frame.parentNode.style.width = width + 'px';
-    }
-    if (height) {
-        frame.style.height = height + 'px';
-        frame.parentNode.style.height = height + 'px';
-    }
+	if (width) {
+		frame.style.width = width + 'px';
+		frame.parentNode.style.width = width + 'px';
+	}
+	if (height) {
+		frame.style.height = height + 'px';
+		frame.parentNode.style.height = height + 'px';
+	}
 }
 
 function openSelectWindow(theURL, winName, myWidth, myHeight, isCenter, formfield)
 {
 	targetfield = formfield;
-    popup(theURL, 1, 1, 30, 15);
-    autoiframe_setsize(myWidth, myHeight);
+	popup(theURL, 1, 1, 30, 15);
+	autoiframe_setsize('autoiframe', myWidth, myHeight);
+
+	return false;
+}
+
+function openSelectWindow2(theURL, winName, myWidth, myHeight, isCenter, formfield1, formfield2)
+{
+	targetfield1 = formfield1;
+	targetfield2 = formfield2;
+	popup(theURL, 1, 1, 30, 15);
+	autoiframe_setsize('autoiframe', myWidth, myHeight);
 
 	return false;
 }
@@ -82,11 +92,16 @@ function locationchoosewin(varname, formname, city, street)
 	return openSelectWindow('?m=chooselocation&name='+varname+'&form='+formname+'&city='+city+'&street='+street,'chooselocation',350,200,'true');
 }
 
+function gpscoordschoosewin(formfield1, formfield2)
+{
+	return openSelectWindow2('?m=choosegpscoords', 'choosegpscoords', 450, 300, 'true', formfield1, formfield2);
+}
+
 function sendvalue(targetfield, value)
 {
 	targetfield.value = value;
-    // close popup
-    window.parent.parent.popclick();
+	// close popup
+	window.parent.parent.popclick();
 	targetfield.focus();
 }
 
@@ -122,26 +137,28 @@ function getSeconds()
 
 function getCookie(name)
 {
-        var cookies = document.cookie.split(';');
-	for (var i=0; i<cookies.length; i++)
-	{
+	var cookies = document.cookie.split(';');
+	for (var i=0; i<cookies.length; i++) {
 		var a = cookies[i].split('=');
-                if (a.length == 2)
-		{
-            		a[0] = a[0].trim();
-                	a[1] = a[1].trim();
-                	if (a[0] == name)
-			{
-                    		return unescape(a[1]);
-			}
-                }
-        }
-        return null;
+		if (a.length == 2) {
+			a[0] = a[0].trim();
+			a[1] = a[1].trim();
+			if (a[0] == name)
+				return unescape(a[1]);
+		}
+	}
+	return null;
 }
 
-function setCookie(name, value)
+function setCookie(name, value, permanent)
 {
-        document.cookie = name + '=' + escape(value);
+	var cookie = name + '=' + escape(value);
+	if (permanent != null) {
+		var d = new Date();
+		d.setTime(d.getTime() + 365 * 24 * 3600 * 1000);
+		cookie += '; expires=' + d.toUTCString();
+	}
+	document.cookie = cookie;
 }
 
 if (typeof String.prototype.trim == 'undefined')
@@ -176,6 +193,8 @@ function checkElement(id)
 
 	if (elem) {
 		elem.checked = !elem.checked;
+		if (typeof elem.onchange === 'function')
+			elem.onchange();
 	}
 }
 
@@ -196,7 +215,7 @@ function get_object_pos(obj)
 	return {x:x, y:y};
 }
 
-function multiselect(formid, elemid, def)
+function multiselect(formid, elemid, def, selected)
 {
 	var old_element = document.getElementById(elemid);
 	var form = document.getElementById(formid);
@@ -205,11 +224,15 @@ function multiselect(formid, elemid, def)
 		return;
 	}
 
+	var selected_elements = null;
+	if (selected)
+		selected_elements = '|' + selected.join('|') + '|';
+
 	// create new multiselect div
 	var new_element = document.createElement('DIV');
 	new_element.className = 'multiselect';
 	new_element.id = elemid;
-	new_element.innerHTML = def ? def : '';
+	new_element.innerHTML = def && !selected ? def : '';
 
 	// save (overlib) popups
 	new_element.onmouseover = old_element.onmouseover;
@@ -236,6 +259,10 @@ function multiselect(formid, elemid, def)
 		box.type = 'checkbox';
 		box.name = old_element.name;
 		box.value = old_element.options[i].value;
+		if (selected_elements && selected_elements.indexOf('|' + old_element.options[i].value + '|') != -1) {
+			box.checked = true;
+			addClass(li, 'selected');
+		}
 
 		span.innerHTML = old_element.options[i].text;
 
@@ -317,26 +344,27 @@ function reset_login_timeout()
 // Display overlib popup
 function popup(content, frame, sticky, offset_x, offset_y)
 {
-    if (lms_sticky_popup)
-        return;
+	if (lms_sticky_popup)
+		return;
 
-    if (frame) {
-        content = '<iframe id="autoiframe" width=100 height=10 frameborder=0 scrolling=no '
-            +'src="'+content+'&popup=1"></iframe>';
-    }
+	if (frame)
+		content = '<iframe id="autoiframe" width=100 height=10 frameborder=0 scrolling=no '
+			+'src="'+content+'&popup=1"></iframe>';
 
-    if (!offset_x) offset_x = 15;
-    if (!offset_y) offset_y = 15;
+	if (!offset_x) offset_x = 15;
+	if (!offset_y) offset_y = 15;
 
-    if (sticky) {
-        overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y, STICKY, MOUSEOFF);
-        var body = document.getElementsByTagName('BODY')[0];
-        body.onmousedown = function () { popclick(); };
-        lms_sticky_popup = 1;
-    }
-    else {
-        overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y);
-    }
+	if (sticky) {
+		// let's check how people will react for this small change ;-)
+		//overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y, STICKY, MOUSEOFF);
+		overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y, STICKY);
+		var body = document.getElementsByTagName('BODY')[0];
+		body.onmousedown = function () { popclick(); };
+		lms_sticky_popup = 1;
+	}
+	else {
+		 overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y);
+	}
 }
 
 // Hide non-sticky popup
@@ -374,4 +402,12 @@ function check_teryt(locid, init)
     }
 
     return checked;
+}
+
+function ping_popup(ip, type)
+{
+	if (type == null)
+		type = 1;
+	popup('?m=ping&ip=' + ip + '&type=' + type, 1, 1, 30, 30);
+	autoiframe_setsize('autoiframe', 480, 300);
 }

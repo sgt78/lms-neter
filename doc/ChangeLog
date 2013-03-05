@@ -35,6 +35,54 @@ version ? (????-??-??):
     WARNING: This update changes required version of Smarty from 2.6 to 3.x.
     		It was quite strongly tested with Smarty 3.1.3
     -----------------------------------------------------------------
+    WARNING: This update changes required version of PHP to 5.2+
+    -----------------------------------------------------------------
+  - quicksearch: fixed search for hosts when exact mac address was entered [chilan]
+  - BTS#0000867: execution node_del_{before,after} hooks while deleting owner [chilan]
+  - gps coordinates support for nodes and netdevices [chilan]
+  - netdevmap: first version of OpenStreetMap map type support thanks to Grzegorz Cichowski [chilan]
+  - netdevmap: show info about netdevices for OpenStreetMap map type [chilan]
+  - selection of gps coordinates from popup map [chilan]
+  - javascript smarty literal cleanup [chilan]
+  - network maps show nodes and node links & switched map creation from markers to features [chilan]
+  - separated js and php files created for map support [chilan]
+  - livemap(tm) in LMS ;-) network state is updated asynchronously in real time 
+    in phpui->lastonline_limit time periods [chilan]
+  - we can ping nodes and devices watching results in popups [chilan]
+  - 5 default base layers for maps [chilan]
+  - ported to xajax 0.5 [chilan]
+  - toolbar on netdevmap and possibility to ping any host (even not included in database) [chilan]
+  - netmap popups are draggable thanks to DragPopup class written by Matt Walker [chilan]
+  - we can close netmap popups by close box; also some map css cleanups [chilan]
+  - netdevmap: remember position, zoom, base layer and visible data layers between
+    netdevmap visits [chilan]
+  - netdevmap: refresh network state on demand - added new button [chilan]
+  - LMS postgresql driver uses E'..' for escaping backslashes (compatibility with changed default
+    value of standard_conforming_strings to on) [chilan]
+  - ping is more smart now - refresh every 1 second, but can make many ping
+    probes on server [chilan]
+  - when network elements are covered too dense then we show these elements info
+    in one, common popup window [chilan]
+  - it's able to pause ping [chilan]
+  - display summary times in ping popup [chilan]
+  - added %bankaccount variable for messages sent from UI [Łukasz Rostalski]
+  - lms-payments: added 'check_invoices' option [foxman]
+  - if user doesn't have finances management privilege then he can't see any
+    financial information [chilan]
+  - possibility to show selected device or node on map [chilan]
+  - we can send sms to any phone number from outside database [chilan]
+  - can send any sms to selected users [chilan]
+  - added %if substitution symbol for interface name [chilan]
+  - BTS#0000892: Fixed bug where phpui/style wasn't used on login page [alec]
+  - we can use percentage and amount discounts [chilan]
+  - BTS#0000894: lmsd/parser: Fixed SQL query for NODES variable [alec]
+  - fixed listing of customers who in debt above 100% and 200% [Jarosław Dziubek/chilan]
+  - complete rewrite of graph statistics engine. Graphs look like in Cacti [chilan] 
+  - we can choose graph statistics from node information form [chilan]
+  - rewritten graph navigation panel [chilan]
+  - invoicenote: we use tax rates which were current in the day
+    when invoice was issued [Jarosław Dziubek/chilan]
+  - ping: added selection of ping type thanks to Grzegorz Cichowski [chilan]
 
 version 1.11.13 Dira (2011-04-07)
 

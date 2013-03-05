@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -32,7 +32,7 @@ CREATE TABLE numberplanassignments (
 	PRIMARY KEY (id),
 	UNIQUE KEY planid (planid, divisionid),
 	INDEX divisionid (divisionid)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 ");
 
 if($divs = $DB->GetAll('SELECT id FROM divisions'))

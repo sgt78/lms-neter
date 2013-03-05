@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -34,7 +34,7 @@ CREATE TABLE imessengers (
     type tinyint(1) NOT NULL DEFAULT '0',
     PRIMARY KEY (id),
     INDEX customerid (customerid)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 ");
 
 $DB->Execute("INSERT INTO imessengers (customerid, uid)

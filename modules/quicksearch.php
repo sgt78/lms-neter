@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -26,7 +26,7 @@
 
 function macformat($mac, $escape=false)
 {
-    global $DB;
+	global $DB;
 
 	$res = str_replace('-', ':', $mac);
 
@@ -50,10 +50,10 @@ function macformat($mac, $escape=false)
 		if(strlen($tmp) == 12) // we've the whole address
 			if(check_mac($tmp))
 				$res = $tmp;
-
-        if ($escape)
-            $res = $DB->Escape("%$res%");
 	}
+
+	if ($escape)
+		$res = $DB->Escape("%$res%");
 	return $res;
 }
 

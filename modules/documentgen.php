@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -26,9 +26,6 @@
 
 $_DOC_DIR = DOC_DIR;
 
-/* Using AJAX for template plugins */
-require(LIB_DIR.'/xajax/xajax.inc.php');
-
 function plugin($template, $customer)
 {
 	global $_DOC_DIR;
@@ -43,17 +40,20 @@ function plugin($template, $customer)
 	// call plugin
 	@include(DOC_DIR.'/templates/'.$engine['name'].'/'.$engine['plugin'].'.php');
 
-	$JSResponse->addAssign("plugin", "innerHTML", $result);
+	$JSResponse->assign('plugin', 'innerHTML', $result);
 	return $JSResponse;
 }
 
-$xajax = new xajax();
-//$xajax->debugOn();
-$xajax->errorHandlerOn();
-$xajax->registerFunction("plugin");
-$xajax->processRequests();
+/* Using AJAX for template plugins */
+require(LIB_DIR.'/xajax/xajax_core/xajax.inc.php');
 
-$SMARTY->assign('xajax', $xajax->getJavascript('img/', 'xajax.js'));
+$xajax = new xajax();
+$xajax->configure('errorHandler', true);
+$xajax->configure('javascript URI', 'img');
+$xajax->register(XAJAX_FUNCTION, 'plugin');
+$xajax->processRequest();
+
+$SMARTY->assign('xajax', $xajax->getJavascript());
 /* end AJAX plugin stuff */
 
 $layout['pagetitle'] = trans('Documents Generator');

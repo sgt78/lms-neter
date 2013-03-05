@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -47,6 +47,7 @@ define('MSG_DRAFT', 4);
 
 define('MSG_MAIL', 1);
 define('MSG_SMS', 2);
+define('MSG_ANYSMS', 3);
 
 // Account types
 define('ACCOUNT_SHELL', 1);
@@ -171,6 +172,14 @@ $CONTACTTYPES = array(
     CONTACT_FAX 	=>	trans('fax'),
 );
 
+define('DISCOUNT_PERCENTAGE', 1);
+define('DISCOUNT_AMOUNT', 2);
+
+$DISCOUNTTYPES = array(
+	DISCOUNT_PERCENTAGE	=> '%',
+	DISCOUNT_AMOUNT		=> trans('amount'),
+);
+
 if(isset($SMARTY))
 {
 	$SMARTY->assign('_DOCTYPES', $DOCTYPES);
@@ -182,6 +191,7 @@ if(isset($SMARTY))
 	$SMARTY->assign('_TARIFFTYPES', $TARIFFTYPES);
 	$SMARTY->assign('_PAYTYPES', $PAYTYPES);
 	$SMARTY->assign('_CONTACTTYPES', $CONTACTTYPES);
+	$SMARTY->assign('_DISCOUNTTYPES', $DISCOUNTTYPES);
 }
 
 define('DEFAULT_NUMBER_TEMPLATE', '%N/LMS/%Y');

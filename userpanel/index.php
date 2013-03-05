@@ -3,7 +3,7 @@
 /*
  *  LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -92,7 +92,7 @@ $SMARTY = new Smarty;
 // test for proper version of Smarty
 
 if (constant('Smarty::SMARTY_VERSION'))
-	$ver_chunks = preg_split('/-/', Smarty::SMARTY_VERSION);
+	$ver_chunks = preg_split('/[- ]/', Smarty::SMARTY_VERSION);
 else
 	$ver_chunks = NULL;
 if (count($ver_chunks) != 2 || version_compare('3.0', $ver_chunks[1]) > 0)
@@ -198,7 +198,7 @@ if($SESSION->islogged)
 	    && isset($USERPANEL->MODULES[$module]) )
         {
     		include(USERPANEL_MODULES_DIR.$module.'/functions.php');
-		
+
 		$function = isset($_GET['f']) && $_GET['f']!='' ? $_GET['f'] : 'main';
 		if (function_exists('module_'.$function)) 
 		{

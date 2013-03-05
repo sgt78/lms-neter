@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -34,7 +34,7 @@ $DB->Execute("
 	customerid int(11) NOT NULL default '0',
 	hash varchar(50) NOT NULL default '',
 	closed tinyint(1) NOT NULL default '0',
-	PRIMARY KEY (id)) TYPE=MyISAM
+	PRIMARY KEY (id)) ENGINE=MyISAM
 ");
 
 $DB->Execute("UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?",array('2005022300', 'dbversion'));

@@ -1,0 +1,245 @@
+div.olPopup {
+	overflow: visible;
+}
+
+div.olPopupContent {
+	overflow: visible;
+	padding: 0px;
+}
+
+div.lmsPopupTitleBar {
+	background-color: #CEBD9B;
+	white-space: nowrap;
+	width: auto; height: 18px;
+	overflow: visible;
+	border-left-width: 1pt; border-left-style: solid; border-top-width: 1pt; border-top-style: solid; border-right-width: 1pt; border-right-style: solid;
+	display: block;
+}
+
+div.lmsPopupTitle {
+	background-color: #CEBD9B;
+	font-weight: bold;
+	float: left;
+	width: auto; height: 16px;
+	line-height: 16px;
+	overflow: visible;
+	padding-left: 2px;
+}
+
+div.lmsPopupCloseBox {
+	background-color: #CEBD9B;
+	float: right;
+	width: 16px; height: 16px;
+	padding: 1px;
+	overflow: visible;
+}
+
+div.lmsInfoPopupContents {
+	background-color: #DFD5BD;
+	padding: 6px;
+	border-color: black;
+	border: thin solid black;
+	width: auto; height: auto;
+	white-space: nowrap;
+	overflow: visible;
+}
+
+div.lmsInfoPopupName {
+	background-color: #DFD5BD;
+	font-weight: bold;
+	padding: 2px;
+	width: auto; height: auto;
+	white-space: nowrap;
+	clear: both;
+}
+
+div.lmsInfoPopupAddress {
+	background-color: #DFD5BD;
+	padding: 2px;
+	border: none;
+	width: auto; height: auto;
+	white-space: nowrap;
+	clear: both;
+}
+
+div.lmsInfoPopupDetails {
+	background-color: #DFD5BD;
+	padding: 2px;
+	border: none;
+	width: auto; height: auto;
+	white-space: nowrap;
+	clear: both;
+}
+
+div.lmsMapPopupContents {
+	border: thin solid black;
+	background-color: #DFD5BD;
+	width: auto; height: auto;
+	white-space: nowrap;
+	overflow: visible;
+}
+
+div.lmsMapPopupName {
+	padding: 2px;
+	font-weight: bold;
+	width: auto; height: auto;
+	white-space: nowrap;
+}
+
+div.lmsMapPopupAddress {
+	padding: 2px;
+	padding-left: 10px;
+	width: auto; height: auto;
+	white-space: nowrap;
+	overflow: visible;
+}
+
+div.lmsIpPopupContents {
+	border: thin solid black;
+	background-color: #DFD5BD;
+	width: auto; height: auto;
+	padding: 6px;
+	white-space: nowrap;
+	overflow: visible;
+}
+
+div.lmsIpPopupLabel {
+	font-weight: bold;
+}
+
+div.lmsPingContentsFrame {
+	border: 1pt solid black;
+	padding: 0px;
+	background-color: #DFD5BD;
+}
+
+div.lmsPingContents {
+	position: absolute;
+	left: 0px; width: 100%;
+	top: 0px; bottom: 44px;
+	overflow: auto;
+	padding: 0px;
+}
+
+div.lmsPingBottom {
+	background-color: #CEBD9B;
+	border-top-width: 1pt; border-top-style: solid;
+	position:absolute;
+	bottom: 0px; height: 44px; width: 100%;
+	left: 0px;
+	overflow: hidden;
+	padding: 0px;
+}
+
+div.lmsPingTotalSummary {
+	position: absolute;
+	left: 0px; bottom: 0px;
+	width: 62%; height: 40px;
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: visible;
+	line-height: 40px;
+	vertical-align: middle;
+	padding: 0px;
+}
+
+div.lmsPingTotal {
+	position: absolute;
+	left: 0px; bottom: 20px;
+	width: auto; height: 20px;
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: visible;
+	line-height: 20px;
+	vertical-align: middle;
+	padding: 0px;
+	padding-left: 2px;
+}
+
+div.lmsPingSummary {
+	position: absolute;
+	bottom: 0px;
+	width: auto; height: 20px;
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: visible;
+	line-height: 20px;
+	vertical-align: middle;
+	padding: 0px;
+	padding-left: 2px;
+}
+
+div.lmsPingControls {
+	position: absolute;
+	right: 0px; bottom: 0px;
+	width: 38%; height: 40px;
+	white-space: nowrap;
+	overflow: visible;
+	line-height: 40px;
+	vertical-align: middle;
+	text-align: left;
+	padding: 0px;
+}
+
+div.lmsPingEnabled {
+	position: absolute;
+	left: 0px; bottom: 20px;
+	width: auto; height: 20px;
+	white-space: nowrap;
+	overflow: visible;
+	line-height: 20px;
+	vertical-align: middle;
+	padding: 0px;
+	padding-right: 2px;
+}
+
+div.lmsPingAutoScroll {
+	position: absolute;
+	left: 0px; bottom: 0px;
+	width: auto; height: 20px;
+	white-space: nowrap;
+	overflow: visible;
+	line-height: 20px;
+	vertical-align: middle;
+	padding: 0px;
+	padding-right: 2px;
+}
+
+div.olControlPanel {
+	position: absolute;
+	left: 60px; top: 5px;
+}
+
+.olControlPanel div {
+	display: block;
+	float: left;
+	width: 22px; height: 22px;
+	border: thin solid black;
+	margin: 1px;
+	background-position: center center;
+	background-repeat: no-repeat;
+}
+
+.lmsCheckButtonItemActive {
+	background: white url("ip.gif");
+}
+
+.lmsCheckButtonItemInactive {
+	background: white url("ip.gif");
+}
+
+.lmsCenterButtonItemActive {
+	background: white url("network.gif");
+}
+
+.lmsCenterButtonItemInactive {
+	background: white url("network.gif");
+}
+
+.lmsRefreshButtonItemActive {
+	background: red url("reload.gif");
+}
+
+.lmsRefreshButtonItemInactive {
+	background: white url("reload.gif");
+}

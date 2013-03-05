@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -39,7 +39,7 @@ $DB->Execute("CREATE TABLE cashrights (
 	rights int(11) 	DEFAULT '0' NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY userid (userid, regid)
-    ) TYPE=MyISAM
+    ) ENGINE=MyISAM
 ");
 
 $DB->Execute("CREATE TABLE cashregs (
@@ -50,7 +50,7 @@ $DB->Execute("CREATE TABLE cashregs (
 	out_numberplanid int(11) DEFAULT '0' NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY name (name)
-    ) TYPE=MyISAM
+    ) ENGINE=MyISAM
 ");
 
 if($create_reg)

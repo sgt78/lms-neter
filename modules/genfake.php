@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -1984,7 +1984,8 @@ if(isset($_GET['l']) && sprintf('%d',$_GET['l']) > 0 && sprintf('%d',$_GET['l'])
 			'invoice' => 0, 
 			'datefrom' => 0, 
 			'dateto' => 0, 
-			'discount' => 0, 
+			'pdiscount' => 0, 
+			'vdiscount' => 0, 
 			'settlement' => 0, 
 			'nodes' => NULL
 		));
@@ -2092,7 +2093,8 @@ if(isset($_GET['l']) && sprintf('%d',$_GET['l']) > 0 && sprintf('%d',$_GET['l'])
 				$contents['taxid'] = mt_rand(1,3);
 				$contents['count'] = mt_rand(1,3);
 				$contents['valuebrutto'] = 100+$n*10+$n*0.1;
-				$contents['discount'] = 0;
+				$contents['pdiscount'] = 0;
+				$contents['vdiscount'] = 0;
 				$inv['cdate'] += 86400;
 				
 				foreach($customers as $c)

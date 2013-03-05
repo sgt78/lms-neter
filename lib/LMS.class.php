@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -52,21 +52,21 @@ class LMS
 		return TRUE;
 	}
 
-        function InitUI()
+    function InitUI()
+    {
+        // set current user
+        switch ($this->CONFIG['database']['type'])
         {
-                // set current user
-                switch ($this->CONFIG['database']['type'])
-                {
-                        case 'postgres':
-                                $this->DB->Execute('SELECT set_config(\'lms.current_user\', ?, false)',
-                                        array($this->AUTH->id));
-                        break;
-                        case 'mysql':
-                        case 'mysqli':
-                                $this->DB->Execute('SET @lms_current_user=?', array($this->AUTH->id));
-                        break;
-                }
+            case 'postgres':
+                $this->DB->Execute('SELECT set_config(\'lms.current_user\', ?, false)',
+                    array($this->AUTH->id));
+                break;
+            case 'mysql':
+            case 'mysqli':
+                $this->DB->Execute('SET @lms_current_user=?', array($this->AUTH->id));
+            break;
         }
+    }
 
 	/*
 	 *  Logging
@@ -506,9 +506,17 @@ class LMS
 		$this->DB->Execute('DELETE FROM customerassignments WHERE customerid=?', array($id));
 		$this->DB->Execute('DELETE FROM assignments WHERE customerid=?', array($id));
 		// nodes
-		$this->DB->Execute('DELETE FROM nodegroupassignments WHERE nodeid IN (
-				SELECT id FROM nodes WHERE ownerid=?)', array($id));
-		$this->DB->Execute('DELETE FROM nodes WHERE ownerid=?', array($id));
+		$nodes = $this->DB->GetCol('SELECT id FROM nodes WHERE ownerid=?', array($id));
+		if ($nodes)
+		{
+			$this->DB->Execute('DELETE FROM nodegroupassignments WHERE nodeid IN ('.join(',', $nodes).')');
+			$plugin_data = array();
+			foreach ($nodes as $node)
+				$plugin_data[] = array('id' => $node, 'ownerid' => $id);
+			$this->ExecHook('node_del_before', $plugin_data);
+			$this->DB->Execute('DELETE FROM nodes WHERE ownerid=?', array($id));
+			$this->ExecHook('node_del_after', $plugin_data);
+		}
 		// hosting
 		$this->DB->Execute('UPDATE passwd SET ownerid=0 WHERE ownerid=?', array($id));
 		$this->DB->Execute('UPDATE domains SET ownerid=0 WHERE ownerid=?', array($id));
@@ -722,42 +730,43 @@ class LMS
 		{
 			case 'id':
 				$sqlord = ' ORDER BY c.id';
-			break;
+				break;
 			case 'address':
 				$sqlord = ' ORDER BY address';
-			break;
+				break;
 			case 'balance':
 				$sqlord = ' ORDER BY balance';
-			break;
+				break;
 			case 'tariff':
 				$sqlord = ' ORDER BY tariffvalue';
-			break;
+				break;
 			default:
 				$sqlord = ' ORDER BY customername';
-			break;
+				break;
 		}
 
 		switch ($state) {
-		    case 4:
-    			// When customer is deleted we have no assigned groups or nodes, see DeleteCustomer().
-	    		// Return empty list in this case
-		    	if (!empty($network) || !empty($customergroup) || !empty($nodegroup)) {
-        	    	$customerlist['total'] = 0;
-		            $customerlist['state'] = 0;
-            		$customerlist['order'] = $order;
-	    	        $customerlist['direction'] = $direction;
-    		        return $customerlist;
-                }
-		    	$deleted = 1;
-                break;
-            case 5:  $disabled   = 1; break;
-		    case 6:  $indebted   = 1; break;
-		    case 7:  $online     = 1; break;
-		    case 8:  $groupless  = 1; break;
-		    case 9:  $tariffless = 1; break;
-		    case 10: $suspended  = 1; break;
-		    case 11: $indebted2  = 1; break;
-        }
+			case 4:
+				// When customer is deleted we have no assigned groups or nodes, see DeleteCustomer().
+				// Return empty list in this case
+				if (!empty($network) || !empty($customergroup) || !empty($nodegroup)) {
+					$customerlist['total'] = 0;
+					$customerlist['state'] = 0;
+					$customerlist['order'] = $order;
+					$customerlist['direction'] = $direction;
+					return $customerlist;
+				}
+				$deleted = 1;
+				break;
+			case 5: $disabled	= 1; break;
+			case 6: $indebted	= 1; break;
+			case 7: $online		= 1; break;
+			case 8: $groupless	= 1; break;
+			case 9: $tariffless	= 1; break;
+			case 10: $suspended	= 1; break;
+			case 11: $indebted2	= 1; break;
+			case 12: $indebted3	= 1; break;
+		}
 
 		if ($network)
 			$net = $this->GetNetworkParams($network);
@@ -867,10 +876,8 @@ class LMS
 				.($tariffs ? 'LEFT JOIN assignments ON (c.id = assignments.customerid) ' : '')
 				.'LEFT JOIN (SELECT a.customerid, 
 					SUM((CASE a.suspended
-						WHEN 0 THEN (CASE discount WHEN 0 THEN (CASE WHEN t.value IS NULL THEN l.value ELSE t.value END)
-							ELSE ((100 - discount) * (CASE WHEN t.value IS NULL THEN l.value ELSE t.value END)) / 100 END)
-						ELSE (CASE discount WHEN 0 THEN (CASE WHEN t.value IS NULL THEN l.value ELSE t.value END) * '.$suspension_percentage.' / 100
-							ELSE (CASE WHEN t.value IS NULL THEN l.value ELSE t.value END) * discount * '.$suspension_percentage.' / 10000 END) END)
+						WHEN 0 THEN (((100 - a.pdiscount) * (CASE WHEN t.value IS NULL THEN l.value ELSE t.value END) / 100) - a.vdiscount)
+						ELSE ((((100 - a.pdiscount) * (CASE WHEN t.value IS NULL THEN l.value ELSE t.value END) / 100) - a.vdiscount) * '.$suspension_percentage.' / 100) END)
 					* (CASE t.period
 						WHEN '.MONTHLY.' THEN 1
 						WHEN '.YEARLY.' THEN 1/12.0
@@ -904,7 +911,8 @@ class LMS
 				.($division ? ' AND c.divisionid = '.intval($division) : '')
 				.($online ? ' AND s.online = 1' : '')
 				.($indebted ? ' AND b.value < 0' : '')
-				.($indebted2 ? ' AND b.value < t.value*-2' : '')
+				.($indebted2 ? ' AND b.value < -t.value' : '')
+				.($indebted3 ? ' AND b.value < -t.value * 2' : '')
 				.($disabled ? ' AND s.ownerid IS NOT NULL AND s.account > s.acsum' : '')
 				.($network ? ' AND EXISTS (SELECT 1 FROM nodes WHERE ownerid = c.id AND 
 							((ipaddr > '.$net['address'].' AND ipaddr < '.$net['broadcast'].') 
@@ -1273,7 +1281,8 @@ class LMS
 				ipaddr=inet_aton(?), passwd=?, netdev=?, moddate=?NOW?,
 				modid=?, access=?, warning=?, ownerid=?, info=?, location=?,
 				location_city=?, location_street=?, location_house=?, location_flat=?,
-				chkmac=?, halfduplex=?, linktype=?, port=?, nas=?
+				chkmac=?, halfduplex=?, linktype=?, port=?, nas=?,
+				longitude=?, latitude=? 
 				WHERE id=?',
 				array($nodedata['name'],
 				    $nodedata['ipaddr_pub'],
@@ -1295,6 +1304,8 @@ class LMS
 				    isset($nodedata['linktype']) ? 1 : 0,
 				    isset($nodedata['port']) && $nodedata['netdev'] ? intval($nodedata['port']) : 0,
 				    isset($nodedata['nas']) ? $nodedata['nas'] : 0,
+				    !empty($nodedata['longitude']) ? str_replace(',', '.', $nodedata['longitude']) : null,
+				    !empty($nodedata['latitude']) ? str_replace(',', '.', $nodedata['latitude']) : null,
 				    $nodedata['id']
 			    ));
 
@@ -1560,9 +1571,9 @@ class LMS
 		if($this->DB->Execute('INSERT INTO nodes (name, ipaddr, ipaddr_pub, ownerid,
 			passwd, creatorid, creationdate, access, warning, info, netdev,
 			location, location_city, location_street, location_house, location_flat,
-			linktype, port, chkmac, halfduplex, nas)
+			linktype, port, chkmac, halfduplex, nas, longitude, latitude)
 			VALUES (?, inet_aton(?), inet_aton(?), ?, ?, ?,
-			?NOW?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			?NOW?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 			array(strtoupper($nodedata['name']),
 				$nodedata['ipaddr'],
 				$nodedata['ipaddr_pub'],
@@ -1583,6 +1594,8 @@ class LMS
 				$nodedata['chkmac'],
 				$nodedata['halfduplex'],
 				isset($nodedata['nas']) ? $nodedata['nas'] : 0,
+				!empty($nodedata['longitude']) ? str_replace(',', '.', $nodedata['longitude']) : null,
+				!empty($nodedata['latitude']) ? str_replace(',', '.', $nodedata['latitude']) : null
 				)))
 		{
 			$id = $this->DB->GetLastInsertID('nodes');
@@ -1774,7 +1787,7 @@ class LMS
 
 		if($assignments = $this->DB->GetAll('SELECT a.id AS id, a.tariffid,
 			a.customerid, a.period, a.at, a.suspended, a.invoice, a.settlement,
-			a.datefrom, a.dateto, a.discount, a.liabilityid,
+			a.datefrom, a.dateto, a.pdiscount, a.vdiscount, a.liabilityid,
 			t.uprate, t.upceil, t.downceil, t.downrate,
 			(CASE WHEN t.value IS NULL THEN l.value ELSE t.value END) AS value,
 			(CASE WHEN t.name IS NULL THEN l.name ELSE t.name END) AS name
@@ -1829,21 +1842,16 @@ class LMS
 				// assigned nodes
 				$assignments[$idx]['nodes'] = $this->DB->GetAll('SELECT nodes.name, nodes.id FROM nodeassignments, nodes
 						    WHERE nodeid = nodes.id AND assignmentid = ?', array($row['id']));
-				
-				if ($row['discount'] == 0)
-					$assignments[$idx]['discounted_value'] = $row['value'];
-				else
-					$assignments[$idx]['discounted_value'] = ((100 - $row['discount']) * $row['value']) / 100;
-				
+
+				$assignments[$idx]['discounted_value'] = (((100 - $row['pdiscount']) * $row['value']) / 100) - $row['vdiscount'];
+
 				if ($row['suspended'] == 1)
-				{
 					$assignments[$idx]['discounted_value'] = $assignments[$idx]['discounted_value'] * $this->CONFIG['finances']['suspension_percentage'] / 100;
-				}
-				
+
 				$assignments[$idx]['discounted_value'] = round($assignments[$idx]['discounted_value'], 2);
-				
+
 				$now = time();
-				
+
 				if ($row['suspended'] == 0 && 
 				    (($row['datefrom'] == 0 || $row['datefrom'] < $now) &&
 				    ($row['dateto'] == 0 || $row['dateto'] > $now)))
@@ -1973,9 +1981,9 @@ class LMS
                 }
 
                 // Create assignment
-    		    $this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice,
-					    settlement, numberplanid, paytype, datefrom, dateto, discount, liabilityid)
-					    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+		$this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice,
+					    settlement, numberplanid, paytype, datefrom, dateto, pdiscount, vdiscount, liabilityid)
+					    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 					    array($tariffid,
 						    $data['customerid'],
 						    $period,
@@ -1986,6 +1994,7 @@ class LMS
 						    !empty($data['paytype']) ? $data['paytype'] : NULL,
 						    $idx ? $datefrom : 0,
 						    $idx ? $dateto : 0,
+						    0,
 						    0,
 						    $lid,
 						    ));
@@ -2005,9 +2014,9 @@ class LMS
 
                 // Create assignments
                 foreach ($tariffs as $t) {
-    		        $this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice,
-					    settlement, numberplanid, paytype, datefrom, dateto, discount, liabilityid)
-					    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			$this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice,
+					    settlement, numberplanid, paytype, datefrom, dateto, pdiscount, vdiscount, liabilityid)
+					    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 					    array($t,
 						    $data['customerid'],
 						    $data['period'],
@@ -2016,7 +2025,7 @@ class LMS
 						    !empty($data['settlement']) ? 1 : 0,
 						    !empty($data['numberplanid']) ? $data['numberplanid'] : NULL,
 						    !empty($data['paytype']) ? $data['paytype'] : NULL,
-						    $datefrom, 0, 0, 0,
+						    $datefrom, 0, 0, 0, 0,
 						    ));
 
         		    $result[] = $this->DB->GetLastInsertID('assignments');
@@ -2025,20 +2034,20 @@ class LMS
         }
         // Create one assignment record
         else {
-    		if(!empty($data['value'])) {
-	    		$this->DB->Execute('INSERT INTO liabilities (name, value, taxid, prodid)
+		if(!empty($data['value'])) {
+			$this->DB->Execute('INSERT INTO liabilities (name, value, taxid, prodid)
 					    VALUES (?, ?, ?, ?)', 
 					    array($data['name'],
 						    str_replace(',', '.', $data['value']),
 						    intval($data['taxid']),
 						    $data['prodid']
 					    ));
-		    	$lid = $this->DB->GetLastInsertID('liabilities');
+			$lid = $this->DB->GetLastInsertID('liabilities');
 		    }
 
-    		$this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice,
-					    settlement, numberplanid, paytype, datefrom, dateto, discount, liabilityid)
-					    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+		$this->DB->Execute('INSERT INTO assignments (tariffid, customerid, period, at, invoice,
+					    settlement, numberplanid, paytype, datefrom, dateto, pdiscount, vdiscount, liabilityid)
+					    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 					    array(intval($data['tariffid']),
 						    $data['customerid'],
 						    $data['period'],
@@ -2049,7 +2058,8 @@ class LMS
 						    !empty($data['paytype']) ? $data['paytype'] : NULL,
 						    $data['datefrom'],
 						    $data['dateto'],
-						    $data['discount'],
+						    $data['pdiscount'],
+						    $data['vdiscount'],
 						    isset($lid) ? $lid : 0,
 						    ));
 
@@ -2116,11 +2126,13 @@ class LMS
 			$item['valuebrutto'] = str_replace(',','.',$item['valuebrutto']);
 			$item['count'] = str_replace(',','.',$item['count']);
 			$item['discount'] = str_replace(',','.',$item['discount']);
+			$item['pdiscount'] = str_replace(',','.',$item['pdiscount']);
+			$item['vdiscount'] = str_replace(',','.',$item['vdiscount']);
 			$item['taxid'] = isset($item['taxid']) ? $item['taxid'] : 0;
 
 			$this->DB->Execute('INSERT INTO invoicecontents (docid, itemid,
-				value, taxid, prodid, content, count, discount, description, tariffid) 
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+				value, taxid, prodid, content, count, pdiscount, vdiscount, description, tariffid) 
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 				array(
 					$iid,
 					$itemid,
@@ -2129,14 +2141,15 @@ class LMS
 					$item['prodid'],
 					$item['jm'],
 					$item['count'],
-					$item['discount'],
+					$item['pdiscount'],
+					$item['vdiscount'],
 					$item['name'],
 					$item['tariffid']
 			));
 
 			$this->AddBalance(array(
 				'time' => $cdate,
-				'value' => $item['valuebrutto']*$item['count']*-1,
+				'value' => $item['valuebrutto'] * $item['count'] * -1,
 				'taxid' => $item['taxid'],
 				'customerid' => $invoice['customer']['id'],
 				'comment' => $item['name'],
@@ -2202,7 +2215,8 @@ class LMS
 				WHERE d.id = ? AND (d.type = ? OR d.type = ?)',
 				array($invoiceid, DOC_INVOICE, DOC_CNOTE)))
 		{
-			$result['discount'] = 0;
+			$result['pdiscount'] = 0;
+			$result['vdiscount'] = 0;
 			$result['totalbase'] = 0;
 			$result['totaltax'] = 0;
 			$result['total'] = 0;
@@ -2221,7 +2235,7 @@ class LMS
 			if($result['content'] = $this->DB->GetAll('SELECT invoicecontents.value AS value, 
 						itemid, taxid, taxes.value AS taxvalue, taxes.label AS taxlabel, 
 						prodid, content, count, invoicecontents.description AS description, 
-						tariffid, itemid, discount
+						tariffid, itemid, pdiscount, vdiscount 
 						FROM invoicecontents 
 						LEFT JOIN taxes ON taxid = taxes.id 
 						WHERE docid=? 
@@ -2264,7 +2278,8 @@ class LMS
 					$result['taxest'][$row['taxvalue']]['taxvalue'] = $row['taxvalue'];
 					$result['content'][$idx]['pkwiu'] = $row['prodid'];
 
-					$result['discount'] += $row['discount'];
+					$result['pdiscount'] += $row['pdiscount'];
+					$result['vdiscount'] += $row['vdiscount'];
 				}
 
 			$result['pdate'] = $result['cdate'] + ($result['paytime'] * 86400);
@@ -3338,11 +3353,12 @@ class LMS
 	function NetDevAdd($data)
 	{
 		if ($this->DB->Execute('INSERT INTO netdevices (name, location,
-		        location_city, location_street, location_house, location_flat,
+				location_city, location_street, location_house, location_flat,
 				description, producer, model, serialnumber,
 				ports, purchasetime, guaranteeperiod, shortname,
-				nastype, clients, secret, community, channelid)
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+				nastype, clients, secret, community, channelid,
+				longitude, latitude)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 				array($data['name'],
 					$data['location'],
 					$data['location_city'] ? $data['location_city'] : null,
@@ -3362,6 +3378,8 @@ class LMS
 					$data['secret'],
 					$data['community'],
 					!empty($data['channelid']) ? $data['channelid'] : NULL,
+					!empty($data['longitude']) ? str_replace(',', '.', $data['longitude']) : NULL,
+					!empty($data['latitude']) ? str_replace(',', '.', $data['latitude']) : NULL
 		))) {
 			$id = $this->DB->GetLastInsertID('netdevices');
 
@@ -3394,9 +3412,9 @@ class LMS
 	function NetDevUpdate($data)
 	{
 		$this->DB->Execute('UPDATE netdevices SET name=?, description=?, producer=?, location=?,
-		        location_city=?, location_street=?, location_house=?, location_flat=?,
+				location_city=?, location_street=?, location_house=?, location_flat=?,
 				model=?, serialnumber=?, ports=?, purchasetime=?, guaranteeperiod=?, shortname=?,
-				nastype=?, clients=?, secret=?, community=?, channelid=?
+				nastype=?, clients=?, secret=?, community=?, channelid=?, longitude=?, latitude=? 
 				WHERE id=?', 
 				array($data['name'],
 					$data['description'],
@@ -3417,6 +3435,8 @@ class LMS
 					$data['secret'],
 					$data['community'],
 					!empty($data['channelid']) ? $data['channelid'] : NULL,
+					!empty($data['longitude']) ? str_replace(',', '.', $data['longitude']) : null,
+					!empty($data['latitude']) ? str_replace(',', '.', $data['latitude']) : null,
 					$data['id']
 				));
 	}
@@ -3728,8 +3748,12 @@ class LMS
 
 	function GetCategoryListByUser($userid=NULL)
 	{
-		return $this->DB->GetAll('SELECT c.id, name FROM rtcategories c LEFT JOIN rtcategoryusers cu 
-			ON c.id = cu.categoryid '.($userid ? 'WHERE userid = '.$userid : '' ).' ORDER BY name');
+		return $this->DB->GetAll('SELECT c.id, name
+		    FROM rtcategories c
+		    LEFT JOIN rtcategoryusers cu 
+			ON c.id = cu.categoryid '
+			.($userid ? 'WHERE userid = '.intval($userid) : '' )
+			.' ORDER BY name');
 	}
 
 	function RTStats()

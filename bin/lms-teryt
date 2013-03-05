@@ -1,8 +1,8 @@
-#!/usr/bin/perl -Tw
+#!/usr/bin/perl -w
 #
 #  LMS version 1.11-cvs
 #
-#  Copyright (C) 2001-2011 LMS Developers
+#  Copyright (C) 2001-2012 LMS Developers
 #
 #  Please, see the doc/AUTHORS for more information about authors!
 #
@@ -28,6 +28,7 @@ use Config::IniFiles;
 use Getopt::Long;
 use vars qw($configfile $quiet $help $version $update $fetch $list $merge);
 use Cwd;
+use LWP::UserAgent;
 
 my $_version = '1.11-cvs';
 
@@ -49,7 +50,7 @@ if($help)
 {
 	print STDERR <<EOF;
 lms-teryt, version $_version
-(C) 2001-2011 LMS Developers
+(C) 2001-2012 LMS Developers
 
 -C, --config-file=/etc/lms/lms.ini	alternate config file (default: /etc/lms/lms.ini);
 -h, --help			print this help and exit;
@@ -67,7 +68,7 @@ if($version)
 {
 	print STDERR <<EOF;
 lms-teryt, version $_version
-(C) 2001-2011 LMS Developers
+(C) 2001-2012 LMS Developers
 
 EOF
 	exit 0;
@@ -81,7 +82,7 @@ if(!$configfile)
 if(!$quiet)
 {
 	print STDOUT "lms-teryt, version $_version\n";
-	print STDOUT "(C) 2001-2011 LMS Developers\n";
+	print STDOUT "(C) 2001-2012 LMS Developers\n";
 	print STDOUT "Using file $configfile as config.\n";
 }
 
@@ -100,6 +101,9 @@ my $dbuser = $ini->val('database', 'user') || 'root';
 my $dbpasswd = $ini->val('database', 'password') || '';
 my $dbname = $ini->val('database', 'database') || 'lms';
 
+my $url = $ini->val('teryt', 'url') || 'http://www.stat.gov.pl/broker/access/prefile/listPreFiles.jspa';
+my $zip_bin = $ini->val('teryt', 'unzip_binary') || '/usr/bin/unzip';
+
 my $dir = $ini->val('teryt', 'dir') || getcwd;
 if (!$list) {
     $list = $ini->val('teryt', 'state_list') || '';
@@ -108,8 +112,42 @@ if (!$list) {
 ######## Download TERYT files ###################################################
 if ($fetch)
 {
+    my $ua = LWP::UserAgent->new;
+    my $response = $ua->get($url);
 
+    if ($response->is_success)
+    {
+        my $content = $response->content;
+        my $file_url = $url;
 
+        $ua->show_progress(1);
+
+        while ($content =~ m/href="(downloadPreFile\.jspa[^\"]+)"/g) {
+            my $file = $1;
+            $file_url =~ s/[^\/]+$//;
+            $file_url .= $file;
+
+            my $response = $ua->get($file_url);
+            if ($response->is_success) {
+                my $type = $response->filename;
+
+                if ($type !~ /^(SIMC|TERC|ULIC)_[0-9]+\.zip/i) {
+                    next;
+                }
+
+                my $filename = $dir.'/'.$response->filename;
+                # save zip file
+                open(FILE, ">$filename") or die $!;
+                print FILE $response->content or die $!;
+                close(FILE) or die $!;
+                # extract file (zip -> xml)
+                system("$zip_bin -qd $dir $filename");
+            }
+        }
+    }
+    else {
+        print STDERR "Error: ".$response->status_line."\n";
+    }
 }
 
 if (!$update && !$merge)
@@ -203,11 +241,11 @@ if ($update)
 ######### Get current TERC database ##################################################
 my %terc;
 $dbq = $dbase->prepare("
-    SELECT ident AS woj, CAST(0 AS text) AS pow, CAST(0 AS text) AS gmi, 0 AS rodz,
+    SELECT ident AS woj, '0' AS pow, '0' AS gmi, 0 AS rodz,
         UPPER(name) AS nazwa, id, 'WOJ' AS type
     FROM location_states
     UNION
-    SELECT s.ident AS woj, d.ident AS pow, CAST(0 AS text) AS gmi, 0 AS rodz,
+    SELECT s.ident AS woj, d.ident AS pow, '0' AS gmi, 0 AS rodz,
         d.name AS nazwa, d.id, 'POW' AS type
     FROM location_districts d
     JOIN location_states s ON (d.stateid = s.id)
@@ -554,77 +592,129 @@ undef %cities;
 }
 
 ######## Merge TERYT with LMS database ###########################################
-if ($merge)
+sub location_update
 {
-    my $node_update = $dbase->prepare("UPDATE nodes SET location_city = ?, location_street = ?,
-        location_house = ?, location_flat = ? WHERE id = ?");
-    my $street_get = $dbase->prepare("SELECT s.id, cityid
-        FROM location_streets s
-        JOIN location_cities c ON (s.cityid = c.id)
-        WHERE s.name = ? AND c.name = ? LIMIT 1");
-    my $city_get = $dbase->prepare("SELECT id
-        JOIN location_cities
-        WHERE name = ? AND cityid IS NULL LIMIT 1");
+    my $row = shift;
+    my $street_get = shift;
+    my $city_get = shift;
+    my $update = shift;
 
-    $dbq = $dbase->prepare("SELECT id, location
-        FROM nodes WHERE location_city IS NULL AND location_street IS NULL
-            AND location <> ''");
-    $dbq->execute();
-    while ($row = $dbq->fetchrow_hashref()) {
-        my $street_id;
-        my $city_id;
-        my $house = '';
-        my $flat = '';
-        my $city;
-        my $street;
-        my $addr = $row->{'location'};
+    my $street_id;
+    my $city_id;
+    my $house = '';
+    my $flat = '';
+    my $city;
+    my $street;
+    my $addr = $row->{'location'};
 
-        # get house/flat
-        if ($addr =~ /\s([0-9]+\s*[a-z]*)$/i) {
-            $addr = substr($addr, 0, -1 * length($1));
-            $house = $1;
-        }
-        elsif ($addr =~ /\s(([0-9]+\s*[a-z]*)\/([0-9]+))$/i) {
-            $addr = substr($addr, 0, -1 * length($1));
-            $house = $2;
-            $flat = $3;
-        }
-
-        # assume format: <City>, <Street>
-        if ($addr =~ /^([^,]+),.*/i) {
-            $street = substr($addr, length($1)+1);
-            $city = $1;
-        }
-        else {
-            $street = $addr;
-        }
-
-        # try to remove prefix UL., AL., PL., SKWER, BULW., RONDO, PARK, RYNEK, SZOSA, DROGA, OS., OGRÓD, WYSPA, WYB.
-        $street =~ s/^(((ul\.|pl\.|al\.|bulw\.|os\.|wyb\.)\s*)|((skwer|rondo|park|rynek|szosa|droga|ogród|wyspa)\s+))//i;
-        $street =~ s/\s+$//;
-
-        # find location_street and/or location_city IDs
-        if ($street && $city) {
-            $street_get->execute($street, $city);
-            if (my $srow = $street_get->fetchrow_hashref()) {
-                $street_id = $srow->{'id'};
-                $city_id = $srow->{'cityid'};
-            }
-        }
-        elsif ($city) {
-            $city_get->execute($city);
-            if (my $crow = $city_get->fetchrow_hashref()) {
-                $city_id = $crow->{'id'};
-            }
-        }
-
-        # update node location
-        if ($street_id || $city_id) {
-            $node_update->execute($city_id, $street_id, $house, $flat, $row->{'id'});
+    # use customer address
+    if (!$addr) {
+        $addr = $row->{'address'};
+        if ($row->{'city'}) {
+            $addr = $row->{'city'} . ', ' . $addr;
         }
     }
 
+    my $orig_location = $addr;
+
+    printf("%s (%04d) %s: ", $row->{'name'}, $row->{'id'}, $addr) if not $quiet;
+
+    # get house/flat
+    if ($addr =~ /\s([0-9-]+\s*[a-z]*)$/i) {
+        $addr = substr($addr, 0, -1 * length($1));
+        $house = $1;
+    }
+    elsif ($addr =~ /\s(([0-9-]+\s*[a-z]*)\/([0-9a-z]+))$/i) {
+        $addr = substr($addr, 0, -1 * length($1));
+        $house = $2;
+        $flat = $3;
+    }
+
+    # assume format: <City>, <Street>
+    if ($addr =~ /^([^,]+),.*/i) {
+        $street = substr($addr, length($1)+1);
+        $city = $1;
+    }
+    else {
+        $city = $addr;
+        $street = ''
+    }
+
+    # try to remove prefix UL., AL., PL., SKWER, BULW., RONDO, PARK, RYNEK, SZOSA, DROGA, OS., OGRÓD, WYSPA, WYB.
+    $street =~ s/^\s*(((ul\.|pl\.|al\.|bulw\.|os\.|wyb\.)\s*)|((skwer|rondo|park|rynek|szosa|droga|ogród|wyspa)\s+))//i;
+    $street =~ s/(^\s+|\s+$)//g;
+    $city =~ s/(^\s+|\s+$)//g;
+
+    # find location_street and/or location_city IDs
+    if ($street && $city) {
+        $street_get->execute($street, $city);
+        if (my $srow = $street_get->fetchrow_hashref()) {
+            $street_id = $srow->{'id'};
+            $city_id = $srow->{'cityid'};
+        }
+        else {
+            $city_get->execute($street);
+            if (my $srow = $city_get->fetchrow_hashref()) {
+                $city_id = $srow->{'id'};
+                $orig_location =~ s/$city, //;
+            }
+        }
+    }
+    elsif ($city) {
+        $city_get->execute($city);
+        if (my $crow = $city_get->fetchrow_hashref()) {
+            $city_id = $crow->{'id'};
+        }
+    }
+
+    # update node location
+    if ($street_id || $city_id) {
+        print "found\n" if not $quiet;
+        $update->execute($city_id, $street_id, $house, $flat, $orig_location, $row->{'id'});
+    }
+    else {
+        print "not found\n" if not $quiet;
+    }
+}
+
+if ($merge)
+{
+    my $node_update = $dbase->prepare("UPDATE nodes SET location_city = ?, location_street = ?,
+        location_house = ?, location_flat = ?, location = ? WHERE id = ?");
+    my $dev_update = $dbase->prepare("UPDATE netdevices SET location_city = ?, location_street = ?,
+        location_house = ?, location_flat = ?, location = ? WHERE id = ?");
+    my $street_get = $dbase->prepare("SELECT s.id, s.cityid
+        FROM location_streets s
+        JOIN location_cities c ON (s.cityid = c.id)
+        WHERE s.name = ? AND c.name = ?
+        ORDER BY c.cityid LIMIT 1");
+    my $city_get = $dbase->prepare("SELECT id
+        FROM location_cities
+        WHERE name = ?
+        ORDER BY cityid LIMIT 1");
+
+    # nodes
+    $dbq = $dbase->prepare("SELECT n.id, n.name, n.location, c.address, c.city
+        FROM nodes n
+        JOIN customers c ON (c.id = n.ownerid)
+        WHERE n.location_city IS NULL AND n.location_street IS NULL
+            AND (n.location <> '' OR c.address <> '')");
+    $dbq->execute();
+    while ($row = $dbq->fetchrow_hashref()) {
+        location_update($row, $street_get, $city_get, $node_update);
+    }
+
+    # netdevices
+    $dbq = $dbase->prepare("SELECT id, name, location
+        FROM netdevices WHERE location_city IS NULL AND location_street IS NULL
+            AND location <> ''");
+    $dbq->execute();
+    while ($row = $dbq->fetchrow_hashref()) {
+        location_update($row, $street_get, $city_get, $dev_update);
+    }
+
     $node_update->finish();
+    $dev_update->finish();
     $street_get->finish();
     $city_get->finish();
 }

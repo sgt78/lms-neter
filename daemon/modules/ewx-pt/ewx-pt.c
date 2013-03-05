@@ -1,7 +1,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -146,7 +146,7 @@ void reload(GLOBAL *g, struct ewx_module *ewx)
 
 				if(j != mnc)
 				{
-	    				syslog(LOG_ERR, "[%s/ewx-stm] Network %s already included in 'dummy_mac_networks' option. Skipping.", all_nets[i].name, ewx->base.instance);
+	    				syslog(LOG_ERR, "[%s/ewx-pt] Network %s already included in 'dummy_mac_networks' option. Skipping.", all_nets[i].name, ewx->base.instance);
 					continue;
 				}
 
@@ -169,21 +169,21 @@ void reload(GLOBAL *g, struct ewx_module *ewx)
 	for (hc=0; hc<g->db_nrows(res); hc++)
 	{
 	    hosts = (struct host*) realloc(hosts, (sizeof(struct host) * (hc+1)));
-        hosts[hc].id     = atoi(g->db_get_data(res, anc, "nodeid"));
-        hosts[hc].nodeid = atoi(g->db_get_data(res, anc, "id"));
-		hosts[hc].name   = strdup(g->db_get_data(res, anc, "name"));
-		hosts[hc].mac    = strdup(g->db_get_data(res, anc, "mac"));
-		hosts[hc].passwd = strdup(g->db_get_data(res, anc, "passwd"));
-	    hosts[hc].ip     = strdup(g->db_get_data(res, anc, "ip"));
-	    hosts[hc].ipaddr = inet_addr(g->db_get_data(res, anc, "ipaddr"));
+        hosts[hc].id     = atoi(g->db_get_data(res, hc, "nodeid"));
+        hosts[hc].nodeid = atoi(g->db_get_data(res, hc, "id"));
+		hosts[hc].name   = strdup(g->db_get_data(res, hc, "name"));
+		hosts[hc].mac    = strdup(g->db_get_data(res, hc, "mac"));
+		hosts[hc].passwd = strdup(g->db_get_data(res, hc, "passwd"));
+	    hosts[hc].ip     = strdup(g->db_get_data(res, hc, "ip"));
+	    hosts[hc].ipaddr = inet_addr(g->db_get_data(res, hc, "ipaddr"));
 	    hosts[hc].status = UNKNOWN;
 	}
 	g->db_free(&res);
 
     // existing nodes with current config for insert, update or delete (if access=0)
-	query = strdup("SELECT n.id, n.ipaddr, n.access "
-	        "(SELECT m.mac FROM macs m WHERE m.nodeid = n.id ORDER BY m.id LIMIT 1) AS mac, "
-	        "INET_NTOA(n.ipaddr) AS ip, LOWER(n.name) AS name, n.passwd, n.chkmac "
+	query = strdup("SELECT n.id, n.ipaddr, n.access, "
+		"(SELECT m.mac FROM macs m WHERE m.nodeid = n.id ORDER BY m.id LIMIT 1) AS mac, "
+		"INET_NTOA(n.ipaddr) AS ip, LOWER(n.name) AS name, n.passwd, n.chkmac "
 		"FROM nodes n "
 		"WHERE 1=1 "
 		// skip disabled nodes when aren't in ewx_pt_config
@@ -304,9 +304,9 @@ void reload(GLOBAL *g, struct ewx_module *ewx)
             }
             // Other node with matching credentials (name, ip, mac)
             else if (hosts[n].status == UNKNOWN) {
-                if (strcmp(hosts[n].name, h.name)
+                if (!strcmp(hosts[n].name, h.name)
                 ) {
-                    del_node(g, ewx, sh, &hosts[i]);
+                    del_node(g, ewx, sh, &hosts[n]);
                     savetables = 1;
                 }
             }
@@ -321,6 +321,8 @@ void reload(GLOBAL *g, struct ewx_module *ewx)
                 update_node(g, ewx, sh, &h, &hosts[found]);
                 savetables = 1;
             }
+            else
+            	hosts[found].status = STATUS_OK;
         }
         else {
             add_node(g, ewx, sh, &h);
@@ -515,7 +517,7 @@ int add_node(GLOBAL *g, struct ewx_module *ewx, struct snmp_session *sh, struct 
 
 		g->db_pexec(g->conn, "INSERT INTO ewx_pt_config (nodeid, name, passwd, ipaddr, mac) "
 		    "VALUES (?, '?', '?', INET_ATON('?'), '?')",
-		    h.id, h.name, h.passwd, h.ip, h.mac);
+		    itoa(h.id), h.name, h.passwd, h.ip, h.mac);
 #ifdef DEBUG1
 		syslog(LOG_INFO, "DEBUG: [%s/ewx-pt] Added node %s (%05d)", ewx->base.instance, h.name, h.id);
 #endif

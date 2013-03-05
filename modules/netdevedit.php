@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -80,6 +80,16 @@ case 'replace':
 				array($dev1['location'], $dev2['id']));
 		$DB->Execute('UPDATE netdevices SET location = ? WHERE id = ?', 
 				array($dev2['location'], $dev1['id']));
+
+		$DB->Execute('UPDATE netdevices SET latitude = ? WHERE id = ?', 
+				array($dev1['latitude'], $dev2['id']));
+		$DB->Execute('UPDATE netdevices SET latitude = ? WHERE id = ?', 
+				array($dev2['latitude'], $dev1['id']));
+
+		$DB->Execute('UPDATE netdevices SET longitude = ? WHERE id = ?', 
+				array($dev1['longitude'], $dev2['id']));
+		$DB->Execute('UPDATE netdevices SET longitude = ? WHERE id = ?', 
+				array($dev2['longitude'], $dev1['id']));
 
 		$LMS->NetDevDelLinks($dev1['id']);
 		$LMS->NetDevDelLinks($dev2['id']);

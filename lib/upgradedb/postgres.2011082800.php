@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License Version 2 as
@@ -178,6 +178,11 @@ $DB->Execute("
     FROM nodes n
     LEFT JOIN (SELECT nodeid, array_to_string(array_agg(mac), ',') AS mac
         FROM macs GROUP BY nodeid) m ON (n.id = m.nodeid);
+
+    CREATE VIEW vmacs AS
+    SELECT n.*, m.mac, m.id AS macid
+        FROM nodes n
+        JOIN macs m ON (n.id = m.nodeid);
 ");
 
 $DB->Execute("UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?", array('2011082800', 'dbversion'));

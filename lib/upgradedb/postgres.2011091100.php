@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -28,9 +28,9 @@ $DB->BeginTrans();
 
 $DB->Execute("
     ALTER TABLE voipaccounts ADD COLUMN access smallint;
-    UPDATE voipaccounts SET access = 0;
+    UPDATE voipaccounts SET access = 1;
     ALTER TABLE voipaccounts ALTER access SET NOT NULL;
-    ALTER TABLE voipaccounts ALTER access SET DEFAULT 0;
+    ALTER TABLE voipaccounts ALTER access SET DEFAULT 1;
 ");
 
 $DB->Execute("UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?",array('2011091100', 'dbversion'));

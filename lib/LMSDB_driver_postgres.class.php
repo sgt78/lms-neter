@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -57,7 +57,8 @@ class LMSDB_driver_postgres extends LMSDB_common
 			($dbhost != '' && $dbhost != 'localhost' ? 'host='.$dbhost : ''),
 			($dbuser != '' ? 'user='.$dbuser : ''),
 			($dbpasswd != '' ? 'password='.$dbpasswd : ''),
-			($dbname != '' ? 'dbname='.$dbname : '')
+			($dbname != '' ? 'dbname='.$dbname : ''),
+			'connect_timeout=10'
 		));
 
 		if($this->_dblink = @pg_connect($cstring, PGSQL_CONNECT_FORCE_NEW))
@@ -129,20 +130,17 @@ class LMSDB_driver_postgres extends LMSDB_common
 		else
 			return FALSE;
 	}
-/*	
-	// added 'E' for postgresql 8.2 to skip warnings in error log:
-	// HINT:  Use the escape string syntax for backslashes, e.g., E'\\'.
-	// WARNING:  nonstandard use of escape in a string literal at character...
+
 	function _quote_value($input)
-        {
-                if($input === NULL)
+	{
+		if($input === NULL)
 			return 'NULL';
 		elseif(gettype($input) == 'string')
-			return 'E\''.addcslashes($input,"'\\\0").'\'';
+			return '\''.@pg_escape_string($this->_dblink, $input).'\'';
 		else
 			return $input;
 	}
-*/	
+
 	function _driver_now()
 	{
 		return 'EXTRACT(EPOCH FROM CURRENT_TIMESTAMP(0))::integer';

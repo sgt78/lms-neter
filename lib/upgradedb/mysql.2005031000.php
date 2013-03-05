@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -24,7 +24,7 @@
  *  $Id$
  */
 
-$DB->Execute("CREATE TABLE sessions (id varchar(50) NOT NULL default '', ctime int(11) NOT NULL default 0, mtime int(11) NOT NULL default 0, atime int(11) NOT NULL default 0, vdata text NOT NULL, content text NOT NULL, PRIMARY KEY (id)) TYPE=MyISAM");
+$DB->Execute("CREATE TABLE sessions (id varchar(50) NOT NULL default '', ctime int(11) NOT NULL default 0, mtime int(11) NOT NULL default 0, atime int(11) NOT NULL default 0, vdata text NOT NULL, content text NOT NULL, PRIMARY KEY (id)) ENGINE=MyISAM");
 
 $DB->Execute("UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?",array('2005031000', 'dbversion'));
 

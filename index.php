@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -32,7 +32,7 @@ $CONFIG_FILE = '/etc/lms/lms.ini';
 // *EXACTLY* WHAT ARE YOU DOING!!!
 // *******************************************************************
 
-define('START_TIME', microtime());
+define('START_TIME', microtime(true));
 define('LMS-UI', true);
 ini_set('error_reporting', E_ALL&~E_NOTICE);
 
@@ -70,16 +70,17 @@ require_once(LIB_DIR.'/checkdirs.php');
 require_once(LIB_DIR.'/config.php');
 
 // Init database
- 
+
 $_DBTYPE = $CONFIG['database']['type'];
 $_DBHOST = $CONFIG['database']['host'];
 $_DBUSER = $CONFIG['database']['user'];
 $_DBPASS = $CONFIG['database']['password'];
 $_DBNAME = $CONFIG['database']['database'];
+$_DBDEBUG = (isset($CONFIG['database']['debug']) ? chkconfig($CONFIG['database']['debug']) : FALSE);
 
 require(LIB_DIR.'/LMSDB.php');
 
-$DB = DBInit($_DBTYPE, $_DBHOST, $_DBUSER, $_DBPASS, $_DBNAME);
+$DB = DBInit($_DBTYPE, $_DBHOST, $_DBUSER, $_DBPASS, $_DBNAME, $_DBDEBUG);
 
 if(!$DB)
 {
@@ -99,8 +100,8 @@ $SMARTY = new Smarty;
 
 // test for proper version of Smarty
 
-if (constant('Smarty::SMARTY_VERSION'))
-	$ver_chunks = preg_split('/-/', Smarty::SMARTY_VERSION);
+if (defined('Smarty::SMARTY_VERSION'))
+	$ver_chunks = preg_split('/[- ]/', Smarty::SMARTY_VERSION);
 else
 	$ver_chunks = NULL;
 if (count($ver_chunks) != 2 || version_compare('3.0', $ver_chunks[1]) > 0)
@@ -161,6 +162,7 @@ $layout['hostname'] = hostname();
 $layout['lmsv'] = '1.11-cvs';
 $layout['lmsvr'] = $LMS->_revision.'/'.$AUTH->_revision;
 $layout['dberrors'] =& $DB->errors;
+$layout['dbdebug'] = $_DBDEBUG;
 $layout['popup'] = isset($_GET['popup']) ? true : false;
 
 $SMARTY->assignByRef('layout', $layout);
@@ -220,7 +222,7 @@ if($AUTH->islogged)
 				}
 
 				if(isset($access['table'][$level]['privilege']))
-					$CONFIG['phpui'][$access['table'][$level]['privilege']] = TRUE;
+					$CONFIG['privileges'][$access['table'][$level]['privilege']] = TRUE;
 			}
 
 		if($allow && ! $deny)
@@ -241,7 +243,7 @@ if($AUTH->islogged)
 		$SMARTY->assign('server', $_SERVER);
 		$SMARTY->display('notfound.html');
 	}
-	
+
 	if($SESSION->get('lastmodule') != $module)
 		$SESSION->save('lastmodule', $module);
 }

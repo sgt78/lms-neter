@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -158,10 +158,10 @@ $DEFAULTS = array(
 	),
 );
 
-foreach($DEFAULTS as $section => $values)
-        foreach($values as $key => $val)
-	        if(!isset($CONFIG[$section][$key]))
-			$CONFIG[$section][$key] = $val;
+foreach ($DEFAULTS as $section => $values)
+    foreach ($values as $key => $val)
+        if (!isset($CONFIG[$section][$key]))
+            $CONFIG[$section][$key] = $val;
 unset($DEFAULTS);
 
 ?>

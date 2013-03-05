@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2011 LMS Developers
+ *  (C) Copyright 2001-2012 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -44,16 +44,16 @@ function GetRecipients($filter, $type=MSG_MAIL)
 	}
 	else
 		$deleted = 0;
-	
+
 	$disabled = ($group == 5) ? 1 : 0;
 	$indebted = ($group == 6) ? 1 : 0;
 	$notindebted = ($group == 7) ? 1 : 0;
-	
+
 	if($group>3) $group = 0;
-	
-	if($network) 
+
+	if($network)
 		$net = $LMS->GetNetworkParams($network);
-	
+
 	if($type == MSG_SMS)
 	{
 		if ($CONFIG['database']['type'] == 'postgres')
@@ -70,7 +70,7 @@ function GetRecipients($filter, $type=MSG_MAIL)
 				AND (type & '.CONTACT_MOBILE.') = '.CONTACT_MOBILE.'
 			AND name NOT LIKE "%#no_sms%") x ON (x.customerid = c.id)';
 	}
-	
+
 	$recipients = $LMS->DB->GetAll('SELECT c.id, email, pin, '
 		.($type==MSG_SMS ? 'x.phone, ': '')
 		.$LMS->DB->Concat('c.lastname', "' '", 'c.name').' AS customername,
@@ -145,7 +145,7 @@ function GetRecipient($customerid, $type=MSG_MAIL)
 
 function BodyVars(&$body, $data)
 {
-    global $LMS, $LANGDEFS;
+	global $LMS, $LANGDEFS;
 
 	$body = str_replace('%customer', $data['customername'], $body);
 	$body = str_replace('%balance', $data['balance'], $body);
@@ -153,6 +153,7 @@ function BodyVars(&$body, $data)
 	$body = str_replace('%pin', $data['pin'], $body);
 	$body = str_replace('%balance', $data['balance'], $body);
 	$body = str_replace('%account', bankaccount($data['id'], $data['divisionid']), $body);
+	$body = str_replace('%bankaccount', bankaccount($data['id'], $data['divisionid']), $body);
 
 	if(!(strpos($body, '%last_10_in_a_table') === FALSE))
 	{
@@ -178,7 +179,7 @@ if(isset($_POST['message']))
 {
 	$message = $_POST['message'];
 
-	$message['type'] = $message['type'] == MSG_MAIL ? MSG_MAIL : MSG_SMS;
+	$message['type'] = $message['type'] == MSG_MAIL ? MSG_MAIL : ($message['type'] == MSG_SMS ? MSG_SMS : MSG_ANYSMS);
 
 	if(empty($message['customerid']) && ($message['group'] < 0 || $message['group'] > 7))
 		$error['group'] = trans('Incorrect customers group!');
@@ -186,7 +187,7 @@ if(isset($_POST['message']))
 	if($message['type'] == MSG_MAIL)
 	{
 		$message['body'] = $message['mailbody'];
-	
+
 		if($message['sender']=='')
 			$error['sender'] = trans('Sender e-mail is required!');
 		elseif(!check_email($message['sender']))
@@ -200,8 +201,19 @@ if(isset($_POST['message']))
 		$message['body'] = $message['smsbody'];
 		$message['sender'] = '';
 		$message['from'] = '';
+		$phonenumbers = array();
+		if ($message['type'] == MSG_ANYSMS)
+		{
+			$message['phonenumber'] = preg_replace('/[ \t]/', '', $message['phonenumber']);
+			if (preg_match('/^[\+]?[0-9]+(,[\+]?[0-9]+)*$/', $message['phonenumber']))
+				$phonenumbers = preg_split('/,/', $message['phonenumber']);
+			if (count($message['users']))
+				$phonenumbers = array_merge($phonenumbers, $message['users']);
+			if (empty($phonenumbers))
+				$error['phonenumber'] = trans('Specified phone number is not correct!');
+		}
 	}
-	
+
 	if($message['subject']=='')
 		$error['subject'] = trans('Message subject is required!');
 
@@ -234,10 +246,14 @@ if(isset($_POST['message']))
 
 	if(!$error)
 	{
+		$recipients = array();
 		if(empty($message['customerid']))
-			{
-			$recipients = GetRecipients($message, $message['type']);
-	}	else{
+			if ($message['type'] == MSG_SMS || $message['type'] == MSG_MAIL)
+				$recipients = GetRecipients($message, $message['type']);
+			else
+				foreach($phonenumbers as $phone)
+					$recipients[]['phone'] = $phone;
+		else
 			$recipients = GetRecipient($message['customerid'], $message['type']);
 }
 		if(!$recipients)
@@ -245,7 +261,7 @@ if(isset($_POST['message']))
 	}
 
 	if(!$error)
-	{	
+	{
 		set_time_limit(0);
 
 		$message['body'] = str_replace("\r", '', $message['body']);
@@ -267,29 +283,28 @@ if(isset($_POST['message']))
 				$AUTH->id,
 				$message['type']==MSG_MAIL ? '"'.$message['from'].'" <'.$message['sender'].'>' : '',
 			));
-		
+
 		$msgid = $DB->GetLastInsertID('messages');
 
 		foreach($recipients as $key => $row)
 		{
 			if($message['type'] == MSG_MAIL)
 				$recipients[$key]['destination'] = $row['email'];
-			else {
+			else
 				$recipients[$key]['destination'] = $row['phone'];
-			}
-			
+
 			$DB->Execute('INSERT INTO messageitems (messageid, customerid,
 				destination, status)
 				VALUES (?, ?, ?, ?)', array(
 					$msgid,
-					$row['id'],
+					isset($row['id']) ? $row['id'] : 0,
 					$recipients[$key]['destination'],
 					MSG_NEW,
 				));
 		}
-		
+
 		$DB->CommitTrans();
-		
+
 		if($message['type'] == MSG_MAIL)
 		{
 			$files = NULL;
@@ -317,7 +332,7 @@ if(isset($_POST['message']))
 			$body = $message['body'];
 
 			BodyVars($body, $row);
-			
+
 			if($message['type'] == MSG_MAIL)
 			{
 				$headers['To'] = '<'.$row['destination'].'>';
@@ -328,12 +343,12 @@ if(isset($_POST['message']))
 				$row['destination'] = preg_replace('/[^0-9]/', '', $row['destination']);
 				echo '<img src="img/sms.gif" border="0" align="absmiddle" alt=""> ';
 			}
-			
+
 			echo trans('$a of $b ($c) $d:', ($key+1), sizeof($recipients),
 				sprintf('%02.1f%%',round((100/sizeof($recipients))*($key+1),1)),
 				$row['customername'].' &lt;'.$row['destination'].'&gt;');
 			flush();
-			
+
 			if($message['type'] == MSG_MAIL)
 				$result = $LMS->SendMail($row['destination'], $headers, $body, $files);
 			else{ 
@@ -346,7 +361,7 @@ if(isset($_POST['message']))
 				echo ' ['.trans('sent').']';
 			else 
 				echo ' ['.trans('added').']';
-			
+
 			echo "<BR>\n";
 
 			if (!is_int($result) || $result == MSG_SENT)
@@ -359,7 +374,7 @@ if(isset($_POST['message']))
 						$row['id'],
 					));
 		}
-		
+
 		$SMARTY->display('footer.html');
 		$SESSION->close();
 		die;
@@ -391,6 +406,7 @@ $SMARTY->assign('networks', $LMS->GetNetworks());
 $SMARTY->assign('customergroups', $LMS->CustomergroupGetAll());
 $SMARTY->assign('nodegroups', $LMS->GetNodeGroupNames());
 $SMARTY->assign('userinfo', $LMS->GetUserInfo($AUTH->id));
+$SMARTY->assign('users', $DB->GetAll('SELECT name, phone FROM users WHERE phone <> \'\' ORDER BY name'));
 $SMARTY->display('messageadd.html');
 
 ?>
