@@ -8,7 +8,7 @@
 		<TD WIDTH="1%" ALIGN="RIGHT" NOWRAP>
 			LMS {$layout.lmsv} @ {$layout.hostname}<BR>
 			{$smarty.now|date_format:"%A, %x"}<BR>
-			{t 0=$layout.logname}Prepared by: $0{/t}
+			{t a=$layout.logname}Prepared by: $a{/t}
 		</TD>
 	</TR>
 </TABLE>
@@ -40,34 +40,34 @@
 		</TD>	
 
 	</TR>
-{foreach from=$customer item=customer}
+{foreach from=$customer item=customeritem}
 	<TR class="{cycle}">
 		<TD ALIGN="CENTER">
 			{counter}
 		</TD>
 		<TD ALIGN="CENTER" NOWRAP>
-			{$customer.id}
+			{$customeritem.id}
 		</TD>
 		<TD ALIGN="CENTER" NOWRAP>
-			{$customer.name} {$customer.lastname}
+			{$customeritem.name} {$customeritem.lastname}
 		</TD>
 		<TD ALIGN="CENTER" NOWRAP>
-			{$customer.address}<br>{$customer.city}
+			{$customeritem.address}<br>{$customeritem.city}
 		</TD>
 		<TD ALIGN="RIGHT" NOWRAP>
-			{$customer.phone|replace:',':'<br>'}
+			{$customeritem.phone|replace:',':'<br>'}
 
 		</TD>
 		<TD ALIGN="RIGHT" NOWRAP>
-			{$customer.tname|replace:'czas':'czas<br>'}
+			{$customeritem.tname|replace:'czas':'czas<br>'}
 
 		</TD>
 		<TD ALIGN="RIGHT" NOWRAP>
-			{$customer.tvalue|money_format}
+			{$customeritem.tvalue|money_format}
 
 		</TD>
 		<TD ALIGN="RIGHT" NOWRAP>
-			{$customer.data}
+			{$customeritem.data}
 
 		</TD>
 

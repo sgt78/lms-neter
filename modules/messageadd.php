@@ -257,7 +257,7 @@ if(isset($_POST['message']))
 					$recipients[]['phone'] = $phone;
 		else
 			$recipients = GetRecipient($message['customerid'], $message['type']);
-}
+
 		if(!$recipients)
 			$error['subject'] = trans('Unable to send message. No recipients selected!');
 	}

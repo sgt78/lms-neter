@@ -881,12 +881,13 @@ case 'customercontract':
  		$data= $DB->GetAll("SELECT  a.id, a.lastname, a.name,a.address, a.city, 
 			GROUP_CONCAT(cus.phone) as phone, from_unixtime(b.dateto,'%d-%m-%Y') as data, 
 			(SELECT name FROM tariffs t WHERE t.id=b.tariffid ) as tname,
-			(SELECT (CASE discount WHEN 0 THEN value ELSE value-(value*(discount/100)) END) 
+			(SELECT (((100 - pdiscount) * value) / 100) - vdiscount 
 			FROM tariffs t WHERE t.id=b.tariffid ) as tvalue FROM  customercontacts cus, customers a 
 			LEFT JOIN assignments b ON (a.id=b.customerid) WHERE a.id=cus.customerid "
 			.($days ? "AND DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL $days DAY) > from_unixtime(b.dateto) 
 			AND from_unixtime(b.dateto)>CURRENT_TIMESTAMP()" : "")." "
-			.($fromdate ? "AND $fromdate < b.dateto AND b.dateto < $todate" : "")
+			.($fromdate ? "AND $fromdate < b.dateto " : "")
+			.($todate ? "AND b.dateto < $todate " : "")
 			." AND b.tariffid!=0 GROUP BY a.id ORDER BY b.dateto");
 		$SMARTY->assign('customer', $data);
 		$SMARTY->display('printcustomercontract.html');
