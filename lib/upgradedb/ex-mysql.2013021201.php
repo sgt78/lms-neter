@@ -1,11 +1,9 @@
 <?php
 
 /*
- *  LMS version 1.11-git
+ * LMS iNET
  *
  *  (C) Copyright 2001-2012 LMS Developers
- *
- *  Please, see the doc/AUTHORS for more information about authors!
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License Version 2 as
@@ -21,14 +19,21 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
  *  USA.
  *
- *  $Id$
  */
 
-$_LANG['I confirm reading of message'] = 'Patvirtinu, jog žinutę perskaičiau';
-$_LANG['Message to you'] = 'Žinutės Tau';
-$_LANG['Messages'] = 'Žinutės';
-$_LANG['Shows administrative messages'] = 'Rodo administracines žinutes';
-$_LANG['This module is for showing administrative informations for your customer'] = 'Šis modulis rodo administracines žinutes skirtas Tavo klientui';
-$_LANG['We don\'t have any messages to you.'] = 'Neturi žinučių.';
+$DB->BeginTrans();
 
+if (!$tmp = $DB->GetOne("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = ? AND COLUMN_NAME = ? ;",array($DB->_dbname,'monit_port'))) 
+{
+    $DB->Execute("ALTER TABLE netdevices ADD monit_port VARCHAR(5) DEFAULT NULL;");
+}
+else
+{
+    $DB->Execute("ALTER TABLE netdevices CHANGE monit_port monit_port VARCHAR( 5 ) NULL DEFAULT NULL ;");
+    $DB->Execute("UPDATE netdevices SET monit_port = NULL WHERE monit_port = '8728' OR monit_port = '0';");
+}
+
+$DB->Execute("UPDATE dbinfo SET keyvalue = ? WHERE keytype = ?", array('2013021201', 'dbvex'));
+
+$DB->CommitTrans();
 ?>
