@@ -54,3 +54,6 @@ lib/Smarty/sysplugins
 nbproject/private
 backups/*
 lms.ini
+*~
+*.swp
+*.swo
