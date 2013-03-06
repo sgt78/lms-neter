@@ -138,6 +138,12 @@
 		<TD style="width: 99%; white-space: nowrap;">
 			<label for="chkmac">{trans("MAC checking")}:</label><INPUT TYPE="checkbox" NAME="nodedata[chkmac]" VALUE="1" id="chkmac" {tip text="Enable/disable MAC address checking" trigger="chkmac"}{if !isset($nodedata.chkmac) || $nodedata.chkmac} checked{/if}>&nbsp;
 			<label for="halfduplex">{trans("Half duplex")}:</label><INPUT TYPE="checkbox" NAME="nodedata[halfduplex]" VALUE="1" id="halfduplex" {if $nodedata.halfduplex} checked{/if} {tip text="Select transmission mode"}> 
+			{if check_modules(110)}
+			    <label for="monit">Monitoruj:</label><INPUT TYPE="checkbox" NAME="nodedata[monitoring]" VALUE="1" id="monit" {if $nodedata.monitoring} checked{/if} {tip text="Monitoruj urządzenie klienta"}>
+			{else}
+			    <input type="hidden" name="nodedata[monitoring]" value="">
+			{/if}
+			
 		</TD>
 	</TR>
 					</TABLE>

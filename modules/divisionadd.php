@@ -95,6 +95,9 @@ if(!empty($_POST['division']))
 				    $division['description'],
 			));
 
+		if (SYSLOG)
+		    addlogs('dodano nową firmę: '.$division['name'],'e=add;m=conf;');
+
 		if(!isset($division['reuse']))
 		{
 			$SESSION->redirect('?m=divisionlist');

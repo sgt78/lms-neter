@@ -51,7 +51,9 @@ if(sizeof($config))
     		$error['section'] = trans('Section name contains forbidden characters!');
 	    
 	if($config['value']=='')
-		$error['value'] = trans('Option with empty value not allowed!');
+	{
+		if (!get_conf('phpui.config_empty_value')) $error['value'] = trans('Option with empty value not allowed!');
+	}
 	elseif($msg = $LMS->CheckOption($config['name'], $config['value']))
 	        $error['value'] = $msg;
 	
@@ -66,6 +68,9 @@ if(sizeof($config))
 					$config['description'],
 					$config['disabled']
 					));
+		
+		if (SYSLOG) 
+		    addlogs('dodano zmienną konfiguracyjna, sekcja: '.$config['section'].' zmienna: '.$config['name'],'e=add;m=conf;');
 		
 		if(!isset($config['reuse']))
 		{

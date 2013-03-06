@@ -261,8 +261,9 @@ if(isset($_POST['assignment']))
 				if ($a['tariffid']) {
 					$DB->Execute('DELETE FROM liabilities WHERE id=?', array($a['liabilityid']));
 					$a['liabilityid'] = 0;
+					
 				}
-				else
+				else {
 					$DB->Execute('UPDATE liabilities SET value=?, name=?, taxid=?, prodid=? WHERE id=?',
 						array(str_replace(',','.',$a['value']),
 							$a['name'],
@@ -270,6 +271,8 @@ if(isset($_POST['assignment']))
 							$a['prodid'],
 							$a['liabilityid']
 						));
+					
+				}
 		}
 		else if (!$a['tariffid']) {
 			$DB->Execute('INSERT INTO liabilities (name, value, taxid, prodid) 
@@ -291,7 +294,8 @@ if(isset($_POST['assignment']))
 			unset($a['invoice']);
 			unset($a['settlement']);
 		}
-
+//					!empty($a['invoice']) ? $a['invoice'] : 0,
+//					isset($a['invoice']) ? 1 : 0,
 		$DB->Execute('UPDATE assignments SET tariffid=?, customerid=?, period=?, at=?,
 			invoice=?, settlement=?, datefrom=?, dateto=?, pdiscount=?, vdiscount=?,
 			liabilityid=?, numberplanid=?, paytype=?
@@ -300,7 +304,7 @@ if(isset($_POST['assignment']))
 					$customer['id'],
 					$period,
 					$at,
-					isset($a['invoice']) ? 1 : 0,
+					!empty($a['invoice']) ? $a['invoice'] : 0,
 					isset($a['settlement']) ? 1 : 0,
 					$from,
 					$to,
@@ -311,7 +315,8 @@ if(isset($_POST['assignment']))
 					!empty($a['paytype']) ? $a['paytype'] : NULL,
 					$a['id'],
 				));
-
+		
+		
 		$DB->Execute('DELETE FROM nodeassignments WHERE assignmentid=?', array($a['id']));
 
 		if (isset($a['nodes']) && sizeof($a['nodes']))
@@ -320,7 +325,12 @@ if(isset($_POST['assignment']))
 				$DB->Execute('INSERT INTO nodeassignments (nodeid, assignmentid) VALUES (?,?)',
 					array($nodeid, $a['id']));
 		}
-
+		
+		if (SYSLOG) {
+		
+		    addlogs('aktualizacja zobowiązania dla klienta '.$LMS->getcustomername($customer['id']).', taryfa: '.$DB->getone('select name from tariffs where id=? limit 1;',array(intval($a['tariffid']))),'e=up;m=cus;c='.$customer['id'].';');
+		}
+		
 		$DB->CommitTrans();
 
 		$SESSION->redirect('?'.$SESSION->get('backto'));

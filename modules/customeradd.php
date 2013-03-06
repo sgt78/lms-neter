@@ -100,6 +100,12 @@ if (isset($_POST['customeradd']))
 		$error['ten'] = trans('Incorrect Tax Exempt Number! If you are sure you want to accept it, then click "Submit" again.');
 		$customeradd['tenwarning'] = 1;
 	}
+	
+	if($customeradd['invoice_ten'] !='' && !check_ten($customeradd['invoice_ten']) && !isset($customeradd['invoice_tenwarning']))
+	{
+		$error['invoice_ten'] = trans('Incorrect Tax Exempt Number! If you are sure you want to accept it, then click "Submit" again.');
+		$customeradd['invoice_tenwarning'] = 1;
+	}
 
 	if($customeradd['ssn'] != '' && !check_ssn($customeradd['ssn']) && !isset($customeradd['ssnwarning']))
 	{
@@ -118,10 +124,17 @@ if (isset($_POST['customeradd']))
 		$error['zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
 		$customeradd['zipwarning'] = 1;
 	}
+
 	if($customeradd['post_zip'] !='' && !check_zip($customeradd['post_zip']) && !isset($customeradd['post_zipwarning']))
 	{
 		$error['post_zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
 		$customeradd['post_zipwarning'] = 1;
+	}
+	
+	if($customeradd['invoice_zip'] !='' && !check_zip($customeradd['invoice_zip']) && !isset($customeradd['invoice_zipwarning']))
+	{
+		$error['invoice_zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
+		$customeradd['invoice_zipwarning'] = 1;
 	}
 
 	if($customeradd['pin'] == '')

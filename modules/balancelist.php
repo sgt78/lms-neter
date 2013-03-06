@@ -88,7 +88,7 @@ function GetBalanceList($search=NULL, $cat=NULL, $group=NULL, $pagelimit=100, $p
 					JOIN excludedgroups e ON (a.customergroupid = e.customergroupid)
 					WHERE e.userid = lms_current_user()
 				) e ON (e.customerid = cash.customerid)
-				WHERE e.customerid IS NULL'
+				WHERE e.customerid IS NULL '
 				.$where
 				.(!empty($group['group']) ? 
 					' AND '.(!empty($group['exclude']) ? 'NOT' : '').' EXISTS (

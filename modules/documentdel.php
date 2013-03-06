@@ -46,6 +46,11 @@ if($_GET['is_sure']=='1')
 	
 			$DB->BeginTrans();
 			
+			if (SYSLOG) {
+			    $tmp = $DB->getrow('select type,customerid from documents where id = ? LIMIT 1;',array($id));
+			    addlogs('skasowano dokument '.$DOCTYPES[$tmp['type']],'e=rm;mod=doc;c='.$tmp['customerid']);
+			}
+			
 			$DB->Execute('DELETE FROM documentcontents WHERE docid = ?',array($id));
 			$DB->Execute('DELETE FROM documents WHERE id = ?',array($id));
 	
@@ -72,6 +77,11 @@ if($_GET['is_sure']=='1')
 		}
 	
 		$DB->BeginTrans();
+		
+		if (SYSLOG) {
+			    $tmp = $DB->getrow('select type,customerid from documents where id = ? LIMIT 1;',array($_GET['id']));
+			    addlogs('skasowano dokument '.$DOCTYPES[$tmp['type']],'e=rm;mod=doc;c='.$tmp['customerid']);
+		}
 		
 		$DB->Execute('DELETE FROM documentcontents WHERE docid = ?',array($_GET['id']));
 		$DB->Execute('DELETE FROM documents WHERE id = ?',array($_GET['id']));

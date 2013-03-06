@@ -112,6 +112,9 @@ if(!empty($_POST['division']))
 				    $division['id']
 			));
 		
+		if (SYSLOG)
+		    addlogs('aktualizacja danych dla firmy '.$division['name'],'e=up;m=conf;');
+		
 		$SESSION->redirect('?m=divisionlist');
 	}
 }	

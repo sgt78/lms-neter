@@ -2,6 +2,37 @@
 <!--// $Id$ //-->
 <H1>{$layout.pagetitle}</H1>
 <TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+		<TD CLASS="fall" colspan="8">
+			<FORM METHOD="GET" ACTION="?m={$layout.module}" NAME="choosefilter">
+				<INPUT type="submit" class="hiddenbtn">
+				<INPUT TYPE="HIDDEN" NAME="m" VALUE="tarifflist">
+				{*<INPUT TYPE="HIDDEN" NAME="page" VALUE="1">*}
+				<img src="img/Filter.png">&nbsp;<a href="?m=tarifflist&t=&p=&g=" {tip text="wyczyść filtr"}><img src="img/cancel.gif"></a>
+				{trans("Type:")}
+				<SELECT SIZE="1" NAME="t" ONCHANGE="document.choosefilter.submit();" {if $listdata.type}class="active"{/if}>
+					<OPTION value="0"{if !$listdata.type} SELECTED{/if}>{trans("- all -")}</OPTION>
+					{foreach from=$_TARIFFTYPES item=item key=key}
+					<OPTION value="{$key}" {if $listdata.type eq $key} SELECTED {/if}>{$item}</OPTION>
+					{/foreach}
+				</SELECT>
+				{trans("Promotion:")}
+				<SELECT SIZE="1" NAME="p" ONCHANGE="document.choosefilter.submit();" {if $listdata.promotionid}class="active"{/if}>
+					<OPTION value="0"{if !$listdata.promotionid} SELECTED{/if}>{trans("- all -")}</OPTION>
+					{section name=promotions loop=$promotions}
+					<OPTION value="{$promotions[promotions].id}" {if $listdata.promotionid eq $promotions[promotions].id} SELECTED {/if}>{$promotions[promotions].name|truncate:50:"...":true}</OPTION>
+					{/section}
+				</SELECT>
+				{trans("Group:")}
+				<SELECT SIZE="1" NAME="g" ONCHANGE="document.choosefilter.submit();" {if $listdata.customergroupid}class="active"{/if}>
+					<OPTION value="0"{if !$listdata.customergroupid} SELECTED{/if}>{trans("- all -")}</OPTION>
+					{section name=customergroups loop=$customergroups}
+					<OPTION value="{$customergroups[customergroups].id}" {if $listdata.customergroupid eq $customergroups[customergroups].id} SELECTED {/if}>{$customergroups[customergroups].name|truncate:50:"...":true}</OPTION>
+					{/section}
+				</SELECT>
+			</FORM>
+		</TD>
+	</TR>
 	<TR class="dark" {tip text="Click on column name to change sorting order"}>
 		<TD WIDTH="93%" CLASS="fleftu" NOWRAP>
 			<IMG SRC="img/money.gif" ALT=""> <A href="?m=tarifflist&o=name{if $listdata.direction eq "asc" && $listdata.order eq "name"},desc{/if}"><B>{trans("Name:")}</B></A> {if $listdata.order eq "name"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}<BR>
@@ -36,40 +67,10 @@
 			</NOBR>
 		</TD>
 	</TR>
-	<TR CLASS="DARK">
-		<TD CLASS="fall" colspan="8">
-			<FORM METHOD="GET" ACTION="?m={$layout.module}" NAME="choosefilter">
-				<INPUT type="submit" class="hiddenbtn">
-				<INPUT TYPE="HIDDEN" NAME="m" VALUE="tarifflist">
-				{*<INPUT TYPE="HIDDEN" NAME="page" VALUE="1">*}
-				<B>{trans("Filter:")}</B>
-				{trans("Type:")}
-				<SELECT SIZE="1" NAME="t" ONCHANGE="document.choosefilter.submit();">
-					<OPTION value="0"{if !$listdata.type} SELECTED{/if}>{trans("- all -")}</OPTION>
-					{foreach from=$_TARIFFTYPES item=item key=key}
-					<OPTION value="{$key}" {if $listdata.type eq $key} SELECTED {/if}>{$item}</OPTION>
-					{/foreach}
-				</SELECT>
-				{trans("Promotion:")}
-				<SELECT SIZE="1" NAME="p" ONCHANGE="document.choosefilter.submit();">
-					<OPTION value="0"{if !$listdata.promotionid} SELECTED{/if}>{trans("- all -")}</OPTION>
-					{section name=promotions loop=$promotions}
-					<OPTION value="{$promotions[promotions].id}" {if $listdata.promotionid eq $promotions[promotions].id} SELECTED {/if}>{$promotions[promotions].name|truncate:50:"...":true}</OPTION>
-					{/section}
-				</SELECT>
-				{trans("Group:")}
-				<SELECT SIZE="1" NAME="g" ONCHANGE="document.choosefilter.submit();">
-					<OPTION value="0"{if !$listdata.customergroupid} SELECTED{/if}>{trans("- all -")}</OPTION>
-					{section name=customergroups loop=$customergroups}
-					<OPTION value="{$customergroups[customergroups].id}" {if $listdata.customergroupid eq $customergroups[customergroups].id} SELECTED {/if}>{$customergroups[customergroups].name|truncate:50:"...":true}</OPTION>
-					{/section}
-				</SELECT>
-			</FORM>
-		</TD>
-	</TR>
+
 	{cycle values="light,lucid" print=false}
 	{section name=tariffs loop=$tarifflist}
-	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+	<TR class="{cycle} {if !$tarifflist[tariffs].active}blend{/if}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
 		<TD WIDTH="93%" CLASS="fleft" onClick="return self.location.href='?m=tariffinfo&id={$tarifflist[tariffs].id}';" class="fleft">
 			<IMG SRC="img/money.gif" ALT="">&nbsp;<B>{$tarifflist[tariffs].name}</B><BR>
 			{if $tarifflist[tariffs].description}<IMG SRC="img/info1.gif" ALT="">&nbsp;{$tarifflist[tariffs].description}{/if}
@@ -110,6 +111,11 @@
 		</TD>
 		<TD WIDTH="1%" CLASS="fright" ALIGN="right">
 			<NOBR>
+			{if $tarifflist[tariffs].active}
+			    <a href="?m=tarifflist&setactive=0&id={$tarifflist[tariffs].id}" {tip text="Wyłącz taryfę"}><img src="img/access.gif"></a>
+			{else}
+			    <a href="?m=tarifflist&setactive=1&id={$tarifflist[tariffs].id}" {tip text="Włącz taryfę"}><img src="img/noaccess.gif"></a>
+			{/if}
 			{if $tarifflist[tariffs].customers}<A HREF="javascript:alert('{trans("Subscription with assigned customers cannot be deleted!")}');">{else}<A HREF="?m=tariffdel&id={$tarifflist[tariffs].id}" onClick="return confirmLink(this,'{trans("Are you sure, you want to delete that tariff?")}');">{/if}<IMG SRC="img/delete.gif" alt="[ {trans("Delete")} ]" title="[ {trans("Delete")} ]"></A>
 				<A HREF="?m=tariffedit&id={$tarifflist[tariffs].id}"><IMG SRC="img/edit.gif" alt="[ {trans("Edit")} ]" title="[ {trans("Edit")} ]"></A>
 				<A HREF="?m=tariffadd&id={$tarifflist[tariffs].id}"><IMG SRC="img/clone.gif" alt="[ {trans("Clone")} ]" title="[ {trans("Clone")} ]"></A>

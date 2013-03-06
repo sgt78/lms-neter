@@ -1,8 +1,122 @@
 {include file="header.html"}
 <!--// $Id$ //-->
+{literal}
+<script type="text/javascript" language="JavaScript">
+<!--
+
+    function setfirstletter(fletter)
+    {
+	if (fletter == 'all') document.choosefilter.fletter.value = "";
+	else document.choosefilter.fletter.value = fletter;
+	document.choosefilter.submit();
+    }
+    
+//-->
+</script>
+{/literal}
+
 <H1>{$layout.pagetitle}</H1>
 <P>
 <TABLE cellpadding="3" WIDTH="100%">
+	
+	<TR CLASS="DARK">
+		<TD CLASS="fall" colspan="4">
+			<FORM METHOD="GET" ACTION="?m={$layout.module}" NAME="choosefilter">
+				<INPUT type="submit" class="hiddenbtn">
+				<INPUT TYPE="HIDDEN" NAME="m" VALUE="customerlist">
+				<INPUT TYPE="HIDDEN" NAME="page" VALUE="1">
+				<input type="hidden" name="fletter" value="{$listdata.fletter}">
+				
+				<img src="img/Filter.png" alt=""> 
+				<NOBR>{trans("Customers:")}
+				<SELECT SIZE="1" NAME="s" ONCHANGE="document.choosefilter.submit();" {if $listdata.state} class="active"{/if}>
+					<OPTION VALUE="0"{if $listdata.state eq 0} SELECTED{/if}>{trans("- all customers -")}</OPTION>
+					<OPTION VALUE="3"{if $listdata.state eq 3} SELECTED{/if}>{trans("connected<!plural>")}</OPTION>
+					<OPTION VALUE="2"{if $listdata.state eq 2} SELECTED{/if}>{trans("awaiting")}</OPTION>
+					<OPTION VALUE="1"{if $listdata.state eq 1} SELECTED{/if}>{trans("interested<!plural>")}</OPTION>
+					<OPTION VALUE="4"{if $listdata.state eq 4} SELECTED{/if}>{trans("deleted<!plural>")}</OPTION>
+					<OPTION VALUE="5"{if $listdata.state eq 5} SELECTED{/if}>{trans("disconnected<!plural>")}</OPTION>
+				</SELECT></NOBR>
+				
+				<NOBR>{trans("Status:")}
+				<SELECT SIZE="1" NAME="st" ONCHANGE="document.choosefilter.submit();" {if $listdata.status} class="active"{/if}>
+					<OPTION VALUE="0"{if $listdata.status eq 0} SELECTED{/if}>{trans("- all customers -")}</OPTION>
+					{if !check_conf('privileges.hide_finances')}
+					<OPTION VALUE="6"{if $listdata.status eq 6} SELECTED{/if}>{trans("in debt")}</OPTION>
+					<OPTION VALUE="11"{if $listdata.status eq 11} SELECTED{/if}>{trans("in debt above 100%")}</OPTION>
+					<OPTION VALUE="12"{if $listdata.status eq 12} SELECTED{/if}>{trans("in debt above 200%")}</OPTION>
+					{/if}
+					<OPTION VALUE="7"{if $listdata.status eq 7} SELECTED{/if}>{trans("online")}</OPTION>
+					<OPTION VALUE="8"{if $listdata.status eq 8} SELECTED{/if}>{trans("without group")}</OPTION>
+					<OPTION VALUE="9"{if $listdata.status eq 9} SELECTED{/if}>{trans("without tariff")}</OPTION>
+					<OPTION VALUE="10"{if $listdata.status eq 10} SELECTED{/if}>{trans("suspended<!plural>")}</OPTION>
+				</SELECT></NOBR>
+				
+				
+				<NOBR>Zobowiązania:
+				<SELECT SIZE="1" NAME="ce" ONCHANGE="document.choosefilter.submit();" {if $listdata.contractend}class="active"{/if}>
+					<OPTION value="" {if !$listdata.contractend} SELECTED {/if}>- wszystkie -</OPTION>
+					<OPTION value="3" {if $listdata.contractend=='3'} SELECTED {/if}>wygasną w ciągu 3 dni</OPTION>
+					<OPTION value="7" {if $listdata.contractend=='7'} SELECTED {/if}>wygasną w ciągu 7 dni</OPTION>
+					<OPTION value="14" {if $listdata.contractend=='14'} SELECTED {/if}>wygasną w ciągu 14 dni</OPTION>
+					<OPTION value="30" {if $listdata.contractend=='30'} SELECTED {/if}>wygasną w ciągu 30 dni</OPTION>
+					<OPTION value="-2" {if $listdata.contractend=='-2'} SELECTED {/if}>bezterminowe</OPTION>
+				</SELECT></NOBR>
+				
+				
+				<NOBR>{trans("Division")}:
+				<SELECT SIZE="1" NAME="d" ONCHANGE="document.choosefilter.submit();" {if $listdata.division} class="active"{/if}>
+				        <OPTION VALUE="" {if !$listdata.division} SELECTED {/if}>- {trans("all")} -</OPTION>
+				        {foreach from=$divisions item=division}
+				        <OPTION VALUE="{$division.id}"{if $listdata.division eq $division.id} SELECTED {/if}>{$division.shortname|truncate:30:"...":true}</OPTION>
+					{/foreach}
+				</SELECT></NOBR>
+				<NOBR>{trans("Network:")}
+				<SELECT SIZE="1" NAME="n" ONCHANGE="document.choosefilter.submit();" {if $listdata.network} class="active"{/if}>
+					<OPTION value="0" {if !$listdata.network} SELECTED {/if}>{trans("- all networks -")}</OPTION>
+					{section name=networks loop=$networks}
+					<OPTION value="{$networks[networks].id}" {if $listdata.network eq $networks[networks].id} SELECTED {/if}>{$networks[networks].name|truncate:30:"...":true}</OPTION>
+					{/section}
+				</SELECT></NOBR>
+				<NOBR>{trans("Group:")}
+				<SELECT SIZE="1" NAME="g" ONCHANGE="document.choosefilter.submit();" {if $listdata.customergroup} class="active"{/if}>
+					<OPTION value="" {if !$listdata.customergroup} SELECTED {/if}>{trans("- all groups -")}</OPTION>
+					{section name=customergroups loop=$customergroups}
+					<OPTION value="{$customergroups[customergroups].id}" {if $listdata.customergroup eq $customergroups[customergroups].id} SELECTED {/if}>{$customergroups[customergroups].name|truncate:30:"...":true}</OPTION>
+					{/section}
+				</SELECT></NOBR>
+				<NOBR>{trans("Nodes Group:<!short>")}
+				<SELECT SIZE="1" NAME="ng" ONCHANGE="document.choosefilter.submit();" {if $listdata.nodegroup} class="active"{/if}>
+	        			<OPTION value="" {if !$listdata.nodegroup} SELECTED {/if}>{trans("- all groups -")}</OPTION>
+		        		{foreach from=$nodegroups item=nodegroup}
+			        	<OPTION value="{$nodegroup.id}" {if $listdata.nodegroup eq $nodegroup.id} SELECTED {/if}>{$nodegroup.name|truncate:30:"...":true}</OPTION>
+				        {/foreach}
+				</SELECT></NOBR>
+				<p>
+				<table width="100%" cellpadding="4">
+				    <tr class="light">
+					<td width="1%" class="dark">
+					    <a href="?m=customerlist&page=1&fletter=&s=&st=&ce=&d=&n=&ng=&g=" {tip text="Wyczyść filtr"}><img src="img/cancel.gif" alt=""></a>
+					</td>
+					<td align="center" style="cursor:pointer;" onclick="setfirstletter('all');" class="fall{if !$listdata.fletter} active{/if}"  onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')"><b>ALL</b></td>
+					
+					{foreach range('A','Z') as $key => $item}
+					    <td align="center" style="cursor:pointer;" onclick="setfirstletter('{$item}');" class="frightu {if $listdata.fletter == $item}active{/if}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')"><b>{$item}</b></td>
+					{/foreach}
+				    </tr>
+				    
+				</table>
+				</p>
+			</FORM>
+		</TD>
+	</TR>		
+	{if $listdata.total != 0}
+	<TR CLASS="scroller">
+		<TD COLSPAN="4" CLASS="FALL">
+			{include file="scroller.html" loop=$customerlist}
+		</TD>
+	</TR>
+	{/if}
 	<TR class="dark" {tip text="Click on column name to change sorting order"}>
 		<TD width="97%" class="fleftu">
 			<img src="img/customer.gif" ALT="">&nbsp;<a href="?m={$layout.module}&s={$listdata.state}&o=customername{if $listdata.direction eq "asc" && $listdata.order eq "customername"},desc{/if}">{trans("First/last or Company name")}</A></B> {if $listdata.order eq "customername"}<IMG SRC="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}<BR>
@@ -22,68 +136,6 @@
 			<NOBR><B>{t a=$listdata.total}Total: $a{/t}</B></NOBR>
 		</TD>
 	</TR>
-	<TR CLASS="DARK">
-		<TD CLASS="fall" colspan="4">
-			<FORM METHOD="GET" ACTION="?m={$layout.module}" NAME="choosefilter">
-				<INPUT type="submit" class="hiddenbtn">
-				<INPUT TYPE="HIDDEN" NAME="m" VALUE="customerlist">
-				<INPUT TYPE="HIDDEN" NAME="page" VALUE="1">
-				<B>{trans("Filter:")}</B> <NOBR>{trans("Customers:")}
-				<SELECT SIZE="1" NAME="s" ONCHANGE="document.choosefilter.submit();">
-					<OPTION VALUE="0"{if $listdata.state eq 0} SELECTED{/if}>{trans("- all customers -")}</OPTION>
-					<OPTION VALUE="3"{if $listdata.state eq 3} SELECTED{/if}>{trans("connected<!plural>")}</OPTION>
-					<OPTION VALUE="2"{if $listdata.state eq 2} SELECTED{/if}>{trans("awaiting")}</OPTION>
-					<OPTION VALUE="1"{if $listdata.state eq 1} SELECTED{/if}>{trans("interested<!plural>")}</OPTION>
-					<OPTION VALUE="4"{if $listdata.state eq 4} SELECTED{/if}>{trans("deleted<!plural>")}</OPTION>
-					<OPTION VALUE="5"{if $listdata.state eq 5} SELECTED{/if}>{trans("disconnected<!plural>")}</OPTION>
-					{if !check_conf('privileges.hide_finances')}
-					<OPTION VALUE="6"{if $listdata.state eq 6} SELECTED{/if}>{trans("in debt")}</OPTION>
-					<OPTION VALUE="11"{if $listdata.state eq 11} SELECTED{/if}>{trans("in debt above 100%")}</OPTION>
-					<OPTION VALUE="12"{if $listdata.state eq 12} SELECTED{/if}>{trans("in debt above 200%")}</OPTION>
-					{/if}
-					<OPTION VALUE="7"{if $listdata.state eq 7} SELECTED{/if}>{trans("online")}</OPTION>
-					<OPTION VALUE="8"{if $listdata.state eq 8} SELECTED{/if}>{trans("without group")}</OPTION>
-					<OPTION VALUE="9"{if $listdata.state eq 9} SELECTED{/if}>{trans("without tariff")}</OPTION>
-					<OPTION VALUE="10"{if $listdata.state eq 10} SELECTED{/if}>{trans("suspended<!plural>")}</OPTION>
-				</SELECT></NOBR>
-				<NOBR>{trans("Division")}:
-				<SELECT SIZE="1" NAME="d" ONCHANGE="document.choosefilter.submit();">
-				        <OPTION VALUE="" {if !$listdata.division} SELECTED {/if}>- {trans("all")} -</OPTION>
-				        {foreach from=$divisions item=division}
-				        <OPTION VALUE="{$division.id}"{if $listdata.division eq $division.id} SELECTED {/if}>{$division.shortname|truncate:30:"...":true}</OPTION>
-					{/foreach}
-				</SELECT></NOBR>
-				<NOBR>{trans("Network:")}
-				<SELECT SIZE="1" NAME="n" ONCHANGE="document.choosefilter.submit();">
-					<OPTION value="0" {if !$listdata.network} SELECTED {/if}>{trans("- all networks -")}</OPTION>
-					{section name=networks loop=$networks}
-					<OPTION value="{$networks[networks].id}" {if $listdata.network eq $networks[networks].id} SELECTED {/if}>{$networks[networks].name|truncate:30:"...":true}</OPTION>
-					{/section}
-				</SELECT></NOBR>
-				<NOBR>{trans("Group:")}
-				<SELECT SIZE="1" NAME="g" ONCHANGE="document.choosefilter.submit();">
-					<OPTION value="" {if !$listdata.customergroup} SELECTED {/if}>{trans("- all groups -")}</OPTION>
-					{section name=customergroups loop=$customergroups}
-					<OPTION value="{$customergroups[customergroups].id}" {if $listdata.customergroup eq $customergroups[customergroups].id} SELECTED {/if}>{$customergroups[customergroups].name|truncate:30:"...":true}</OPTION>
-					{/section}
-				</SELECT></NOBR>
-				<NOBR>{trans("Nodes Group:<!short>")}
-				<SELECT SIZE="1" NAME="ng" ONCHANGE="document.choosefilter.submit();">
-	        			<OPTION value="" {if !$listdata.nodegroup} SELECTED {/if}>{trans("- all groups -")}</OPTION>
-		        		{foreach from=$nodegroups item=nodegroup}
-			        	<OPTION value="{$nodegroup.id}" {if $listdata.nodegroup eq $nodegroup.id} SELECTED {/if}>{$nodegroup.name|truncate:30:"...":true}</OPTION>
-				        {/foreach}
-				</SELECT></NOBR>
-			</FORM>
-		</TD>
-	</TR>		
-	{if $listdata.total != 0}
-	<TR CLASS="DARK">
-		<TD COLSPAN="4" CLASS="FALL">
-			{include file="scroller.html" loop=$customerlist}
-		</TD>
-	</TR>
-	{/if}
 	{cycle values="light,lucid" print=false}
 	{section name=customerlist loop=$customerlist start=$start max=$pagelimit}
 	<TR class="{cycle}{if $customerlist[customerlist].account && !$customerlist[customerlist].nodeac} blend{/if}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
@@ -99,7 +151,8 @@
 		</TD>
 		<TD align="right" valign="top" NOWRAP>
 			{if !check_conf('privileges.hide_finances')}
-			<NOBR><IMG src="img/empty.gif" width="1" height="16" ALT="">{if $customerlist[customerlist].balance < 0}<font class="alert">{/if}{$customerlist[customerlist].balance|money_format}{if $customerlist[customerlist].balance < 0}</FONT>{/if}<BR><IMG src="img/empty.gif" width="1" height="16" ALT=""><FONT CLASS="blend">{$customerlist[customerlist].tariffvalue|money_format}</FONT></NOBR>
+			<NOBR>
+			    <img src="img/empty.gif" width="1" height="16" ALT="">{if $customerlist[customerlist].balance < 0}<font class="alert" style="font-weight:bold;">{/if}{if $customerlist[customerlist].balance > 0}<font class="surplus" style="font-weight:bold;">+{/if}{$customerlist[customerlist].balance|money_format}{if $customerlist[customerlist].balance != 0}</font>{/if}<BR><IMG src="img/empty.gif" width="1" height="16" ALT=""><FONT CLASS="blend">{$customerlist[customerlist].tariffvalue|money_format}</FONT></NOBR>
 			{/if}
 		</TD>
 		<TD align="right" class="fright">
@@ -153,8 +206,8 @@
 	</TR>
 	{/section}
 	{if $listdata.total != 0}
-	<TR CLASS="DARK">
-		<TD COLSPAN="4" CLASS="FALL">
+	<TR CLASS="scroller">
+		<TD COLSPAN="4" CLASS="fall">
 			{include file="scroller.html" loop=$customerlist}
 		</TD>
 	</TR>

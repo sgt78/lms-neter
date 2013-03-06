@@ -31,7 +31,7 @@
 			<IMG src="img/division.gif" alt="">
 		</TD>
 		<TD WIDTH="99%">
-			{$customerinfo.division}
+			<a href="javascript:divisioninfo_popup('{$customerinfo.divisionid}');" {tip text="Pokaż szczegóły"}>{$customerinfo.division}</a>
 		</TD>
 	</TR>
 {/if}
@@ -48,23 +48,47 @@
 			<IMG SRC="img/home.gif" ALT="">
 		</TD>
 		<TD WIDTH="99%">
-			{$customerinfo.address}<BR>
+		    <fieldset style="width:50%">
+		    <legend><b> Adres siedziby, zameldowania, instalacji </b></legend>
+			{$customerinfo.address}<br>
 			{$customerinfo.zip} {$customerinfo.city}
 			{if $customerinfo.cstate}<BR>{$customerinfo.cstate}{/if}
 			{if $customerinfo.country}<BR>{t}{$customerinfo.country}{/t}{/if}
+		    </lieldset>
 		</TD>
 	</TR>
+{if $customerinfo.invoice_name neq "" || $customerinfo.invoice_address neq ""}
+	<TR CLASS="LIGHT">
+		<TD WIDTH="1%" style="vertical-align:top;">
+			<IMG SRC="img/home.gif" ALT="">
+		</TD>
+		<TD WIDTH="99%" nowrap>
+		    <fieldset style="width:50%">
+		    <legend><b> Odbiorca faktury </b></legend>
+			{if $customerinfo.invoice_name neq ""}{$customerinfo.invoice_name}{/if}
+			{if $customerinfo.invoice_address neq ""}<BR>{$customerinfo.invoice_address}{/if}
+			<BR>{$customerinfo.invoice_zip} {$customerinfo.invoice_city}
+			{if $customerinfo.invoice_cstate}<BR>{$customerinfo.invoice_cstate}{/if}
+			{if $customerinfo.invoice_country}<BR>{t}{$customerinfo.invoice_country}{/t}{/if}
+		    </fieldset>
+		</TD>
+	</TR>
+{/if}
+
 {if $customerinfo.post_name neq "" || $customerinfo.post_address neq ""}
 	<TR CLASS="LIGHT">
-		<TD WIDTH="1%">
+		<TD WIDTH="1%" style="vertical-align:top;">
 			<IMG SRC="img/post.gif" ALT="">
 		</TD>
-		<TD WIDTH="99%">
+		<TD WIDTH="99%" nowrap>
+		    <fieldset style="width:50%">
+		    <legend><b> Adres do wysyłki</b></legend>
 			{if $customerinfo.post_name neq ""}{$customerinfo.post_name}{/if}
 			{if $customerinfo.post_address neq ""}<BR>{$customerinfo.post_address}{/if}
-			{$customerinfo.post_zip} {$customerinfo.post_city}
+			<BR>{$customerinfo.post_zip} {$customerinfo.post_city}
 			{if $customerinfo.post_cstate}<BR>{$customerinfo.post_cstate}{/if}
 			{if $customerinfo.post_country}<BR>{t}{$customerinfo.post_country}{/t}{/if}
+		    </fieldset>
 		</TD>
 	</TR>
 {/if}
@@ -323,7 +347,10 @@
 			<B>{trans("Balance:")}</B>
 		</TD>
 		<TD WIDTH="98%">
-			{if $customerinfo.balance < 0}<FONT class="alert">{$customerinfo.balance|money_format}</FONT>{else}{$customerinfo.balance|default:"0"|money_format}{/if}
+			{if $customerinfo.balance < 0}<FONT class="alert" style="font-weight:bold;">{/if}
+			{if $customerinfo.balance > 0}<FONT class="surplus" style="font-weight:bold;">+{/if}
+			{$customerinfo.balance|default:"0"|money_format}
+			{if $customerinfo.balance != 0}</FONT>{/if}
 		</TD>
 	</TR>
 	{/if}
@@ -367,10 +394,10 @@
 				<A HREF="?m=customeredit&id={$customerinfo.id}&action=recover">{trans("Restore")} <IMG SRC="img/recover.gif" ALT="[ {trans("Restore")} ]"></A>
 			{else}
 				<NOBR>
-				<A HREF="?m=rtsearch&id={$customerinfo.id}">{trans("Tickets")}</A> <IMG src="img/ticket.gif" alt="[ {trans("Tickets")} ]"></A>
-				<A href="?m=accountlist&u={$customerinfo.id}">{trans("Accounts")} <IMG src="img/account.gif" alt="[ {trans("Accounts")} ]"></A>
-				<A href="?m=domainlist&c={$customerinfo.id}">{trans("Domains")} <IMG src="img/network.gif" alt="[ {trans("Domains")} ]"></A>
-				<A href="?m=trafficprint&type=customertraffic&customer={$customerinfo.id}" target="_blank">{trans("Stats")} <IMG src="img/traffic.gif" alt="[ {trans("Stats")} ]"></A>
+				{if check_modules(280)}<A HREF="?m=rtsearch&id={$customerinfo.id}">{trans("Tickets")}</A> <IMG src="img/ticket.gif" alt="[ {trans("Tickets")} ]"></A>{/if}
+				{if check_modules(200)}<A href="?m=accountlist&u={$customerinfo.id}">{trans("Accounts")} <IMG src="img/account.gif" alt="[ {trans("Accounts")} ]"></A>{/if}
+				{if check_modules(200)}<A href="?m=domainlist&c={$customerinfo.id}">{trans("Domains")} <IMG src="img/network.gif" alt="[ {trans("Domains")} ]"></A>{/if}
+				{if check_modules(260)}<A href="?m=trafficprint&type=customertraffic&customer={$customerinfo.id}" target="_blank">{trans("Stats")} <IMG src="img/traffic.gif" alt="[ {trans("Stats")} ]"></A>{/if}
 				</NOBR>
 				<NOBR>
 				<A href="?m=customeredit&id={$customerinfo.id}" ACCESSKEY="E">{trans("Edit")} <IMG src="img/edit.gif" alt="[ {trans("Edit")} ]"></A>

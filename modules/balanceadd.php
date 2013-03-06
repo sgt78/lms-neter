@@ -99,7 +99,8 @@ if(isset($addbalance['mcustomerid']))
 		if($LMS->CustomerExists($value))
 		{
 			$addbalance['customerid'] = $value;
-			if($addbalance['value'] != 0)
+			
+			if($addbalance['value'] != 0) 
 				$LMS->AddBalance($addbalance);
 		}
 }
@@ -107,7 +108,7 @@ elseif(isset($addbalance['customerid']))
 {
 	if($LMS->CustomerExists($addbalance['customerid']))
 	{
-		if($addbalance['value'] != 0)
+		if($addbalance['value'] != 0) 
 			$LMS->AddBalance($addbalance);
 	}
 }

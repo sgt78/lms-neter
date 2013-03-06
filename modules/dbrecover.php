@@ -75,6 +75,20 @@ function DBLoad($filename=NULL)
 							'documentcontents',
 							'stats',
 							'eventassignments',
+							'monitnodes',
+							'monituser',
+							'hv_county',
+							'hv_province',
+							'hv_borough',
+							'hv_pcb',
+							'hv_pricelist',
+							'hv_pstn',
+							'hv_pstnrange',
+							'hv_pstnusage',
+							'hv_subscriptionlist',
+							'hv_terminal',
+							'hv_customers',
+							'hv_enduserlist',
 							'sessions')))
 					$DB->Execute("SELECT setval('".$tablename."_id_seq',max(id)) FROM ".$tablename);
 		break;
@@ -92,13 +106,13 @@ if(isset($_GET['is_sure']))
 
 	$db = $_GET['db'];
 
-	if(file_exists($CONFIG['directories']['backup_dir'].'/lms-'.$db.'.sql'))
+	if(file_exists($CONFIG['directories']['backup_dir'].'/iNET-lms-'.$db.'.sql'))
 	{
-		DBLoad($CONFIG['directories']['backup_dir'].'/lms-'.$db.'.sql');
+		DBLoad($CONFIG['directories']['backup_dir'].'/iNET-lms-'.$db.'.sql');
 	}
-	elseif (extension_loaded('zlib') && file_exists($CONFIG['directories']['backup_dir'].'/lms-'.$db.'.sql.gz'))
+	elseif (extension_loaded('zlib') && file_exists($CONFIG['directories']['backup_dir'].'/iNET-lms-'.$db.'.sql.gz'))
 	{
-		DBLoad($CONFIG['directories']['backup_dir'].'/lms-'.$db.'.sql.gz');
+		DBLoad($CONFIG['directories']['backup_dir'].'/iNET-lms-'.$db.'.sql.gz');
 	}
 
     include(MODULES_DIR . '/dblist.php');

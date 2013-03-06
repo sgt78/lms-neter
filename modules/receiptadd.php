@@ -143,6 +143,11 @@ switch($action)
 		$receipt['regid'] = isset($_GET['regid']) ? $_GET['regid'] : $oldreg;
 		$receipt['type'] = isset($_GET['type']) ? $_GET['type'] : (isset($_POST['type']) ? $_POST['type'] : 0);
 		$receipt['customerid'] = isset($_GET['customerid']) ? $_GET['customerid'] : 0;
+		
+		if (isset($_GET['contractor'])) 
+		    $receipt['contractor'] = TRUE;
+		else
+		    $receipt['contractor'] = FALSE;
 
 		// when registry is not selected but we've got only one registry in database
 		if(!$receipt['regid'] && count($cashreglist) == 1)
@@ -172,8 +177,14 @@ switch($action)
 
 		if(!isset($error) && $receipt['customerid'] && $LMS->CustomerExists($receipt['customerid']))
 		{
-			$customer = $LMS->GetCustomer($receipt['customerid'], true);
-			$customer['groups'] = $LMS->CustomergroupGetForCustomer($receipt['customerid']);
+			if ($receipt['contractor']) {
+				$customer = $LMS->GetContractor($receipt['customerid']);
+				$customer['groups'] = $LMS->ContractorgroupGetForContractor($receipt['customerid']);
+			} else {
+				$customer = $LMS->GetCustomer($receipt['customerid'], true);
+				$customer['groups'] = $LMS->CustomergroupGetForCustomer($receipt['customerid']);
+			}
+			
 			if(!isset($CONFIG['receipts']['show_notes']) || !chkconfig($CONFIG['receipts']['show_notes']))
 				unset($customer['notes']);
 			
@@ -374,7 +385,12 @@ switch($action)
 		if($receipt = $_POST['receipt'])
 			foreach($receipt as $key => $val)
 				$receipt[$key] = $val;
-
+		
+		if (isset($_POST['contractor']) && !empty($_POST['contractor']))
+		    $receipt['contractor'] = TRUE;
+		else
+		    $receipt['contractor'] = FALSE;
+		
 		//$receipt['customerid'] = $_POST['customerid'];
 		$receipt['type'] = isset($_POST['type']) ? $_POST['type'] : $oldtype;
 
@@ -473,19 +489,29 @@ switch($action)
 		$receipt['customerid'] = $cid;
 
 		if(!isset($error) && $cid)
-			if($LMS->CustomerExists($cid))
+			if($LMS->CustomerExists($cid) || $LMS->ContractorExists($cid))
 			{
 				if($receipt['type'] == 'out')
 				{
+				    if ($receipt['contractor'])
+					$balance = $LMS->GetContractorBalance($cid);
+				    else
 					$balance = $LMS->GetCustomerBalance($cid);
+					
 					if( $balance<0 )
 						$error['customerid'] = trans('Selected customer is in debt for $a!', moneyf($balance*-1));
 				}
 
 				if(!isset($error))
 				{
+				    if ($receipt['contractor']) {
+					$customer = $LMS->GetContractor($cid, true);
+					$customer['groups'] = $LMS->ContractorgroupGetForContractor($cid);
+				    } else {
 					$customer = $LMS->GetCustomer($cid, true);
 					$customer['groups'] = $LMS->CustomergroupGetForCustomer($cid);
+				    }
+				    
 					if(!isset($CONFIG['receipts']['show_notes']) || !chkconfig($CONFIG['receipts']['show_notes']))
 						unset($customer['notes']);
 

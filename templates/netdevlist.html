@@ -2,6 +2,13 @@
 <!--// $Id$ //-->
 <H1>{$layout.pagetitle}</H1>
 <TABLE CELLPADDING="3" width="100%">
+    {if $listdata.total != 0}
+	<TR CLASS="scroller">
+		<TD CLASS="fall" colspan="4" WIDTH="100%">
+			{include file="scroller.html" loop=$netdevlist}
+		</TD>
+	</TR>
+	{/if}
 	<TR CLASS="dark" {tip text="Click on column name to change sorting order"}>
 		<TD CLASS="fleftu" width="97%">
 			<IMG src="img/netdev.gif" ALT="">&nbsp;<A href="?m=netdevlist&o=name{if $listdata.direction eq "asc" && $listdata.order eq "name"},desc{/if}"><B>{trans("Name:")}</B></A> {if $listdata.order eq "name"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}<BR>
@@ -21,13 +28,7 @@
 			<B>{trans("Total:")} {$listdata.total|default:"0"}</B>
 		</TD>
 	</TR>
-	{if $listdata.total != 0}
-	<TR CLASS="dark">
-		<TD CLASS="fall" colspan="4" WIDTH="100%">
-			{include file="scroller.html" loop=$netdevlist}
-		</TD>
-	</TR>
-	{/if}
+	
 	{cycle values="light,lucid" print=false}
 	{section name=netdevlist loop=$netdevlist start=$start max=$pagelimit}
 	<TR class="{cycle}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
@@ -61,7 +62,7 @@
 	</TR>
 	{/section}
 	{if $listdata.total != 0}
-	<TR CLASS="dark">
+	<TR CLASS="scroller">
 		<TD CLASS="fall" colspan="4" WIDTH="100%">
 			{include file="scroller.html" loop=$netdevlist}
 		</TD>

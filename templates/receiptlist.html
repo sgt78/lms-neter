@@ -127,7 +127,7 @@
 			{if $receipt.value < 0}{($receipt.value*-1)|money_format}{else}-{/if}
 		</TD>
 		<TD WIDTH="45%"{if !$receipt.closed} class="alert"{/if}>
-			{if $receipt.customerid}<A HREF="?m=customerinfo&id={$receipt.customerid}">{/if}
+			{if $receipt.customerid}<A HREF="?m={if $receipt.customertype == $smarty.const.CTYPES_CONTRACTOR}contractor{else}customer{/if}info&id={$receipt.customerid}">{/if}
 			{$receipt.customer|truncate:"60":"...":true}
 			{if $receipt.customerid}</A>{/if}
 		</TD>

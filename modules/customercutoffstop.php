@@ -45,6 +45,10 @@ if(isset($_GET['cutoffstop']))
 			array($customerid)))
 	{
 		$DB->Execute('UPDATE customers SET cutoffstop = ? WHERE id = ?', array($cutoffstop, $customerid));
+
+		if (SYSLOG) {
+		    addlogs(($cutoffstop ? 'włączono' : 'wyłączono').' zawieszenie blokowania dla klienta '.$LMS->getcustomername($customerid),'e=up;m=cus;c='.$customerid.';');
+		}
 	}
 }
 

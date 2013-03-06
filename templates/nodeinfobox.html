@@ -17,6 +17,14 @@
 		else
 			location.href = '?m=nodeedit&id={$nodeinfo.id}&action=duplex&duplex=0';
 	}
+	
+	function monit_change()
+	{
+		if (document.getElementById('monit').checked)
+			location.href = '?m=nodeedit&id={$nodeinfo.id}&action=monit&monit=1';
+		else
+			location.href = '?m=nodeedit&id={$nodeinfo.id}&action=monit&monit=0';
+	}
 //-->
 </SCRIPT>
 <TABLE style="width: 100%;" CELLPADDING="3">
@@ -150,6 +158,7 @@
 		<TD style="width: 99%; white-space: nowrap;" COLSPAN="2">
 			<label for="chkmac">{trans("MAC checking")}:</label><INPUT TYPE="checkbox" NAME="chkmac" ID="chkmac" VALUE="1" {if $nodeinfo.chkmac} checked{/if} onchange="chkmac_change();">&nbsp;
 			<label for="duplex">{trans("Half duplex")}:</label><INPUT TYPE="checkbox" NAME="duplex" ID="duplex" VALUE="1" {if $nodeinfo.halfduplex} checked{/if} onchange="duplex_change();">
+			{if check_modules(110)}<label for="monit">Monitoruj:</label><INPUT TYPE="checkbox" NAME="monit" ID="monit" VALUE="1" {if $nodeinfo.monitoring} checked{/if} onchange="monit_change();">{/if}
 		</TD>
 	</TR>
 					</TABLE>
@@ -286,6 +295,14 @@
 		</TD>
 	</TR>
 {/if}
+	{if check_modules(110)}
+	<TR CLASS="LIGHT">
+		<TD style="width:100%;" colspan="3">
+		<img src="?m=monitchartimg&chart=ping&chartsize=small&type=nodes&id={$nodeinfo.id}&time=-1d" alt="">
+		</TD>
+		
+	</TR>
+	{/if}
 						</TABLE>
 					</TD>
 				</TR>

@@ -28,6 +28,11 @@ $id = $_GET['id'];
 
 if($id && $_GET['is_sure']=='1')
 {
+	if (SYSLOG) {
+	    $tmp = $DB->getrow('SELECT * FROM uiconfig WHERE id = ? LIMIT 1;',array($id));
+	    addlogs('skasowano zmienną konfiguracyjną, sekcja: '.$tmp['section'].' zmienna: '.$tmp['var'].' wartość: '.$tmp['value'],'e=rm;m=conf;');
+	}
+
 	$DB->Execute('DELETE FROM uiconfig WHERE id = ?', array($id));
 }
 

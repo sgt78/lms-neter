@@ -166,6 +166,10 @@ if(isset($_POST['account']))
 				$account['description'],
 				$account['id']
 		));
+		
+		if (SYSLOG) {
+		    addlogs('Aktualizacja danych dla konta '.$account['login'],'e=up;m=hosting;c='.$account['ownerid'].';id='.$account['id']);
+		}
 
 		$SESSION->redirect('?m=accountinfo&id='.$account['id']);
 	}

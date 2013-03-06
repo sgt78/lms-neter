@@ -113,16 +113,35 @@ function invoice_buyer($x,$y)
     global $invoice,$pdf;
     $font_size=10;
     $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Purchaser:')).'</b>');
-    $y=text_wrap($x,$y,350,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['name']),'left');
-    $y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['address']));
-    $y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['zip']." ".$invoice['city']));
-    if ($invoice['division_countryid'] && $invoice['countryid'] && $invoice['division_countryid'] != $invoice['countryid'])
-        $y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans($invoice['country'])));
-    if ($invoice['ten']) 
-	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('TEN')).' '.$invoice['ten']);
-    else if ($invoice['ssn']) 
-	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('SSN')).' '.$invoice['ssn']);
-    $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Customer No.: $a',sprintf('%04d',$invoice['customerid']))).'</b>');
+    
+    if (!empty($invoice['invoice_name']) && !empty($invoice['invoice_address']) && !empty($invoice['invoice_zip'])&& !empty($invoice['invoice_city']))
+    {
+	$y=text_wrap($x,$y,350,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['invoice_name']),'left');
+	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['invoice_address']));
+	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['invoice_zip']." ".$invoice['invoice_city']));
+    
+//    if ($invoice['division_countryid'] && $invoice['countryid'] && $invoice['division_countryid'] != $invoice['countryid'])
+//        $y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans($invoice['country'])));
+//    if ($invoice['ten']) 
+	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('TEN')).' '.$invoice['invoice_ten']);
+//    else if ($invoice['ssn']) 
+//	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('SSN')).' '.$invoice['ssn']);
+    
+    }
+    else
+    {
+    
+	$y=text_wrap($x,$y,350,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['name']),'left');
+	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['address']));
+	$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",$invoice['zip']." ".$invoice['city']));
+	if ($invoice['division_countryid'] && $invoice['countryid'] && $invoice['division_countryid'] != $invoice['countryid'])
+		$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans($invoice['country'])));
+	if ($invoice['ten']) 
+		$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('TEN')).' '.$invoice['ten']);
+	else if ($invoice['ssn']) 
+		$y=$y-text_align_left($x,$y,$font_size,iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('SSN')).' '.$invoice['ssn']);
+	$y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Customer No.: $a',sprintf('%04d',$invoice['customerid']))).'</b>');
+    }
     return $y;
 }
 
@@ -150,14 +169,21 @@ function invoice_title($x,$y)
     $tmp = docnumber($invoice['number'], $invoice['template'], $invoice['cdate']);
     if(isset($invoice['invoice']))
     	$y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Credit Note No. $a',$tmp)).'</b>');
-    else
-	$y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Invoice No. $a',$tmp)).'</b>');
+    else {
+	if ($invoice['type'] == DOC_INVOICE)
+	    $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Invoice No. $a',$tmp)).'</b>');
+	else
+	    $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('Pro Forma Invoice No. $a',$tmp)).'</b>');
+    }
     
     if(isset($invoice['invoice']))
     {
 	$font_size = 12; $y += 8;
 	$tmp = docnumber($invoice['invoice']['number'], $invoice['invoice']['template'], $invoice['invoice']['cdate']);
-	$y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('for Invoice No. $a',$tmp)).'</b>');
+	if ($invoice['type'] == DOC_INVOICE)
+	    $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('for Invoice No. $a',$tmp)).'</b>');
+	else
+	    $y=$y-text_align_left($x,$y,$font_size,'<b>'.iconv("UTF-8","ISO-8859-2//TRANSLIT",trans('for Pro Forma Invoice No. $a',$tmp)).'</b>');
 	$y -= 5;
     }
     
@@ -282,15 +308,20 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, $item['prodid']);
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, $item['content']);
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, sprintf('%.2f', $item['count']));
+			
 			if (!empty($invoice['pdiscount']))
 				$tt_width[$v] = $pdf->getTextWidth($font_size, sprintf('%.2f %%', $item['pdiscount']));
+			
 			if (!empty($invoice['vdiscount']))
 			{
 				$tmp_width = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['vdiscount'])));
 				if ($tmp_width > $tt_width[$v])
 					$tt_width[$v] = $tmp_width;
 			}
-			$v++;
+			
+			if (!empty($invoice['pdiscount']) || !empty($invoice['vdiscount']))
+			    $v++;
+			
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['basevalue']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totalbase']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", $item['taxlabel'])) + 6;
@@ -317,6 +348,7 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 				if ($tmp_width > $tt_width[$v])
 					$tt_width[$v] = $tmp_width;
 			}
+			if (!empty($invoice['pdiscount']) || !empty($invoice['vdiscount']))
 			$v++;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['basevalue']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totalbase']))) + 6;
@@ -358,6 +390,8 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 					$t_data[$v++] = sprintf('%.2f %%', $item['pdiscount']);
 				elseif (!empty($item['vdiscount']))
 					$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['vdiscount']));
+				elseif (!empty($invoice['pdiscount']) || !empty($invoice['vdiscount']))
+					$t_data[$v++] = '';
 				$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['basevalue']));
 				$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totalbase']));
 				$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", $item['taxlabel']);
@@ -426,12 +460,13 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 				$t_data[$v++] = sprintf('%.2f %%',$item['pdiscount']);
 			elseif (!empty($item['vdiscount']))
 				$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['vdiscount']));
+			elseif (!empty($invoice['pdiscount']) || !empty($invoice['vdiscount']))
+				$t_data[$v++] = '';
 			$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['basevalue']));
 			$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totalbase']));
 			$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", $item['taxlabel']);
 			$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totaltax']));
 			$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['total']));
-
 			$lp++;
 			$y = invoice_data_row($x, $y, $width, $font_size, $margin, $t_data, $t_width, $t_justify);
 		}

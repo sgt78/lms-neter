@@ -1394,7 +1394,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LMS-SENDINVOICES"
->4.3.11. lms-sendinvoices</A
+>4.3.11. lms-sendinvoices, lms-sendinvoices-proforma</A
 ></H2
 ><P
 >Skrypt służy do wysyłania pocztą elektroniczną faktur, jako załączników
@@ -1403,6 +1403,11 @@ NAME="LMS-SENDINVOICES"
 ><P
 >W odróżnieniu od pozostałych skryptów ten wymaga dodatkowych modułów perla:
 	LWP::UserAgent, MIME::QuotedPrint oraz Mail::Sender.</P
+
+><P
+>	skrypt lms-sendinvoices-proforma korzysta domyślnie z konfiguracji [sendinvoices],<br>
+	 jeżeli chcemy np. wysyłac proformy przez inną skrzynkę, lub z innym nagłówkiem,
+	to należy utworzyć sekcję [sendinvoicesproforma], wpisując tylko te opcje które sa inne niż w [sendinvoices]</P
 ><P
 >Konfigurację należy umieścić w sekcji <SPAN
 CLASS="emphasis"

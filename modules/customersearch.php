@@ -72,6 +72,12 @@ else
 	$s = $_POST['s'];
 $SESSION->save('csls', $s);
 
+if(!isset($_POST['st']))
+	$SESSION->restore('cslst', $st);
+else
+	$st = $_POST['st'];
+$SESSION->save('cslst', $st);
+
 if(!isset($_POST['n']))
 	$SESSION->restore('csln', $n);
 else
@@ -102,10 +108,26 @@ else
 	$d = $_POST['d'];
 $SESSION->save('csld', $d);
 
+if(!isset($_POST['ce']))
+        $SESSION->restore('cslce', $ce);
+else
+        $ce = $_POST['ce'];
+$SESSION->save('cslce', $ce);
+
+if (!empty($ce)) {
+    $idlist = $LMS->GetIdContractEnding($ce);
+    if (!empty($idlist))
+	$cetmp = implode(',',$idlist);
+    else
+	$cetmp = -1;
+}
+    else $cetmp = NULL;
+
+
 if(isset($_GET['search']))
 {
 	$layout['pagetitle'] = trans('Customer Search Results');
-	$customerlist = $LMS->GetCustomerList($o, $s, $n, $g, $customersearch, NULL, $k, $ng, $d);
+	$customerlist = $LMS->GetCustomerList($o, $s, $n, $g, $customersearch, NULL, $k, $ng, $d, NULL, $st, $cetmp);
 	
 	$listdata['total'] = $customerlist['total'];
 	$listdata['direction'] = $customerlist['direction'];
@@ -113,6 +135,7 @@ if(isset($_GET['search']))
 	$listdata['below'] = $customerlist['below'];
 	$listdata['over'] = $customerlist['over'];
 	$listdata['state'] = $s;
+	$listdata['status'] = $st;
 	$listdata['network'] = $n;
 	$listdata['customergroup'] = $g;
 	$listdata['nodegroup'] = $ng;

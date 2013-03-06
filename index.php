@@ -1,9 +1,8 @@
 <?php
-
 /*
- * LMS version 1.11-git
+ * LMS version 1.11-git ( iNET )
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2012 LMS-EX Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -37,12 +36,10 @@ define('LMS-UI', true);
 ini_set('error_reporting', E_ALL&~E_NOTICE);
 
 // find alternative config files:
-if(is_readable('lms.ini'))
-	$CONFIG_FILE = 'lms.ini';
-elseif(is_readable('/etc/lms/lms-'.$_SERVER['HTTP_HOST'].'.ini'))
-	$CONFIG_FILE = '/etc/lms/lms-'.$_SERVER['HTTP_HOST'].'.ini';
-elseif(!is_readable($CONFIG_FILE))
-	die('Unable to read configuration file ['.$CONFIG_FILE.']!'); 
+if (is_readable('lms.ini')) $CONFIG_FILE = 'lms.ini';
+elseif (is_readable('/etc/lms/lms.ini')) $CONFIG_FILE = '/etc/lms/lms.ini';
+elseif (is_readable('/etc/lms/lms-'.$_SERVER['HTTP_HOST'].'.ini')) $CONFIG_FILE = '/etc/lms/lms-'.$_SERVER['HTTP_HOST'].'.ini';
+elseif (!is_readable($CONFIG_FILE)) die('Unable to read configuration file ['.$CONFIG_FILE.'] !'); 
 
 $CONFIG = (array) parse_ini_file($CONFIG_FILE, true);
 
@@ -118,8 +115,14 @@ if($cfg = $DB->GetAll('SELECT section, var, value FROM uiconfig WHERE disabled=0
 	foreach($cfg as $row)
 		$CONFIG[$row['section']][$row['var']] = $row['value'];
 
-// Redirect to SSL
 
+// SYSLOG
+if (empty($CONFIG['phpui']['syslog_level']))
+    define('SYSLOG',FALSE);
+else
+    define('SYSLOG',TRUE);
+
+// Redirect to SSL
 $_FORCE_SSL = (isset($CONFIG['phpui']['force_ssl']) ? chkconfig($CONFIG['phpui']['force_ssl']) : FALSE);
 
 if($_FORCE_SSL && (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 'on'))
@@ -139,6 +142,8 @@ require_once(LIB_DIR.'/LMS.class.php');
 require_once(LIB_DIR.'/Auth.class.php');
 require_once(LIB_DIR.'/accesstable.php');
 require_once(LIB_DIR.'/Session.class.php');
+require_once(LIB_DIR.'/GaduGadu.class.php');
+require_once(LIB_DIR.'/LMS.Hiperus.class.php');
 
 // Initialize Session, Auth and LMS classes
 
@@ -147,21 +152,22 @@ $AUTH = new Auth($DB, $SESSION);
 $LMS = new LMS($DB, $AUTH, $CONFIG);
 $LMS->ui_lang = $_ui_language;
 $LMS->lang = $_language;
-
+$GG = new rfGG(GG_VER_77);
 // Set some template and layout variables
 
 $SMARTY->template_dir = SMARTY_TEMPLATES_DIR;
 $SMARTY->compile_dir = SMARTY_COMPILE_DIR;
 $SMARTY->debugging = (isset($CONFIG['phpui']['smarty_debug']) ? chkconfig($CONFIG['phpui']['smarty_debug']) : FALSE);
+$SMARTY->use_sub_dirs = TRUE;
 
 $layout['logname'] = $AUTH->logname;
 $layout['logid'] = $AUTH->id;
 $layout['lmsdbv'] = $DB->_version;
 $layout['smarty_version'] = SMARTY_VERSION;
 $layout['hostname'] = hostname();
-$layout['lmsv'] = '1.11-git';
-//$layout['lmsvr'] = $LMS->_revision.'/'.$AUTH->_revision;
-$layout['lmsvr'] = '';
+$layout['lmsv'] = 'iNET';
+$layout['lmsvr'] = $LMS->_revision.'/'.$AUTH->_revision;
+$layout['lmsvr'] = '1.0.0';
 $layout['dberrors'] =& $DB->errors;
 $layout['dbdebug'] = $_DBDEBUG;
 $layout['popup'] = isset($_GET['popup']) ? true : false;
@@ -212,6 +218,8 @@ if ($AUTH->islogged) {
 	if ($module == '')
 	{
 		$module = $CONFIG['phpui']['default_module'];
+		if (!file_exists(MODULES_DIR.'/'.$module.'.php'))
+		    $module = 'welcome';
 	}
 
 	if (file_exists(MODULES_DIR.'/'.$module.'.php'))

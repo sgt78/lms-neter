@@ -52,6 +52,17 @@
 		</TD>
 	</TR>
 {/if}
+{if $userinfo.gadugadu}
+	<TR CLASS="light">
+		<TD style="width: 1%; white-space: nowrap;" CLASS="fleft">
+			<IMG SRC="img/gg.gif" ALT="">
+		</TD>
+		<TD style="width: 1%;"><span class="bold">Gadu-Gadu:</span></TD>
+		<TD style="width: 98%;" CLASS="fright">
+			<a href="gg:{$userinfo.gadugadu}">{$userinfo.gadugadu}</a>
+		</TD>
+	</TR>
+{/if}
 	<TR CLASS="light">
 		<TD style="width: 1%; white-space: nowrap;" CLASS="fleft">
 			<IMG SRC="img/options.gif" ALT="">

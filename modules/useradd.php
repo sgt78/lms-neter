@@ -112,6 +112,15 @@ if(sizeof($useradd))
 	{
 		$useradd['accessfrom'] = $accessfrom;
 		$useradd['accessto'] = $accessto;
+		
+		if (isset($_POST['selectedmodules']))
+		{
+		    $useradd['modules'] = array();
+		    foreach($_POST['selectedmodules'] as $key => $item) $useradd['modules'][] = $key;
+		    $useradd['modules'] = serialize($useradd['modules']);
+		} else $useradd['modules'] = NULL;
+		
+		
 		$id = $LMS->UserAdd($useradd);
 
                 if(isset($_POST['selected']))
@@ -121,17 +130,29 @@ if(sizeof($useradd))
 
 		$SESSION->redirect('?m=userinfo&id='.$id);
 	}
-	elseif(isset($_POST['selected']))
+	else
+	{
+	    if(isset($_POST['selected']))
 	        foreach($_POST['selected'] as $idx => $name)
 	        {
 	                $useradd['selected'][$idx]['id'] = $idx;
 	                $useradd['selected'][$idx]['name'] = $name;
 	        }
+	    
+		$useradd['selectedmodules'] = array();
+		if(isset($_POST['selectedmodules']))
+		{
+		        foreach($_POST['selectedmodules'] as $idx => $name)
+			{
+			        $useradd['modules'][$idx]['id'] = $idx;
+			    	$useradd['modules'][$idx]['name'] = $name;
+			}
+		}
+	}
 }
 else {
-    $useradd['ntype'] = MSG_MAIL | MSG_SMS;
+    $useradd['ntype'] = MSG_MAIL | MSG_SMS | MSG_GADUGADU;
 }
-
 foreach($access['table'] as $idx => $row)
 {
 	$row['id'] = $idx;
@@ -142,11 +163,22 @@ foreach($access['table'] as $idx => $row)
 }
 
 $layout['pagetitle'] = trans('New User');
+$available = $DB->GetAllByKey('SELECT id, name FROM customergroups ORDER BY name', 'id');
+
+$i=0;
+$tab = array();
+foreach ($menu as $key => $item) {
+    $i++;
+    $tab[$i]['id'] = $item['index'];
+    $tab[$i]['name'] = $item['name'];
+}
+$SMARTY->assign('module',$tab);
 
 $SMARTY->assign('useradd', $useradd);
 $SMARTY->assign('error', $error);
 $SMARTY->assign('accesslist', $accesslist);
-$SMARTY->assign('available', $DB->GetAllByKey('SELECT id, name FROM customergroups ORDER BY name', 'id'));
+
+$SMARTY->assign('available', $available);
 
 $SMARTY->display('useradd.html');
 

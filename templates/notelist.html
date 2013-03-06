@@ -32,6 +32,18 @@ window.open('?m=note&id={$note}');
 		document.page.target="";
 		document.page.submit();
 	}
+	
+	function clear_filter()
+	{
+		document.page.action="?m=notelist";
+		document.page.target="";
+		document.page.search.value = "";
+		document.page.cat.value = "";
+		document.page.group.value="";
+		document.page.groupexclude.checked = false;
+		document.page.hideclosed.checked = false;
+		document.page.submit();
+	}
 
 {if check_conf('phpui', 'short_pagescroller')}
 	function pagechange1()
@@ -53,6 +65,46 @@ window.open('?m=note&id={$note}');
 <FORM METHOD="POST" NAME="page">
 <INPUT type="submit" class="hiddenbtn">
 <TABLE WIDTH="100%" CELLPADDING="3">
+	
+	<TR class="DARK">
+		<TD class="fall" colspan="7">
+				<img src="img/Filter.png">&nbsp;
+				<a href="javascript:void(0);" onclick="clear_filter();" {tip text="wyczyść filtr"}><img src="img/cancel.gif"></a>
+				<INPUT type="text" name="search" value="{$listdata.search}" size="15" {tip text="Enter value of searching data and select category"} {if $listdata.search != ''}style="background-color:#FFFF99;"{/if}>&nbsp;
+				<SELECT size="1" name="cat" {if $listdata.cat}class="active"{/if}>
+					<OPTION value=""{if $listdata.cat eq ""} SELECTED{/if}>{trans("- select filter category -")}</OPTION>
+					<OPTION value="cdate"{if $listdata.cat eq "cdate"} SELECTED{/if}>{trans("day (YYYY/MM/DD)")}</OPTION>
+					<OPTION value="month"{if $listdata.cat eq "month"} SELECTED{/if}>{trans("month (YYYY/MM)")}</OPTION>
+					<OPTION value="number"{if $listdata.cat eq "number"} SELECTED{/if}>{trans("number")}</OPTION>
+					<OPTION value="value"{if $listdata.cat eq "value"} SELECTED{/if}>{trans("value")}</OPTION>
+					<OPTION value="name"{if $listdata.cat eq "name"} SELECTED{/if}>{trans("customer name")}</OPTION>
+					<OPTION value="customerid"{if $listdata.cat eq "customerid"} SELECTED{/if}>{trans("customer ID")}</OPTION>
+					<OPTION value="ten"{if $listdata.cat eq "ten"} SELECTED{/if}>{trans("TEN")}</OPTION>
+					<OPTION value="address"{if $listdata.cat eq "address"} SELECTED{/if}>{trans("address")}</OPTION>
+				</SELECT>&nbsp;
+				{trans("Group:")}
+				<SELECT size="1" name="group" {if $listdata.group}class="active"{/if}>
+					<OPTION value="0"{if !$listdata.group} SELECTED{/if}>{trans("- all groups -")}</OPTION>
+					{section name="grouplist" loop=$grouplist}
+					<OPTION value="{$grouplist[grouplist].id}"{if $listdata.group eq $grouplist[grouplist].id} SELECTED{/if}>{$grouplist[grouplist].name|truncate:30:"...":true}</OPTION>
+					{/section}
+				</SELECT>
+				<NOBR>
+				<INPUT type="checkbox" name="groupexclude" id="groupexclude"{if $listdata.groupexclude} CHECKED{/if}><label for="groupexclude" {if $listdata.groupexclude}style="font-weight:bold;"{/if}>{trans("exclude group")}</label>
+				</NOBR>
+				<NOBR>
+				<INPUT type="checkbox" name="hideclosed" id="hideclosed"{if $listdata.hideclosed} CHECKED{/if}><label for="hideclosed" {if $listdata.hideclosed}style="font-weight:bold;"{/if}>{trans("hide accounted<!plural>")}</label>
+				&nbsp;<A href="javascript: filter();">&raquo;&raquo;&raquo;</A>
+				</NOBR>
+		</TD>
+	</TR>
+	{if $listdata.total != 0}
+	<TR CLASS="scroller">
+		<TD WIDTH="100%" class="fall" COLSPAN="7">
+			{include file="scroller.html" loop=$notelist scrollerno=1}
+		</TD>
+	</TR>
+	{/if}
 	<TR CLASS="DARK">
 		<TD CLASS="fleftu" WIDTH="1%" nowrap>
 			<A href="?m=notelist&o=id{if $listdata.direction eq "asc" && $listdata.order eq "id"},desc{/if}">{trans("ID:")}</A> {if $listdata.order eq "id"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}
@@ -76,44 +128,6 @@ window.open('?m=note&id={$note}');
 			&nbsp;
 		</TD>
 	</TR>
-	<TR class="DARK">
-		<TD class="fall" colspan="7">
-				<B>{trans("Filter:")} </B> 
-				<INPUT type="text" name="search" value="{$listdata.search}" size="15" {tip text="Enter value of searching data and select category"}>&nbsp;
-				<SELECT size="1" name="cat">
-					<OPTION value=""{if $listdata.cat eq ""} SELECTED{/if}>{trans("- select filter category -")}</OPTION>
-					<OPTION value="cdate"{if $listdata.cat eq "cdate"} SELECTED{/if}>{trans("day (YYYY/MM/DD)")}</OPTION>
-					<OPTION value="month"{if $listdata.cat eq "month"} SELECTED{/if}>{trans("month (YYYY/MM)")}</OPTION>
-					<OPTION value="number"{if $listdata.cat eq "number"} SELECTED{/if}>{trans("number")}</OPTION>
-					<OPTION value="value"{if $listdata.cat eq "value"} SELECTED{/if}>{trans("value")}</OPTION>
-					<OPTION value="name"{if $listdata.cat eq "name"} SELECTED{/if}>{trans("customer name")}</OPTION>
-					<OPTION value="customerid"{if $listdata.cat eq "customerid"} SELECTED{/if}>{trans("customer ID")}</OPTION>
-					<OPTION value="ten"{if $listdata.cat eq "ten"} SELECTED{/if}>{trans("TEN")}</OPTION>
-					<OPTION value="address"{if $listdata.cat eq "address"} SELECTED{/if}>{trans("address")}</OPTION>
-				</SELECT>&nbsp;
-				{trans("Group:")}
-				<SELECT size="1" name="group">
-					<OPTION value="0"{if !$listdata.group} SELECTED{/if}>{trans("- all groups -")}</OPTION>
-					{section name="grouplist" loop=$grouplist}
-					<OPTION value="{$grouplist[grouplist].id}"{if $listdata.group eq $grouplist[grouplist].id} SELECTED{/if}>{$grouplist[grouplist].name|truncate:30:"...":true}</OPTION>
-					{/section}
-				</SELECT>
-				<NOBR>
-				<INPUT type="checkbox" name="groupexclude" id="groupexclude"{if $listdata.groupexclude} CHECKED{/if}><label for="groupexclude">{trans("exclude group")}</label>
-				</NOBR>
-				<NOBR>
-				<INPUT type="checkbox" name="hideclosed" id="hideclosed"{if $listdata.hideclosed} CHECKED{/if}><label for="hideclosed">{trans("hide accounted<!plural>")}</label>
-				&nbsp;<A href="javascript: filter();">&raquo;&raquo;&raquo;</A>
-				</NOBR>
-		</TD>
-	</TR>
-	{if $listdata.total != 0}
-	<TR CLASS="dark">
-		<TD WIDTH="100%" class="fall" COLSPAN="7">
-			{include file="scroller.html" loop=$notelist scrollerno=1}
-		</TD>
-	</TR>
-	{/if}
 	{cycle values="light,lucid" print=false}
 	{section name=notelist loop=$notelist start=$start max=$pagelimit}
 	{assign var=note value=$notelist[notelist]}
@@ -158,7 +172,7 @@ window.open('?m=note&id={$note}');
 	</TR>
 	{/section}
 	{if $listdata.total != 0}
-	<TR CLASS="dark">
+	<TR CLASS="scroller">
 		<TD WIDTH="100%" class="fall" COLSPAN="7">
 			{include file="scroller.html" loop=$notelist scrollerno=2}
 		</TD>

@@ -25,7 +25,6 @@
  */
 
 $layout['pagetitle'] = trans('Database Backups');
-
 if ($handle = opendir($CONFIG['directories']['backup_dir']))
 {
 	while (false !== ($file = readdir($handle)))
@@ -39,9 +38,9 @@ if ($handle = opendir($CONFIG['directories']['backup_dir']))
 			
 			if($path['extension'] == 'sql')
 			{
-				if(substr($path['basename'],0,4) == 'lms-')
+				if(substr($path['basename'],0,9) == 'iNET-lms-')
 				{
-					$name = substr(basename($file,'.sql'),4,25);
+					$name = substr(basename($file,'.sql'),9,31);
 					if($pos = strpos($name,'-'))
 					{
 						$dblist['dbv'][]  = substr($name, $pos+1);
@@ -52,7 +51,6 @@ if ($handle = opendir($CONFIG['directories']['backup_dir']))
 						$dblist['dbv'][]  = '';
 						$dblist['time'][] = (int) $name;
 					}
-					
 					$dblist['name'][] = $name;
 					$dblist['size'][] = filesize($CONFIG['directories']['backup_dir'].'/'.$file);
 					$dblist['type'][] = 'plain';
@@ -60,9 +58,9 @@ if ($handle = opendir($CONFIG['directories']['backup_dir']))
 			}
 			elseif(extension_loaded('zlib'))
 			{
-				if((($path['extension'] == 'gz')&&(strstr($file, "sql.gz")))&& (substr($path['basename'],0,4) == 'lms-'))
+				if((($path['extension'] == 'gz')&&(strstr($file, "sql.gz")))&& (substr($path['basename'],0,9) == 'iNET-lms-'))
 				{
-					$name = substr(basename($file,'.sql.gz'),4,25);
+					$name = substr(basename($file,'.sql.gz'),9,30);
 					if($pos = strpos($name,'-'))
 					{
 						$dblist['dbv'][]  = substr($name, $pos+1);

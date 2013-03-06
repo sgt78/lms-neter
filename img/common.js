@@ -103,6 +103,11 @@ function customerchoosewin(formfield)
 	return openSelectWindow('?m=choosecustomer','choosecustomer',450,250,'true',formfield);
 }
 
+function contractorchoosewin(formfield,formfield2)
+{
+	return openSelectWindow2('?m=choosecontractor','choosecontractor',450,250,'true',formfield,formfield2);
+}
+
 function nodechoosewin(formfield, customerid)
 {
 	return openSelectWindow('?m=choosenode&id='+customerid,'choosenode',350,200,'true',formfield);
@@ -111,6 +116,11 @@ function nodechoosewin(formfield, customerid)
 function locationchoosewin(varname, formname, city, street)
 {
 	return openSelectWindow('?m=chooselocation&name='+varname+'&form='+formname+'&city='+city+'&street='+street,'chooselocation',350,200,'true');
+}
+
+function invoiceconvertwin(varname, docid, parent)
+{
+	return openSelectWindow('?m=invoiceconvert&name=' + varname + '&parent=' + parent + '&docid=' + docid,'invoiceconvert',350,300,'true');
 }
 
 function gpscoordschoosewin(formfield1, formfield2)
@@ -130,6 +140,15 @@ function sendvalue(targetfield, value)
 	// close popup
 	window.parent.parent.popclick();
 	targetfield.focus();
+}
+
+function sendvalue2(targetfield1, value1, targetfield2, value2)
+{
+	targetfield1.value = value1;
+	targetfield2.value = value2;
+	// close popup
+	window.parent.parent.popclick();
+	targetfield1.focus();
 }
 
 function showOrHide(elementslist)
@@ -419,6 +438,31 @@ function popup(content, frame, sticky, offset_x, offset_y)
 	}
 }
 
+function popup_scroll(content, frame, sticky, offset_x, offset_y)
+{
+	if (lms_sticky_popup)
+		return;
+
+	if (frame)
+		content = '<iframe id="autoiframe" width=100 height=10 frameborder=0 scrolling=auto '
+			+'src="'+content+'&popup=1"></iframe>';
+
+	if (!offset_x) offset_x = 15;
+	if (!offset_y) offset_y = 15;
+
+	if (sticky) {
+		// let's check how people will react for this small change ;-)
+		//overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y, STICKY, MOUSEOFF);
+		overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y, STICKY);
+		var body = document.getElementsByTagName('BODY')[0];
+		body.onmousedown = function () { popclick(); };
+		lms_sticky_popup = 1;
+	}
+	else {
+		 overlib(content, HAUTO, VAUTO, OFFSETX, offset_x, OFFSETY, offset_y);
+	}
+}
+
 // Hide non-sticky popup
 function pophide()
 {
@@ -462,6 +506,25 @@ function ping_popup(ip, type)
 	autoiframe_setsize('autoiframe', 480, 300);
 }
 
+function monitchart_popup(id,type)
+{
+	popup('?m=monitchartwin&id=' + id + '&type=' + type, 1, 1, 30, 30);
+	autoiframe_setsize('autoiframe', 645,340);
+}
+
+
+function divisioninfo_popup(id)
+{
+	popup_scroll('?m=divisioninfowin&id=' + id, 1, 1, 30, 30);
+	autoiframe_setsize('autoiframe', 450,250);
+}
+
+function infocenter_popup(id)
+{
+	popup_scroll('?m=infocenterwin&id=' + id, 1, 1, 30, 30);
+	autoiframe_setsize('autoiframe', 450,250);
+}
+
 function changeMacFormat(id)
 {
 	if (!id) return;
@@ -493,4 +556,31 @@ function changeMacFormat(id)
 			curmac = curmac.replace(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/gi, '$1:$2:$3:$4:$5:$6');
 	}
 	elem.innerHTML = curmac;
+}
+
+function ShowAjaxLoadingImage()
+{
+    document.getElementById('id_loadajax_img').innerHTML = 
+	'<div style="width:80px;height:80px;position:fixed;top:40%;left:49%;"><img src="img/loadajax3.gif"> alt="Czekaj..."></div>';
+}
+
+function HideAjaxLoadingImage()
+{
+    document.getElementById('id_loadajax_img').innerHTML = '';
+}
+function loadAjax(idel,strona)
+{
+    if (strona=='empty') {
+	$("#"+idel+"").empty();
+    } else {
+	ShowAjaxLoadingImage();
+	$.ajax({ 
+		url:strona, 
+		success:function(html){$("#"+idel+"").empty().append(html);
+		HideAjaxLoadingImage();
+		}
+		
+	});
+	
+    }
 }

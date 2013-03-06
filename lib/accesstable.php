@@ -25,8 +25,9 @@
  */
 
 unset($access);
+// last 46
 // modules with access for everyone
-$access['allow'] = '^(welcome|copyrights|logout|chpasswd|quicksearch|calendar)$';
+$access['allow'] = '^(welcome|welcome_new|copyrights|logout|chpasswd|quicksearch|calendar|changelog|calculator)$';
 
 $access['table'][0]['name']		= trans('full access');
 $access['table'][0]['allow_reg']	= '^.*$';
@@ -38,7 +39,7 @@ $access['table'][2]['name']		= trans('nodes connection/disconnection');
 $access['table'][2]['allow_reg']	= '^nodeset$';
 
 $access['table'][3]['name']		= trans('finances management');
-$access['table'][3]['allow_reg']	= '^((tariff|customerassignment)(add|info|list|move|edit|del)|(payment)(add|del|edit|info|list)|(balance|customerbalance)(new|add|ok|del|list|)|(cashreg(list|add|edit|del|info))|(invoice|invoice(list|new|edit|del|note|report|paid))|(note|note(list|add|edit|del|paid))|number|export|print|cashimport|cashimportparser|cashpackagedel)$';
+$access['table'][3]['allow_reg']	= '^((tariff|customerassignment)(add|info|list|move|edit|del)|(payment)(add|del|edit|info|list)|(balance|customerbalance)(new|add|ok|del|list|)|(cashreg(list|add|edit|del|info))|(invoice|invoice(list|new|edit|del|note|report|paid|convert))|(note|note(list|add|edit|del|paid))|number|export|print|cashimport|cashimportparser|cashpackagedel)$';
 $access['table'][3]['privilege']	= 'finances_management';
 
 $access['table'][4]['name']    		= trans('configuration reload');
@@ -113,6 +114,45 @@ $access['table'][26]['privilege']	= 'hide_finances';
 
 $access['table'][27]['name']		= trans('reports');
 $access['table'][27]['privilege']	= 'reports';
+
+$access['table'][40]['name']		= trans('contractors management');
+$access['table'][40]['allow_reg']	= '^(contractor|contractor(add|edit|info|infoshort|list|del|print|search))$';
+
+$access['table'][41]['name']		= trans('contractors groups management');
+$access['table'][41]['allow_reg']	= '^(contractorgroup(add|edit|del|info|list))$';
+
+$access['table'][42]['name']		= trans('Viewing the system log');
+$access['table'][42]['allow_reg']	= '^(syslog)$';
+
+$access['table'][43]['name']		= trans('Hide other users of the system log');
+$access['table'][43]['privilege']	= 'hide_syslog';
+
+$access['table'][44]['name']		= 'Call Center';
+$access['table'][44]['allow_reg']	= '^(infocenter(|win|postshort|print|list|print|edit|del))$';
+
+$access['table'][45]['name']		= 'Zabroń dostępu do Call Center użytkownikowi z pełnymi prawami';
+$access['table'][45]['privilege']	= 'hide_callcenter';
+
+$access['table'][46]['name']		= 'Zabroń edycji zdarzeń w Call Center';
+$access['table'][46]['privilege']	= 'hide_callcenteredit';
+
+$access['table'][47]['name']		= 'Zabroń kasowania zdarzeń w Call Center';
+$access['table'][47]['privilege']	= 'hide_callcenterdel';
+
+$access['table'][48]['name']		= 'Zabroń na ponowne otwarcie tematu w Call Center';
+$access['table'][48]['privilege']	= 'reopen_callcenter';
+
+$access['table'][49]['name']		= 'Historia adresów IP';
+$access['table'][49]['allow_reg']	= '^(iphistory)$';
+
+$access['table'][102]['name']		= 'Obsługa VoIP HIPERUS C5 - Pełny dostęp';
+$access['table'][102]['allow_reg'] 	= '^hv_*';
+
+$access['table'][103]['name']		= 'Obsługa VoIP HIPERUS C5 - Tylko do odczytu';
+$access['table'][103]['allow_reg']	= '^(hv_+(accountinfo|accountlist|billinginfoext|billinginfoext_print|pstnrangelist|pstnusagelist|searchemptypstn|searchterminallocation|terminallist))$';
+
+$access['table'][105]['name']		= 'Monitoring';
+$access['table'][105]['allow_reg']	= '^monit.*$';
 
 $access['table'][253]['name']		= trans('users edition and addition forbidden');
 $access['table'][253]['deny_reg']	= '^(user(add|del|edit|passwd))$';

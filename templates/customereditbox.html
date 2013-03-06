@@ -106,6 +106,8 @@
 			<IMG SRC="img/home.gif" ALT="">
 		</TD>
 		<TD WIDTH="99%">
+		<fieldset style="width:240px;">
+					    <legend><b> Adres siedziby, zameldowania, instalacji </b></legend>
 			<TABLE width="100%" cellpadding="1">
 			    <TR>
     				<TD width="1%" NOWRAP>{trans("Address:")}</TD>
@@ -154,12 +156,88 @@
 		new AutoSuggest(document.getElementById('customeredit'),document.getElementById('zip'),'?m=customeradd&ajax=1&mode=zip&what=',0);
 		new AutoSuggest(document.getElementById('customeredit'),document.getElementById('city'),'?m=customeradd&ajax=1&mode=city&what=',0);
 		</script>
+		</fieldset>
 	</TR>
+	<TR>
+		<TD width="1%" style="vertical-align: top">
+						<IMG src="img/home.gif" alt="">
+						
+					</TD>
+					<TD width="99%" nowrap>
+					    <fieldset style="width:240px">
+					    <legend><img src="img/help.png" width="16" {tip text="Odbiorca faktury VAT lub proformy, jeżeli jest inny niż główny adresat"}><b> Odbiorca faktury VAT / Proforma </b></legend>
+						<TABLE width="100%" cellpadding="1">
+						    <TR>
+							<TD width="1%" NOWRAP>{trans("Name:")}</TD>
+							<TD width="99%"><INPUT TYPE="text" size="30" value="{$customerinfo.invoice_name}" name="customerdata[invoice_name]" id="invoice_name" {tip text="Enter service name" trigger="invoice_name"}></TD>
+						    </TR>
+						    <TR>
+							<TD width="1%" NOWRAP>{trans("Address:")}</TD>
+							<TD width="99%"><INPUT TYPE="text" size="30" value="{$customerinfo.invoice_address}" name="customerdata[invoice_address]" id="invoice_address" {tip text="Enter customer address" trigger="invoice_address"}></TD>
+						    </TR>
+						    <TR>
+							<TD width="1%" NOWRAP>{trans("City:")}</TD>
+							<TD width="99%"><INPUT TYPE="TEXT" SIZE="30" VALUE="{$customerinfo.invoice_city}" NAME="customerdata[invoice_city]" id="invoice_city" {tip text="Enter customer city" trigger="invoice_city"}></TD>
+						    </TR>
+						    <TR>
+							<TD width="1%" NOWRAP>{trans("Zip:")}</TD>
+							<TD width="99%"><INPUT TYPE="text" SIZE="10" VALUE="{$customerinfo.invoice_zip}" NAME="customerdata[invoice_zip]" id="invoice_zip" {tip text="Enter zip code" trigger="invoice_zip"}></TD>
+							{if $customerinfo.zipwarning}
+							<INPUT TYPE="HIDDEN" NAME="customerdata[invoice+zipwarning]" VALUE="1">
+							{/if}
+						    </TR>
+						    
+						    <TR>
+					        	<TD width="1%" NOWRAP>{trans("TEN")}:</TD>
+					        	<TD width="99%">
+							<INPUT TYPE="text" size="30" value="{$customerinfo.invoice_ten}" name="customerdata[invoice_ten]" {tip text="Enter customer Tax Exempt Number (optional)" trigger="invoice_ten"}>
+							{if $customerinfo.invoice_tenwarning}
+							    <INPUT TYPE="HIDDEN" NAME="customerdata[invoice_tenwarning]" VALUE="1">
+							{/if}
+					            </TD>
+				        	    </TR>
+						{if $cstateslist}
+						    <TR>
+							<TD width="1%" NOWRAP>{trans("State:")}</TD>
+							<TD width="99%">
+							    <SELECT NAME="customerdata[invoice_stateid]" {tip text="Select country state (optional)" trigger="invoice_stateid"}>
+								<OPTION value="0"></OPTION>
+								{foreach from=$cstateslist item=item key=key}
+								<OPTION value="{$key}"{if $key==$customerinfo.stateid} SELECTED{/if}>{$item.name}</OPTION>
+								{/foreach}
+							    </SELECT>
+							</TD>
+						    </TR>
+						{/if}
+						{if $countrieslist}
+						    <TR>
+						        <TD width="1%" NOWRAP>{trans("Country:")}</TD>
+						        <TD width="99%">
+						            <SELECT NAME="customerdata[invoice_countryid]" {tip text="Select country (optional)" trigger="invoice_countryid"}>
+						                <OPTION value="0"></OPTION>
+								{foreach from=$countrieslist item=item key=key}
+						                <OPTION value="{$key}"{if $key==$customerinfo.countryid} SELECTED{/if}>{t}{$item.name}{/t}</OPTION>
+								{/foreach}
+						            </SELECT>
+							    </TD>
+						    </TR>
+						{/if}
+						</TABLE>
+						<script type="text/javascript">
+							new AutoSuggest(document.getElementById('customeredit'),document.getElementById('invoice_address'),'?m=customeradd&ajax=1&mode=address&what=',0);
+							new AutoSuggest(document.getElementById('customeredit'),document.getElementById('invoice_zip'),'?m=customeradd&ajax=1&mode=zip&what=',0);
+							new AutoSuggest(document.getElementById('customeredit'),document.getElementById('invoice_city'),'?m=customeradd&ajax=1&mode=city&what=',0);
+						</script>
+						</fieldset>
+					</TD>
+				</TR>
 	<TR CLASS="LIGHT">
 		<TD WIDTH="1%" style="vertical-align: top">
 			<IMG SRC="img/post.gif" ALT="">
 		</TD>
 		<TD WIDTH="99%">
+		<fieldset style="width:240px">
+		<legend><img src="img/help.png" width="16" {tip text="Adresy wysyłki jeżeli jest inny niż adres odbiorcy faktury lub adres siedziby"}><b> Adres do wysyłki </b></legend>
 			<TABLE width="100%" cellpadding="1">
 			    <TR>
 				<TD width="1%" NOWRAP>{trans("Name:")}</TD>
@@ -212,6 +290,7 @@
 		new AutoSuggest(document.getElementById('customeredit'),document.getElementById('post_zip'),'?m=customeradd&ajax=1&mode=zip&what=',0);
 		new AutoSuggest(document.getElementById('customeredit'),document.getElementById('post_city'),'?m=customeradd&ajax=1&mode=city&what=',0);
 		</script>
+		</fieldset>
 	</TR>
 	{foreach from=$customerinfo.contacts item=item key=key}
 	<TR CLASS="LIGHT" ID="contact{$key}">

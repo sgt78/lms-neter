@@ -75,7 +75,7 @@ function GetTariffList($order = 'name,asc', $type = NULL, $customergroupid = NUL
 			taxes.label AS tax, taxes.value AS taxvalue, prodid,
 			t.uprate, t.downrate, t.upceil, t.downceil, t.climit, t.plimit,
 			t.uprate_n, t.downrate_n, t.upceil_n, t.downceil_n, t.climit_n, t.plimit_n,
-			t.description, t.period, a.customerscount, a.count, a.value AS sumval
+			t.description, t.period, t.active, a.customerscount, a.count, a.value AS sumval
 			FROM tariffs t
 			LEFT JOIN (SELECT a.tariffid, COUNT(*) AS count,
 				COUNT(DISTINCT a.customerid) AS customerscount,
@@ -193,6 +193,14 @@ function GetTariffList($order = 'name,asc', $type = NULL, $customergroupid = NUL
 	$tarifflist['direction'] = $direction;
 
 	return $tarifflist;
+}
+
+if (isset($_GET['setactive'])) {
+    $DB->Execute('UPDATE tariffs SET active=? WHERE id=? ;',array($_GET['setactive'],$_GET['id']));
+    if (SYSLOG) {
+	$tmp = $DB->GetOne('SELECT name FROM tariffs WHERE id=? '.$DB->limit('1').' ;',array($_GET['id']));
+	addlogs(($_GET['setactive'] ? 'włączono' : 'wyłączono').' taryfę '.$tmp,'e=up;m=tariff;');
+    }
 }
 
 if (!isset($_GET['o']))

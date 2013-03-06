@@ -24,7 +24,7 @@
  *  $Id$
  */
 
-$divisionlist = $DB->GetAll('SELECT d.id, d.name, d.shortname, d.status,
+$divisionlist = $DB->GetAll('SELECT d.id, d.name, d.shortname, d.status, d.address, d.zip, d.city, d.ten, d.account, d.inv_paytime, d.inv_paytype, 
 	(SELECT COUNT(*) FROM customers WHERE divisionid = d.id) AS cnt 
 	FROM divisions d ORDER BY d.shortname');
 

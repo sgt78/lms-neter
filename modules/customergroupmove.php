@@ -31,6 +31,12 @@ if($LMS->CustomergroupExists($from) && $LMS->CustomergroupExists($to) && $_GET['
 {
 	$DB->BeginTrans();
 	
+	if (SYSLOG) {
+	    $gfrom = $DB->GetOne('SELECT name FROM customergroups WHERE id = ? '.$DB->limit('1').';',array($from));
+	    $gto = $DB->GetOne('SELECT name FROM customergroups WHERE id = ? '.$DB->limit('1').';',array($from));
+	    addsyslog('przeniesiono klientów z grupy '.$gfrom.' do grupy '.$gto,'e=up;m=cus;');
+	}
+	
 	$DB->Execute('INSERT INTO customerassignments (customergroupid, customerid)
 			SELECT ?, customerid 
 			FROM customerassignments a, customersview c

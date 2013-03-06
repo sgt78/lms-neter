@@ -87,6 +87,7 @@
 			{if check_conf('phpui.radius')}
 			&nbsp;<label for="chknas">{trans("NAS")}:</label><INPUT TYPE="checkbox" NAME="ipadd[nas]" VALUE="1" ID="chknas" {tip text="Select NAS on or off" trigger="nas"}{if $nodeipdata.nas} checked{/if}>
 			{/if}
+			<label for="monit">Monitoruj:</label><INPUT TYPE="checkbox" NAME="ipadd[monitoring]" VALUE="1" ID="monit" {tip text="Moitoruj urządzenie sieciowe"}{if $nodeipdata.monitoring} checked{/if}>&nbsp;
 		</TD>
 	</TR>
 	<TR CLASS="LIGHT">

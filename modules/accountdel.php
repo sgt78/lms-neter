@@ -24,11 +24,16 @@
  *  $Id$
  */
 
-$id = $_GET['id'];
+$id = (int)$_GET['id'];
 
 if($id && $_GET['is_sure']=='1')
 {
 	$DB->BeginTrans();
+	
+	if (SYSLOG) {
+	    $tmp = $DB->GetOne('SELECT login FROM passwd WHERE id = ? LIMIT 1;',array($id));
+	    addlogs('Skasowano konto '.$tmp,'e=rm;m=hosting');
+	}
 	
 	if($DB->Execute('DELETE FROM passwd WHERE id = ?', array($id)))
 	{	

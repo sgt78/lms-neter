@@ -26,9 +26,19 @@
 
 $id = intval($_GET['id']);
 
-$customerinfo = $LMS->GetCustomer($id, true);
-$customergroups = $LMS->CustomergroupGetForCustomer($id);
+$contractor = FALSE;
 
+if (isset($_GET['contractor']))
+{
+    $customerinfo = $LMS->GetContractor($id, true);
+    $customergroups = $LMS->ContractorgroupGetForContractor($id);
+    $contractor = TRUE;
+} else {
+    $customerinfo = $LMS->GetCustomer($id, true);
+    $customergroups = $LMS->CustomergroupGetForCustomer($id);
+}
+
+$SMARTY->assign('contractor',$contractor);
 $SMARTY->assign('customergroups', $customergroups);
 $SMARTY->assign('customerinfo', $customerinfo);
 

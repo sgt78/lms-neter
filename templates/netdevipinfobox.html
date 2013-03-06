@@ -24,6 +24,14 @@
 		else
 			location.href = '?m=netdevedit&id={$netdevinfo.id}&ip={$nodeipdata.id}&action=nas&nas=0';
 	}
+	
+	function monit_change()
+	{
+		if(document.getElementById('monit').checked)
+			location.href = '?m=netdevedit&id={$netdevinfo.id}&ip={$nodeipdata.id}&action=monit&monit=1';
+		else
+			location.href = '?m=netdevedit&id={$netdevinfo.id}&ip={$nodeipdata.id}&action=monit&monit=0';
+	}
 //-->
 </SCRIPT>
 <TABLE WIDTH="100%" CELLPADDING="3">
@@ -90,6 +98,7 @@
 			&nbsp;
 			<label for="chknas">{trans("NAS")}:</label><INPUT TYPE="checkbox" NAME="nas" ID="chknas" VALUE="1" {if $nodeipdata.nas} checked{/if} onchange="nas_change();">
 			{/if}
+			<label for="monit">Monitoruj:</label><INPUT TYPE="checkbox" NAME="monit" ID="monit" VALUE="1" {if $nodeipdata.monitoring} checked{/if} onchange="monit_change();">
 		</TD>
 	</TR>
 	<TR CLASS="LIGHT">
@@ -149,6 +158,12 @@
 			{if $nodeipdata.moddate}{$nodeipdata.modifiedby}, {$nodeipdata.moddateh}{else}-{/if}
 		</TD>
 	</TR>
+	
+	<tr class="light">
+	    <td colspan="3" width="100%">
+		<img src="?m=monitchartimg&chart=ping&chartsize=small&type=netdev&id={$nodeipdata.id}$time=-1d" alt="">
+	    </td>
+	</tr>
                                                 </TABLE>
 					</TD>
 				</TR>

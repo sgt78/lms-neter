@@ -52,11 +52,162 @@ function GetConfigList($order='var,asc', $section='', $search='')
 	{
 		switch($item['section'])
 		{
+			case 'hiperus_c5' :
+			    switch($item['var'])
+			    {
+				
+				case 'lms_login':
+					$config[$idx]['description'] = 'login uzytkownika LMS';
+				break;
+				
+				case 'lms_pass':
+					$config[$idx]['description'] = 'hasło dla użytkownika';
+				break;
+				
+				case 'lms_url':
+					$config[$idx]['description'] = 'domyślny URL dla LMS DEF.: http://localhost/lms';
+				break;
+				
+				case 'leftmonth':
+					$config[$idx]['description'] = 'numer miesiaca wstecz za ktory wystawić fakturę, np. dzisiaj mamy sierpien, jeżeli chcemy wystawiac fakturę za lipiec to wartość musi być 1, jeżeli będziemy chcieli wystawić za maj to wpisujemy 3, DEF.: 1';
+				break;
+				
+				case 'numberplanid':
+					$config[$idx]['description'] = 'Numer ID planu numeracyjnego dla wystawianych faktur za abonament i rozmowy VoIP. Jeżeli pozostawimy puste pole to będzie brany domyślny plan numeracyjny dla klienta';
+				break;
+				
+				case 'taxrate':
+					$config[$idx]['description'] = 'Wartość stawki VAT, jeżeli pozostawimy puste pole to będzie użyta domyślna stawka VAT';
+				break;
+				
+				case 'prodid':
+					$config[$idx]['description'] = 'PKWiU';
+				break;
+				
+				case 'content':
+					$config[$idx]['description'] = 'domyślna jednostka miary na fakturze. DEF.: szt';
+				break;
+				
+				case 'wlr':
+					$config[$idx]['description'] = 'Usługa hurtowego dostępu do sieci telekomunikacyjnej. Wymaga osobnej umowy z operatorem. DEF.: 0';
+				break;
+				
+				case 'accountlist_pagelimit':
+					$config[$idx]['description'] = 'Ilość wyświetlanych pozycji na jednej stronie w liście kont VoIP, DEF.: 50';
+				break;
+				
+				case 'terminallist_pagelimit':
+					$config[$idx]['description'] = 'Ilość wyświetlanych pozycji na jednej stronie w liście terminali, DEF.: 50';
+				break;
+				
+				case 'force_relationship':
+					$config[$idx]['description'] = 'Wymuś powiązanie konta VoIP z klientem z LMS podczas edycji lub tworzenia nowego konta VoIP, DEF.: 1';
+				break;
+				
+				case 'number_manually':
+					$config[$idx]['description'] = 'Pozwól na ręczne wprowadzenie numeru telefonicznego przy dodawaniu lub edycji terminala.';
+				break;
+			    
+				default:
+					$config[$idx]['description'] = trans('Unknown option. No description.');
+				break;
+			    }
+			break;
+			
+			case 'autobackup' :
+			    switch($item['var'])
+			    {
+				
+				case 'ftphost':
+					$config[$idx]['description'] = 'adres serwera FTP';
+				break;
+				
+				case 'ftppass':
+					$config[$idx]['description'] = 'hasło do konta FTP';
+				break;
+				
+				case 'ftpuser':
+					$config[$idx]['description'] = 'login do konta FTP';
+				break;
+				
+				case 'ftpssl':
+					$config[$idx]['description'] = 'połączenie SSL FTP DEFAULT: 0';
+				break;
+				
+				case 'db_backup':
+					$config[$idx]['description'] = 'czy tworzyć kopię bazy danych do domyślnego katalogu dla LMS DEFAULT: 1';
+				break;
+				
+				case 'db_gz':
+					$config[$idx]['description'] = '1 - twórz skompresowaną bazę danych, 0 - nieskompresowaną DEFAULT: 1';
+				break;
+				
+				case 'db_stats':
+					$config[$idx]['description'] = 'dołącz statystyki do archiwum DEFAULT: 0';
+				break;
+				
+				case 'db_ftpsend':
+					$config[$idx]['description'] = 'wysyłaj kopię bazy na zdalny serwer FTP , DEFAULT: 0';
+				break;
+				
+				case 'db_ftppath':
+					$config[$idx]['description'] = 'katalog na FTP do którego będą kopiowane archiwa bazy dancyh DEFAULT: iNET_LMS_DB_DUMP';
+				break;
+				
+				case 'dir_ftpsend':
+					$config[$idx]['description'] = 'twórz kopię lolaknych katalogów na serwerze FTP , DEFAULT: 0';
+				break;
+				
+				case 'dir_ftpaction':
+					$config[$idx]['description'] = 'typ akcji jaka ma być wykonana, jeżeli dany plik już istnieje na serwerze FTP<br>
+					skip - pomin plik<br>
+					replace - nadpisz plik<br>
+					update - nadpisz plik, jeżeli waga pliku jest inna niż na lokalnym serwerze<br>
+					DEFAULT: update';
+				break;
+				
+				case 'dir_local':
+					$config[$idx]['description'] = 'analogiczna lista katalogów dla dir_ftp na lokalnym serwerze do skopiowania na FTP. Katalogi należy oddzielać przecinkiem. Kopia jest tworzona z całą strukturą katalogów<br>
+					<b>UWAGA</b> liczba katalogów musi być dokładnie taka sama jak w opcji dir_fpt';
+				break;
+				
+				case 'dir_ftp':
+					$config[$idx]['description'] = 'analogiczna lista katalogów dla dir_local na FTP do których będą skopiowane pliki z lokalnego serwera. Katalogi należy oddzielać przecinkiem<br>
+					<b>UWAGA</b> liczba katalogów musi być dokładnie taka sama jak w opcji dir_local';
+				break;
+				
+				default:
+					$config[$idx]['description'] = trans('Unknown option. No description.');
+				break;
+			    }
+			break;
+			
+			
 			case 'phpui':
 				switch($item['var'])
 				{
+				case 'delete_link_in_customerbalancebox':
+					$config[$idx]['description'] = 'Dodaje link umożliwiający usunięcie naliczonego zobowiązania w karcie klienta, box konto klienta';
+				break;
+				
 				case 'allow_from':
 					$config[$idx]['description'] = trans('List of networks and IP addresses, with access to LMS. If empty, every IP address has access to LMS. When you write list of addresses or address pools here, LMS will dismiss every unwanted user with HTTP 403 error.');
+				break;
+				
+				case 'config_empty_value':
+					$config[$idx]['description'] = 'Pozwala na zapisanie zmiennej konfiguracyjnej z pustą wartością';
+				break;
+				
+				case 'installation_name':
+					$config[$idx]['description'] = 'nazwa instalacji LMS widoczna w górnym prawym rogu, w stopce i oknie logowania.';
+				break;
+				
+				case 'iphistory':
+					$config[$idx]['description'] = 'włącz logowanie zmian adresów IP';
+				break;
+				
+				case 'callcenter_pagelimit':
+					$config[$idx]['description'] = 'Ilość maksymalnie wyświetlanych rekordów na jednej stronie.<br><B>DEFAULT: 50';
 				break;
 
 				case 'lang':
@@ -276,6 +427,14 @@ function GetConfigList($order='var,asc', $section='', $search='')
 				case 'report_type':
 					$config[$idx]['description'] = trans('Documents type. You can use "html" or "pdf". Default: html.');
 				break;
+				
+				case 'syslog_level':
+					$config[$idx]['description'] = trans('System event log level (0/1), 0 - disabled. Default: 1');
+				break;
+				
+				case 'syslog_pagelimit':
+					$config[$idx]['description'] = trans('Limit the events displayed on a single page in the system logs. Default: 100');
+				break;
 
 				default:
 					$config[$idx]['description'] = trans('Unknown option. No description.');
@@ -299,6 +458,9 @@ function GetConfigList($order='var,asc', $section='', $search='')
 					break;
 				} //end: var
 			break;
+			
+			
+			
 
 			case 'invoices':
 				switch($item['var'])
@@ -480,6 +642,98 @@ function GetConfigList($order='var,asc', $section='', $search='')
 					break;
 				} //end: var
 			break;
+			
+			case 'gadugadu':
+				switch($item['var'])
+				{
+					case 'gg_number':
+						$config[$idx]['description'] = 'Numer konta Gadu-Gadu';
+					break;
+
+					case 'gg_passwd':
+						$config[$idx]['description'] = 'Hasło do konta Gadu-Gadu';
+					break;
+					
+					case 'gg_signature_statuson':
+						$config[$idx]['description'] = 'Domyślny podpis jaki będzie ustawiony gdy konto będzie aktywne';
+					break;
+					
+					case 'gg_signature_statusoff':
+						$config[$idx]['description'] = 'Domyślny podpis jaki będzie ustawiony gdy konto będzie nieaktywne';
+					break;
+					
+					case 'gg_header':
+						$config[$idx]['description'] = 'Tekst jaki będzie dołączony na początku każdej wiadomości';
+					break;
+					
+					case 'gg_footer':
+						$config[$idx]['description'] = 'Tekst jaki będzie dołączony na końcu każdej wiadomości';
+					break;
+
+    				default:
+						$config[$idx]['description'] = trans('Unknown option. No description.');
+					break;
+				} //end: var
+			break;
+			
+			case 'monit':
+				switch($item['var'])
+				{
+					case 'active_monitoring'	: $config[$idx]['description'] = 'czy monitorować hosty,wartość globalna, jeżeli ustawimy 0 to nie będą przeprowadzane testy. DEFAULT.:1';break;
+					case 'lms_password'		: $config[$idx]['description'] = 'Hasło użytkownika';break;
+					case 'lms_url'			: $config[$idx]['description'] = 'Adres URL do LMS, Domyślnie: http://localhost/lms ';break;
+					case 'lms_user'			: $config[$idx]['description'] = 'Nazwa użytkownika (login)';break;
+					case 'netdev_clear'		: $config[$idx]['description'] = 'Ilość dni trzymanych statystyk testów, starsze wpisy będą kasowane'; break;
+					case 'netdev_test'		: $config[$idx]['description'] = 'Włącz testowanie hostów (urządzeń) sieciowych'; break;
+					case 'netdev_test_port'		: $config[$idx]['description'] = 'Domyślny port dla protokołu tcp'; break;
+					case 'netdev_test_type'		: $config[$idx]['description'] = 'Domyślny protokół lub usługa jaka będzie użyta do testów dla urządzeń sieciowych. DEFAULT: icmp<br>dozwolone wartości : icmp, http, https, ssh, ftp, telnet, callbook, rpcbind, samba, pptp, mysql, smtp, dns, nfs, postgresql'; break;
+					case 'netdev_time_max'		: $config[$idx]['description'] = 'Wartość maksymalna czasu odpowiedzi w ms dla testowanych urządzeń sieciowych. Po przekroczeniu tej wartości podczas testu, zostanie wysłana odpowiednia informacja. DEFAULT: 100'; break;
+					case 'netdev_time_send'		: $config[$idx]['description'] = 'Wyślij informację o przekroczonych czasach odpowiedzi dla urządzeń sieciowych. Wartość domyślna , DEFAULT: 1'; break;
+					case 'netdev_timeout_level'	: $config[$idx]['description'] = 'Poziom wysyłąnia informacji o braku aktywności<br>low - informuj przy drugim przebiegu testu jeżeli urządzenie dalej nie odpowiada<br>high - informuj natychmiast jeżeli urządzenie jest nieaktywne DEFAULT: low<br>Ustawienie domyślne '; break;
+					case 'netdev_timeout_send'	: $config[$idx]['description'] = 'Wyślij informację o braku aktywności urządzenia sieciowego, wartość domyślna dla testowanych urządzeń. DEFAULT: 1 '; break;
+					case 'nodes_clear'		: $config[$idx]['description'] = 'Ilość dni trzymanych statystyk testów, starsze wpisy będą kasowane'; break;
+					case 'nodes_test'		: $config[$idx]['description'] = 'Włącz testowanie hostów (urządzeń) klientów'; break;
+					case 'nodes_test_port'		: $config[$idx]['description'] = 'Domyślny port dla protokołu tcp'; break;
+					case 'nodes_test_type'		: $config[$idx]['description'] = 'Domyślny protokół lub usługa jaka będzie użyta do testów dla urządzeń klientów. DEFAULT: icmp<br>dozwolone wartości : icmp, http, https, ssh, ftp, telnet, callbook, rpcbind, samba, pptp, mysql, smtp, dns, nfs, postgresql'; break;
+					case 'nodes_time_max'		: $config[$idx]['description'] = 'Wartość maksymalna czasu odpowiedzi w ms dla testowanych urządzeń klientów. Po przekroczeniu tej wartości podczas testu, zostanie wysłana odpowiednia informacja. DEFAULT: 150'; break;
+					case 'nodes_time_send'		: $config[$idx]['description'] = 'Wyślij informację o przekroczonych czasach odpowiedzi dla urządzeń klientów. Wartość domyślna , DEFAULT: 1'; break;
+					case 'nodes_timeout_level'	: $config[$idx]['description'] = 'Poziom wysyłąnia informacji o braku aktywności<br>low - informuj przy drugim przebiegu testu jeżeli urządzenie dalej nie odpowiada<br>high - informuj natychmiast jeżeli urządzenie jest nieaktywne DEFAULT: low<br>Ustawienie domyślne '; break;
+					case 'nodes_timeout_send'	: $config[$idx]['description'] = 'Wyślij informację o braku aktywności urządzenia sieciowego, wartość domyślna dla testowanych urządzeń. DEFAULT: 1 '; break;
+					case 'owner_clear'		: $config[$idx]['description'] = 'Ilość dni trzymanych statystyk testów, starsze wpisy będą kasowane'; break;
+					case 'owner_test'		: $config[$idx]['description'] = 'Włącz testowanie własnych hostów'; break;
+					case 'owner_test_port'		: $config[$idx]['description'] = 'Domyślny port dla protokołu tcp'; break;
+					case 'owner_test_type'		: $config[$idx]['description'] = 'Domyślny protokół lub usługa jaka będzie użyta do testów dla własnych urządzeń. DEFAULT: icmp<br>dozwolone wartości : icmp, http, https, ssh, ftp, telnet, callbook, rpcbind, samba, pptp, mysql, smtp, dns, nfs, postgresql'; break;
+					case 'owner_time_max'		: $config[$idx]['description'] = 'Wartość maksymalna czasu odpowiedzi w ms dla testowanych urządzeń . Po przekroczeniu tej wartości podczas testu, zostanie wysłana odpowiednia informacja. DEFAULT: 150'; break;
+					case 'owner_time_send'		: $config[$idx]['description'] = 'Wyślij informację o przekroczonych czasach odpowiedzi dla własnych urządzeń. Wartość domyślna , DEFAULT: 1'; break;
+					case 'owner_timeout_level'	: $config[$idx]['description'] = 'Poziom wysyłąnia informacji o braku aktywności<br>low - informuj przy drugim przebiegu testu jeżeli urządzenie dalej nie odpowiada<br>high - informuj natychmiast jeżeli urządzenie jest nieaktywne DEFAULT: low<br>Ustawienie domyślne '; break;
+					case 'owner_timeout_send'	: $config[$idx]['description'] = 'Wyślij informację o braku aktywności własnych urządzenia sieciowego, wartość domyślna dla testowanych urządzeń. DEFAULT: 1 '; break;
+					case 'packetsize'		: $config[$idx]['description'] = 'waga pakietu w bajtach podczas pingowania.<BR><B>DEFAULT:</B> 32';break;
+					case 'smtp_host'		: $config[$idx]['description'] = 'adres smtp serwera pocztowego.<BR><B>DEFAULT:</B> localhost';break;
+					case 'smtp_user'		: $config[$idx]['description'] = 'nazwa użytkownika, najlepiej wraz z domeną.<BR><B>DEFAULT:</B> root';break;
+					case 'smtp_pass'		: $config[$idx]['description'] = 'hasło użytkownika do skrzynki pocztowej.<BR><B>DEFAULT:</B> ';break;
+					case 'smtp_auth'		: $config[$idx]['description'] = 'typ autoryzacji : LOGIN, PLAIN, CRAM-MD5, NTLM.<BR><B>DEFAULT:</B> LOGIN';break;
+					case 'smtp_port'		: $config[$idx]['description'] = 'port na którym słucha serwer smtp.<BR><B>DEFAULT:</B> 25';break;
+					case 'send_to_email'		: $config[$idx]['description'] = 'Pozwól na wysyłanie informacji pocztą elekroniczą. DEFAULT: 1. Ustawienie globalne'; break;
+					case 'send_to_gg'		: $config[$idx]['description'] = 'Pozwól na wysyłanie wiadomości przez komunikator Gadu-Gadu. DEFAULT.: 1. Ustawienie globalne'; break;
+					case 'send_to_sms'		: $config[$idx]['description'] = 'Pozwól na wysyłanie informacji poprzez sms. DEFAULT.: 1. Ustawienie Globalne'; break;
+					case 'test_script_dir'		: $config[$idx]['description'] = 'ścieżka do skryptu lms-monitoring.pl<BR><B>DEFAULT:</B> /usr/local/sbin/lms-monitoring.pl';break;
+					case 'img_gen'			: $config[$idx]['description'] = 'automatycznie generuj wykres do obrazka w formacie IP_HOSTA.png, wygenerowane wykresy możemy potem wykorzystać we własnych stronach.<BR>LMS na swoje potrzeby generuje w "locie" wykresy i nie są one powiązane z tą zmienną.<BR><B>DEFAULT:</B> false';break;
+					case 'img_dir'			: $config[$idx]['description'] = 'ścieżka gdzie mają być generowane wykresy dla poszczególnych urządzeń.<BR><B>DEFAULT:</B> /var/www/lms/img/monit';break;
+					case 'img_time'			: $config[$idx]['description'] = 'przedział czasowy wykresu od kiedy ma być wygenerowany do "teraz", podajemy w formacie : -1h -6h -12 -1d -3d itd..<BR><B>DEFAULT:</B> -1d';break;
+					case 'img_width'		: $config[$idx]['description'] = 'szerokość generowanego obrazka w px.<BR><B>DEFAULT:</B> 360';break;
+					case 'img_height'		: $config[$idx]['description'] = 'wysokość generowanego obrazka w px.<BR><B>DEFAULT:</B> 180';break;
+					case 'rrd_dir'			: $config[$idx]['description'] = 'ścieżka zapisu danych dla rrdtool.<BR><B>DEFAULT:</B> /var/www/lms/rrd';break;
+					case 'rrdtool_dir'		: $config[$idx]['description'] = 'ścieżka do skryptu rrdtool<BR><B>DEFAULT:</B> /usr/bin/rrdtool';break;
+					case 'grep_dir'			: $config[$idx]['description'] = 'ścieżka do binarki grep.<BR><B>DEFAULT:</B> /bin/grep';break;
+					case 'awk_dir'			: $config[$idx]['description'] = 'ścieżka do binarki awk.<BR><B>DEFAULT:</B> /usr/bin/awk';break;
+					case 'step_test_netdev'		: $config[$idx]['description'] = 'czas w minutach co ile jest robiony test dla urządzeń sieciowych, czas ten <b>musi</b> pokrywać się z czasem odpalania testu przez cron, w przypadku zmiany czasu należy wyczyścić statystyki pomiarów inaczej będą błędy na wykresach<BR><B>DEFAULT:</B> 5';break;
+					case 'step_test_nodes'		: $config[$idx]['description'] = 'czas w minutach co ile jest robiony test dla urządzeń klientów, czas ten <b>musi</b> pokrywać się z czasem odpalania testu przez cron, w przypadku zmiany czasu należy wyczyścić statystyki pomiarów inaczej będą błędy na wykresach<BR><B>DEFAULT:</B> 5';break;
+					case 'step_test_owner'		: $config[$idx]['description'] = 'czas w minutach co ile jest robiony test dla własnych urządzeń, czas ten <b>musi</b> pokrywać się z czasem odpalania testu przez cron, w przypadku zmiany czasu należy wyczyścić statystyki pomiarów inaczej będą błędy na wykresach<BR><B>DEFAULT:</B> 5';break;
+					
+					default				: $config[$idx]['description'] = 'Nieznana opcja lub brak opisu';break;
+				} //end: monit
+			break;
+			
                        case 'zones':
                                 switch($item['var'])
                                 {

@@ -28,6 +28,13 @@ $SESSION->save('backto', $_SERVER['QUERY_STRING']);
 
 $layout['pagetitle'] = trans('Customers List');
 
+// first letter
+if(!isset($_GET['fletter']))
+	$SESSION->restore('clfl', $fletter);
+else
+	$fletter = $_GET['fletter'];
+$SESSION->save('clfl', $fletter);
+
 if(!isset($_GET['o']))
 	$SESSION->restore('clo', $o);
 else
@@ -40,6 +47,12 @@ else
 	$s = $_GET['s'];
 $SESSION->save('cls', $s);
 
+if(!isset($_GET['st']))
+	$SESSION->restore('clst', $st);
+else
+	$st = $_GET['st'];
+$SESSION->save('clst', $st);
+
 if(!isset($_GET['n']))
 	$SESSION->restore('cln', $n);
 else
@@ -49,7 +62,7 @@ $SESSION->save('cln', $n);
 if(!isset($_GET['g']))
 	$SESSION->restore('clg', $g);
 else
-	$g = $_GET['g'];
+	$g = $_GET['g'];	
 $SESSION->save('clg', $g);
 
 if(!isset($_GET['ng']))
@@ -57,6 +70,12 @@ if(!isset($_GET['ng']))
 else
         $ng = $_GET['ng'];
 $SESSION->save('clng', $ng);
+
+if(!isset($_GET['ce']))
+        $SESSION->restore('clce', $ce);
+else
+        $ce = $_GET['ce'];
+$SESSION->save('clce', $ce);
 
 if(!isset($_GET['d']))
         $SESSION->restore('cld', $d);
@@ -66,8 +85,18 @@ $SESSION->save('cld', $d);
 		
 if (! isset($_GET['page']))
 	$SESSION->restore('clp', $_GET['page']);
+
+if (!empty($ce)) {
+    $idlist = $LMS->GetIdContractEnding($ce);
+    if (!empty($idlist))
+	$cetmp = implode(',',$idlist);
+    else
+	$cetmp = -1;
+}
+    else $cetmp = NULL;
+    
 	    
-$customerlist = $LMS->GetCustomerList($o, $s, $n, $g, NULL, NULL, 'AND', $ng, $d);
+$customerlist = $LMS->GetCustomerList($o, $s, $n, $g, NULL, NULL, 'AND', $ng, $d, $fletter, $st, $cetmp);
 
 $listdata['total'] = $customerlist['total'];
 $listdata['order'] = $customerlist['order'];
@@ -79,6 +108,9 @@ $listdata['nodegroup'] = $ng;
 $listdata['customergroup'] = $g;
 $listdata['division'] = $d;
 $listdata['state'] = $s;
+$listdata['status'] = $st;
+$listdata['fletter'] = $fletter;
+$listdata['contractend'] = $ce;
 
 $page = (! $_GET['page'] ? 1 : $_GET['page']); 
 $pagelimit = (!$CONFIG['phpui']['customerlist_pagelimit'] ? $listdata['total'] : $CONFIG['phpui']['customerlist_pagelimit']);

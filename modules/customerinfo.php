@@ -26,7 +26,11 @@
 
 $customerid = intval($_GET['id']);
 
+
+include(MODULES_DIR.'/infocenter.inc.php');
 include(MODULES_DIR.'/customer.inc.php');
+
+
 
 if($customerinfo['cutoffstop'] > mktime(0,0,0))
         $customerinfo['cutoffstopnum'] = floor(($customerinfo['cutoffstop'] - mktime(23,59,59))/86400);

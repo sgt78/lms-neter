@@ -134,6 +134,11 @@
 		<TD style="width: 98%; white-space: nowrap;" COLSPAN="2">
 			<label for="chkmac">{trans("MAC checking")}:</label><INPUT TYPE="checkbox" NAME="nodeedit[chkmac]" VALUE="1" ID="chkmac" {tip text="Enable/disable MAC address checking" trigger="chkmac"}{if !isset($nodeinfo.chkmac) || $nodeinfo.chkmac} checked{/if}>&nbsp;
 			<label for="duplex">{trans("Half duplex")}:</label><INPUT TYPE="checkbox" NAME="nodeedit[halfduplex]" VALUE="1" ID="duplex" {if $nodeinfo.halfduplex} checked{/if} {tip text="Select transmission mode"}> 
+			{if check_modules(110)}
+			    <label for="monit">Monitoruj:</label><INPUT TYPE="checkbox" NAME="nodeedit[monitoring]" VALUE="1" ID="monit" {if $nodeinfo.monitoring} checked{/if} {tip text="Monitoruj urządzenie klienta"}>
+			{else}
+			    <input type="hidden" name="nodeedit[monitoring]" VALUE="{$nodeinfo.monitoring}">
+			{/if}
 		</TD>
 	</TR>
 					</TABLE>

@@ -147,6 +147,31 @@ class LMSDB_driver_mysqli extends LMSDB_common
 		return 'CONCAT('.$return.')';
 	}
 
+	function _dirver_distinct()
+	{
+	    return 'DISTINCT';
+	}
+
+	function _driver_limit($start,$offset=NULL)
+	{
+	    return 'LIMIT '.$start.' '.($offset ? ',$offset' : '');
+	}
+
+	function _driver_year($data)
+	{
+	    return 'YEAR('.$data.')';
+	}
+
+	function _driver_month($data)
+	{
+	    return 'MONTH('.$data.')';
+	}
+
+	function _driver_day($data)
+	{
+	    return 'DAY('.$data.')';
+	}
+
 	function _driver_listtables()
 	{
 		return $this->GetCol('SELECT table_name FROM information_schema.tables 

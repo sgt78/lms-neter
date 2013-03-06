@@ -197,4 +197,4 @@ foreach my $line (@lines)
 }
 
 $dbase->disconnect();
-system("rm $tmpfile");	
+#system("rm $tmpfile");	

@@ -106,6 +106,14 @@ if($userinfo)
 	{
 		$userinfo['accessfrom'] = $accessfrom;
 		$userinfo['accessto'] = $accessto;
+		if (isset($_POST['selectedmodules']))
+		{
+		    
+		    $userinfo['modules'] = array();
+		    foreach($_POST['selectedmodules'] as $key => $item) $userinfo['modules'][] = $key;
+		    $userinfo['modules'] = serialize($userinfo['modules']);
+		} else $userinfo['modules'] = NULL;
+			
 		$LMS->UserUpdate($userinfo);
 
 		$DB->Execute('DELETE FROM excludedgroups WHERE userid = ?', array($userinfo['id']));
@@ -125,6 +133,16 @@ if($userinfo)
 			{
 			        $userinfo['selected'][$idx]['id'] = $idx;
 			    	$userinfo['selected'][$idx]['name'] = $name;
+			}
+		}
+		
+		$userinfo['selectedmodules'] = array();
+		if(isset($_POST['selectedmodules']))
+		{
+		        foreach($_POST['selectedmodules'] as $idx => $name)
+			{
+			        $userinfo['modules'][$idx]['id'] = $idx;
+			    	$userinfo['modules'][$idx]['name'] = $name;
 			}
 		}
 
@@ -152,9 +170,36 @@ else
 	}
 }
 
+
+
 foreach($LMS->GetUserInfo($_GET['id']) as $key => $value)
 	if(!isset($userinfo[$key]))
 		$userinfo[$key] = $value;
+
+if (!empty($userinfo['modules']))
+    $userinfomodules = unserialize($userinfo['modules']);
+else
+    $userinfomodules = NULL;
+
+
+	
+$i=0;
+$tab = array();
+
+$userinfo['modules'] = NULL;
+
+foreach ($menu as $key => $item) {
+    $i++;
+    $tab[$i]['id'] = $item['index'];
+    $tab[$i]['name'] = $item['name'];
+    if (!empty($userinfomodules) && in_array($item['index'],$userinfomodules))
+    {
+	$userinfo['modules'][$i]['id'] = $item['index'];
+	$userinfo['modules'][$i]['name'] = $item['name'];
+    }
+}
+
+//echo "<pre>"; print_r($userinfomodules); echo "</pre>"; die;
 
 if(!isset($userinfo['selected']))
 	$userinfo['selected'] = $DB->GetAllByKey('SELECT g.id, g.name 
@@ -168,6 +213,10 @@ $SESSION->save('backto', $_SERVER['QUERY_STRING']);
 
 $SMARTY->assign('accesslist', $accesslist);
 $SMARTY->assign('available', $DB->GetAllByKey('SELECT id, name FROM customergroups ORDER BY name', 'id'));
+
+
+$SMARTY->assign('module',$tab);
+
 $SMARTY->assign('userinfo', $userinfo);
 $SMARTY->assign('error', $error);
 

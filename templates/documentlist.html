@@ -42,6 +42,17 @@
 		document.page.method="get";
 		document.page.submit();
 	}
+	
+	function clear_filter()
+	{
+	    {if $customerlist}
+	    document.page.c.value = "0";
+	    {/if}
+	    document.page.t.value = "0";
+	    document.page.from.value = "";
+	    document.page.to.value = "";
+	    filter();
+	}
 //-->
 </SCRIPT>
 {include file="calendar_js.html"}
@@ -49,6 +60,43 @@
 <INPUT type="hidden" name="m" value="documentlist">
 <INPUT type="hidden" name="page" value="1">
 <TABLE WIDTH="100%" CELLPADDING="3">
+	
+	<TR class="DARK">
+		<TD class="fall" colspan="5">
+				<img src="img/Filter.png">&nbsp;
+				<a href="javascript:void(0);" onclick="clear_filter();" {tip text="wyczyść filtr"}><img src="img/cancel.gif"></a>
+				{trans("Customer:")}
+                {if $customerlist}
+				    <SELECT size="1" name="c" OnChange="filter()" {if $listdata.customer}class="active"{/if}>
+					<OPTION value="0"{if $listdata.customer eq ""} SELECTED{/if}>{trans("- all customers -")}</OPTION>
+					{foreach from=$customerlist item=customer}
+					<OPTION value="{$customer.id}"{if $customer.id eq $listdata.customer} SELECTED{/if}>{$customer.customername|truncate:40:"...":true}</OPTION>
+					{/foreach}
+				    </SELECT>
+				{else}
+				    <INPUT TYPE="TEXT" NAME="c" VALUE="{if $listdata.customer}{$listdata.customer}{/if}" SIZE="5" {if $listdata.customer !=''}style="background-color:#FFFF99;"{/if}>
+				    <A href="javascript: void(0);" onClick="return customerchoosewin(document.page.elements['c']);" {tip text="Click to search customer"}>{trans("Search")}&nbsp;&raquo;&raquo;&raquo;</A>
+                {/if}&nbsp;
+				{trans("Type:")}
+				<SELECT size="1" name="t" ONCHANGE="filter()" {if $listdata.type}class="active"{/if}>
+					<OPTION value="0"{if !$listdata.type} SELECTED {/if}>{trans("- all -")}</OPTION>
+					{foreach from=$_DOCTYPES key=key item=item}{if $key < 0}
+					<OPTION VALUE="{$key}"{if $listdata.type==$key} SELECTED{/if}>{$item}</OPTION>
+					{/if}{/foreach}
+				</SELECT>&nbsp;
+				<B>{trans("Period:")}</B>&nbsp;
+				{trans("from")}&nbsp;<INPUT TYPE="text" NAME="from" SIZE="10" MAXSIZE="10" value="{if $listdata.from > 0}{$listdata.from|date_format:"%Y/%m/%d"}{/if}" OnClick="javascript:cal1.popup();" {tip text="Enter date in YYYY/MM/DD format (empty field means no limit) or click to choose it from calendar"} {if $listdata.from !=''}style="background-color:#FFFF99;"{/if}>
+				{trans("to")}&nbsp;<INPUT TYPE="text" NAME="to" SIZE="10" MAXSIZE="10" value="{if $listdata.to > 0}{$listdata.to|date_format:"%Y/%m/%d"}{/if}" OnClick="javascript:cal2.popup();"  {tip text="Enter date in YYYY/MM/DD format (empty field means no limit) or click to choose it from calendar"} {if $listdata.to !=''}style="background-color:#FFFF99;"{/if}>&nbsp;
+				<A href="javascript: filter();">&raquo;&raquo;&raquo;</A>&nbsp;
+		</TD>
+	</TR>
+	{if $listdata.total != 0}
+	<TR CLASS="scroller">
+		<TD COLSPAN="5" CLASS="FALL">
+			{include file="scroller.html" loop=$documentlist}
+		</TD>
+	</TR>
+	{/if}
 	<TR CLASS="DARK">
 		<TD WIDTH="1%" NOWRAP class="fleftu"> <A href="?m=documentlist&o=cdate{if $listdata.direction eq "asc" && $listdata.order eq "cdate"},desc{/if}">{trans("Date:")}</A>{if $listdata.order eq "cdate"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}<BR><B>{trans("Number:")}</B></TD>
 		<TD WIDTH="1%" NOWRAP class="fbt"> <A href="?m=documentlist&o=type{if $listdata.direction eq "asc" && $listdata.order eq "type"},desc{/if}"><B>{trans("Type:")}</B></A>{if $listdata.order eq "type"}<IMG src="img/{if $listdata.direction eq "desc"}asc{else}desc{/if}_order.gif" alt="">{/if}</TD>
@@ -58,40 +106,6 @@
 			<A href="?m=documentadd&cid={$listdata.customer}&type={$listdata.type}">{trans("New Document")}</A> <IMG src="img/save.gif" alt="">
 		</TD>
 	</TR>
-	<TR class="DARK">
-		<TD class="fall" colspan="5">
-				<B>{trans("Filter:")} </B> {trans("Customer:")}
-                {if $customerlist}
-				    <SELECT size="1" name="c" OnChange="filter()">
-					<OPTION value="0"{if $listdata.customer eq ""} SELECTED{/if}>{trans("- all customers -")}</OPTION>
-					{foreach from=$customerlist item=customer}
-					<OPTION value="{$customer.id}"{if $customer.id eq $listdata.customer} SELECTED{/if}>{$customer.customername|truncate:40:"...":true}</OPTION>
-					{/foreach}
-				    </SELECT>
-				{else}
-				    <INPUT TYPE="TEXT" NAME="c" VALUE="{if $listdata.customer}{$listdata.customer}{/if}" SIZE="5">
-				    <A href="javascript: void(0);" onClick="return customerchoosewin(document.page.elements['c']);" {tip text="Click to search customer"}>{trans("Search")}&nbsp;&raquo;&raquo;&raquo;</A>
-                {/if}&nbsp;
-				{trans("Type:")}
-				<SELECT size="1" name="t" ONCHANGE="filter()">
-					<OPTION value="0"{if !$listdata.type} SELECTED {/if}>{trans("- all -")}</OPTION>
-					{foreach from=$_DOCTYPES key=key item=item}{if $key < 0}
-					<OPTION VALUE="{$key}"{if $listdata.type==$key} SELECTED{/if}>{$item}</OPTION>
-					{/if}{/foreach}
-				</SELECT>&nbsp;
-				<B>{trans("Period:")}</B>&nbsp;
-				{trans("from")}&nbsp;<INPUT TYPE="text" NAME="from" SIZE="10" MAXSIZE="10" value="{if $listdata.from > 0}{$listdata.from|date_format:"%Y/%m/%d"}{/if}" OnClick="javascript:cal1.popup();" {tip text="Enter date in YYYY/MM/DD format (empty field means no limit) or click to choose it from calendar"}>
-				{trans("to")}&nbsp;<INPUT TYPE="text" NAME="to" SIZE="10" MAXSIZE="10" value="{if $listdata.to > 0}{$listdata.to|date_format:"%Y/%m/%d"}{/if}" OnClick="javascript:cal2.popup();"  {tip text="Enter date in YYYY/MM/DD format (empty field means no limit) or click to choose it from calendar"}>&nbsp;
-				<A href="javascript: filter();">&raquo;&raquo;&raquo;</A>&nbsp;
-		</TD>
-	</TR>
-	{if $listdata.total != 0}
-	<TR CLASS="DARK">
-		<TD COLSPAN="5" CLASS="FALL">
-			{include file="scroller.html" loop=$documentlist}
-		</TD>
-	</TR>
-	{/if}
 	{cycle values="light,lucid" print=false}
 	{section loop=$documentlist name=documentlist start=$start max=$pagelimit}
 	{assign var=doc value=$documentlist[documentlist]}
@@ -137,13 +151,7 @@
 		</TD>
 	</TR>
 	{/section}
-	{if $listdata.total != 0}
-	<TR CLASS="DARK">
-		<TD COLSPAN="5" CLASS="FALL">
-			{include file="scroller.html" loop=$documentlist}
-		</TD>
-	</TR>
-	{/if}
+	
 	<TR CLASS="dark">
 		<TD CLASS="fall" COLSPAN="5">
 		        <TABLE WIDTH="100%">
@@ -162,6 +170,13 @@
 			</TABLE>
 		</TD>
 	</TR>
+	{if $listdata.total != 0}
+	<TR CLASS="scroller">
+		<TD COLSPAN="5" CLASS="FALL">
+			{include file="scroller.html" loop=$documentlist}
+		</TD>
+	</TR>
+	{/if}
 </TABLE>
 </FORM>
 <SCRIPT type="text/javascript">

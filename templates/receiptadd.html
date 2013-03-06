@@ -49,6 +49,7 @@
 <INPUT type="submit" class="hiddenbtn">
 <INPUT type="hidden" name="receipt[type]" value="{$receipt.type}">
 <INPUT type="hidden" name="receipt[numberplanid]" value="{$receipt.numberplanid}">
+<input type="hidden" name="contractor" value="{$receipt.contractor}">
 <TABLE WIDTH="100%" CELLPADDING="3">
 	<TR CLASS="dark">
 		<TD CLASS="fall" WIDTH="100%" COLSPAN="2">
@@ -131,7 +132,8 @@
 				{trans("or Customer ID:")}
 			    {/if}
 			    <INPUT TYPE="TEXT" NAME="customerid" VALUE="{if $customer.id}{$customer.id}{elseif $receipt.customerid}{$receipt.customerid}{/if}" SIZE="5"{if $customerlist} onchange="reset_customer()" onfocus="reset_customer()"{/if} onclick="document.getElementById('radio_customer').checked=true;" {tip text="Enter customer ID" trigger="customerid"}>
-			    <A href="javascript: void(0);" onclick="document.getElementById('radio_customer').checked=true;return customerchoosewin(document.setcustomer.customerid);" {tip text="Click to search customer"}>{trans("Search")}&nbsp;&raquo;&raquo;&raquo;</A>
+			    <a href="javascript: void(0);" onclick="document.getElementById('radio_customer').checked=true;return customerchoosewin(document.setcustomer.customerid);" {tip text="Click to search customer"}>{trans("Search customer")}</a>&nbsp;&nbsp;&nbsp;
+			    <a href="javascript: void(0);" onclick="document.getElementById('radio_customer').checked=true;return contractorchoosewin(document.setcustomer.customerid,document.setcustomer.contractor);" {tip text="Click to search contractor"}>{trans("Search contractor")}</a>
 			    </TD>
 			</TR>
 		    {/if}

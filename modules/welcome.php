@@ -44,6 +44,7 @@ if (check_conf('privileges.superuser')) {
 	$SMARTY->assign('regdata', $LMS->GetRegisterData());
 }
 
+
 $SMARTY->assign('_dochref', is_dir('doc/html/'.$LMS->ui_lang) ? 'doc/html/'.$LMS->ui_lang.'/' : 'doc/html/en/');
 $SMARTY->assign('rtstats', $LMS->RTStats());
 

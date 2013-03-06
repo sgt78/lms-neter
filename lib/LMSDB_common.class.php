@@ -28,9 +28,9 @@
  * LMSDB - klasa wspólna.
  */
 
-Class LMSDB_common
+class LMSDB_common
 {
-	var $_version = '1.11-git';
+	var $_version = 'iNET 1.0.0';
 	var $_revision = '$Revision$';
 
 	// Driver powinien nadpisać tą zmienną wartością TRUE, żeby
@@ -86,6 +86,8 @@ Class LMSDB_common
 
 	function Execute($query, $inputarray = NULL)
 	{
+	    $query = str_replace('`','',$query);
+	    
 	    if ($this->debug)
     	    $start = microtime(true);
 
@@ -167,6 +169,8 @@ Class LMSDB_common
 	// in less memory consumptive way than using GetAll() & foreach()
 	function Exec($query, $inputarray = NULL)
 	{
+	    $query = str_replace('`','',$query);
+	    
 	    if ($this->debug)
     	    $start = microtime(true);
 
@@ -196,6 +200,11 @@ Class LMSDB_common
 	function Concat()
 	{
 		return $this->_driver_concat(func_get_args());
+	}
+	
+	function Distinct()
+	{
+		return $this->_driver_distinct();
 	}
 
 	function Now()
@@ -251,6 +260,26 @@ Class LMSDB_common
 	function Escape($input)
 	{
 		return $this->_quote_value($input);
+	}
+	
+	function Limit($start,$offset=NULL)
+	{
+	    return $this->_driver_limit($start,$offset);
+	}
+	
+	function Year($data)
+	{
+	    return $this->_driver_year($data);
+	}
+	
+	function Month($data)
+	{
+	    return $this->_driver_month($data);
+	}
+	
+	function Day($data)
+	{
+	    return $this->_driver_day($data);
 	}
 
 	function _query_parser($query, $inputarray = NULL)
@@ -310,6 +339,12 @@ Class LMSDB_common
 	function GroupConcat($field, $separator = ',')
 	{
 		return $this->_driver_groupconcat($field, $separator);
+	}
+	
+	function addconfig($section,$var,$value)
+	{
+	    if (!$this->GetOne('SELECT 1 FROM uiconfig WHERE section=? AND var=? LIMIT 1;',array($section,$var)))
+		$this->Execute('INSERT INTO uiconfig (section, var, value) VALUES (?,?,?);',array($section,$var,$value));
 	}
 }
 

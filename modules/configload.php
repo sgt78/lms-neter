@@ -122,6 +122,38 @@ foreach($CONFIG['zones'] as $key => $val)
 			);
 }
 
+if(!empty($CONFIG['gadugadu']) && (!$section || $section == 'gadugadu'))
+foreach($CONFIG['gadugadu'] as $key => $val)
+{
+	$DB->Execute('INSERT INTO uiconfig(section, var, value) VALUES(?,?,?)',
+			array('gadugadu', $key, parse_cfg_val($val))
+			);
+}
+
+if(!empty($CONFIG['monit']) && (!$section || $section == 'monit'))
+foreach($CONFIG['monit'] as $key => $val)
+{
+	$DB->Execute('INSERT INTO uiconfig(section, var, value) VALUES(?,?,?)',
+			array('monit', $key, parse_cfg_val($val))
+			);
+}
+
+if(!empty($CONFIG['hiperus_c5']) && (!$section || $section == 'hiperus_c5'))
+foreach($CONFIG['hiperus_c5'] as $key => $val)
+{
+	$DB->Execute('INSERT INTO uiconfig(section, var, value) VALUES(?,?,?)',
+			array('hiperus_c5', $key, parse_cfg_val($val))
+			);
+}
+
+if(!empty($CONFIG['autobackup']) && (!$section || $section == 'autobackup'))
+foreach($CONFIG['autobackup'] as $key => $val)
+{
+	$DB->Execute('INSERT INTO uiconfig(section, var, value) VALUES(?,?,?)',
+			array('autobackup', $key, parse_cfg_val($val))
+			);
+}
+
 $DB->CommitTrans();
 
 header('Location: ?m=configlist');

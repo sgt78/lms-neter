@@ -26,15 +26,17 @@
 
 if(isset($_GET['is_sure']))
 {
-	$basename = 'lms-'.$_GET['db'];
+	$basename = 'iNET-lms-'.$_GET['db'];
 	
 	if(@file_exists($CONFIG['directories']['backup_dir'].'/'.$basename.'.sql'))
 	{
-		@unlink($CONFIG['directories']['backup_dir'].'/'.$basename.'.sql');
+		if (@unlink($CONFIG['directories']['backup_dir'].'/'.$basename.'.sql') && SYSLOG)
+		    addlogs('skasowano archiwum bazy: '.$CONFIG['directories']['backup_dir'].'/'.$basename.'.sql','e=rm;m=admin;');
 	}
 	elseif((extension_loaded('zlib'))&&((@file_exists($CONFIG['directories']['backup_dir'].'/'.$basename.'.sql.gz'))))
 	{
-		@unlink($CONFIG['directories']['backup_dir'].'/'.$basename.'.sql.gz');
+		if (@unlink($CONFIG['directories']['backup_dir'].'/'.$basename.'.sql.gz') && SYSLOG)
+		    addlogs('skasowano archiwum bazy: '.$CONFIG['directories']['backup_dir'].'/'.$basename.'.sql.gz','e=rm;m=admin;');
 	}
 
 	$SESSION->redirect('?m=dblist');

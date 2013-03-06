@@ -184,6 +184,11 @@ if(isset($_POST['document']))
 					$documentedit['numberplanid'],
 					$documentedit['id'],
 					));
+		
+		if (SYSLOG) {
+		    $tmp = $DB->getone('select customerid from documents where id =? limit 1',array($documentedit['id']));
+		    addlogs('aktualizacja dokumentu '.$DOCTYPES[$documentedit['type']],'e=up;m=doc;c='.$tmp);
+		}
 
 		$DB->Execute('UPDATE documentcontents SET title=?, fromdate=?, todate=?, description=?
 				WHERE docid=?',

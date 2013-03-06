@@ -164,6 +164,10 @@ if(isset($_POST['account']))
 					));
 
 		$id = $DB->GetLastInsertId('passwd');
+		
+		if (SYSLOG) {
+		    addlogs('Dodano nowe konto '.$account['login'],'e=add;m=hosting;id='.$id.';c='.$account['ownerid']);
+		}
 
 		$DB->Execute('UPDATE passwd SET uid = id + 2000 WHERE id = ?', array($id));
 		

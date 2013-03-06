@@ -16,11 +16,12 @@
 			<table align="center" cellpadding="20">
 				<tr>
 					<td>
-						<img src="img/logo.gif" alt="">
+						<img src="img/newlogo.png" alt="">
+						
 					</td>
 					<td align="center" class="loginform light" width="300">
-						<b>{trans("LMS version")} {$layout.lmsv}{if $layout.lmsvr} ({$layout.lmsvr}){/if}<br><br>
-						&copy; 2001-2012 LMS Developers</b><br><br><br>
+						<b>{$layout.lmsv} LMS {$layout.lmsvr}</b><br><br>
+						<b>&copy; 2012 LMS iNET Developers</b><br><br><br>
 						{if $error}<font class="alert bold">{$error}</font>{else}&nbsp;{/if}<br>
 						<br>
 						<form method="post" name="loginform" action="{$target}">
@@ -49,7 +50,7 @@
 								</tr>
 								<tr>
 									<td colspan="2" align="center">
-										<input class="bold" type="SUBMIT" name="loginform[submit]" value="{trans("Login")}">
+										<input type="button" class="bold" name="loginform[submit]" onclick="document.loginform.submit();" value="{trans("Login")}">
 									</td>
 								</tr>
 							</table>
@@ -58,7 +59,9 @@
 						<br>
 						<br>
 						<a href="doc/html/{$_ui_language}/"><font class="blend">{trans("Documentation")}</font></a><br>
-						<a href="http://www.lms.org.pl/"><font class="blend">{trans("LMS Project Homepage")}</font></a>
+						<a href="http://www.lms.org.pl/"><font class="blend">{trans("LMS Project Homepage")}</font></a><br>
+						<font class="blend">&copy; 2001 - 2012 LMS Developers</b></font>
+						{if get_conf('phpui.installation_name')}<br><br><b>{get_conf('phpui.installation_name')}</b>{/if}
 					</td>
 				</tr>
 				{if $layout.dberrors}

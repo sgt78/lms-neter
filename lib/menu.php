@@ -1,7 +1,7 @@
 <?php
 
 /*
- * LMS version 1.11-git
+ * LMS version 1.11-git (EXPANDED)
  *
  * (C) Copyright 2001-2012 LMS Developers
  *
@@ -32,10 +32,11 @@ $menu = array(
 			'tip' => trans('System information and management'),
 			'accesskey' =>'i',
 			'prio' => 0,
+			'index' => 20,
 			'submenu' => array(
 				array(
 					'name' => trans('Info'),
-					'link' =>'?m=welcome',
+					'link' =>'?m='.$CONFIG['phpui']['default_module'],
 					'tip' => trans('Basic system information'),
 					'prio' => 10,
 				),
@@ -57,11 +58,23 @@ $menu = array(
 					'tip' => trans('Allows you to manage database backups'),
 					'prio' => 40,
 				),
+				
+				array(
+					'name' => trans('Syslog'),
+					'link' => '?m=syslog&sl_df='.date('Y/m/d',strtotime("-2 week",time())),
+					'prio' => 50,
+				),
+				array(
+					'name' => 'Changelog',
+					'link' =>'?m=changelog',
+					'tip' => '',
+					'prio' => 60,
+				),
 				array(
 					'name' => trans('Copyrights'),
 					'link' =>'?m=copyrights',
 					'tip' => trans('Copyrights, authors, etc.'),
-					'prio' => 50,
+					'prio' => 200,
 				),
 			),
 		),
@@ -73,6 +86,7 @@ $menu = array(
 			'tip' => trans('Customers Management'),
 			'accesskey' =>'u',
 			'prio' => 5,
+			'index' => 40,
 			'submenu' => array(
 				array(
 					'name' => trans('List'),
@@ -105,6 +119,12 @@ $menu = array(
 					'prio' => 50,
 				),
 				array(
+					'name' => 'Call Center',
+					'link' =>'?m=infocenterlist&cid=',
+					'tip' => '',
+					'prio' => 51,
+				),
+				array(
 					'name' => trans('Notices'),
 					'link' =>'?m=customerwarn',
 					'tip' => trans('Allows you to send notices to customers'),
@@ -126,6 +146,7 @@ $menu = array(
 			'tip' => trans('Nodes Management'),
 			'accesskey' =>'k',
 			'prio' => 10,
+			'index' => 60,
 			'submenu' => array(
 				array(
 					'name' => trans('List'),
@@ -164,6 +185,12 @@ $menu = array(
 					'prio' => 60,
 				),
 				array(
+					'name' => 'Historia zmian IP',
+					'link' => '?m=iphistory',
+					'tip' => '',
+					'prio' => 65,
+				),
+				array(
 					'name' => trans('Reports'),
 					'link' => '?m=nodeprint',
 					'tip' => trans('Lists and reports printing'),
@@ -178,6 +205,7 @@ $menu = array(
 			'tip' => trans('VoIP Management'),
 			'accesskey' =>'v',
 			'prio' => 11,
+			'index' => 80,
 			'submenu' => array(
 				array(
 					'name' => trans('List'),
@@ -200,6 +228,48 @@ $menu = array(
 			),
 		),
 
+		'VoIPC5' => array(
+			'name' => 'VoIP Hiperus C5',
+			'img' =>'voip.gif',
+			'link' =>'',
+			'tip' => 'Telefonia Internetowa Hiperus',
+			'accesskey' => '',
+			'prio' => 12,
+			'index'	=> 81,
+			'submenu' => array(
+				array(
+					'name' => 'Lista kont',
+					'link' => '?m=hv_accountlist',
+					'tip' => 'Lista Klientów',
+					'prio' => 10,
+				),
+				array(
+					'name' => 'Nowe konto',
+					'link' => '?m=hv_accountadd',
+					'tip' => 'Tworzenie nowego konta VoIP w  Hiperus C5',
+					'prio' => 30,
+				),
+				array(
+					'name' => 'Numery PSTN',
+					'link' => '?m=hv_pstnrangelist',
+					'tip' => 'Lista pul numerów PSTN',
+					'prio' => 50,
+				),
+				array(
+					'name' => 'Lista Terminali',
+					'link' => '?m=hv_terminallist',
+					'tip' => 'Lista Terminali',
+					'prio' => 60,
+				),
+				array(
+					'name' => 'Konfiguracja',
+					'link' => '?m=configlist&page=1&s=hiperus_c5&n=',
+					'tip' => '',
+					'prio' => 70,
+				),
+			),
+		),
+
 		'netdevices' => array(
 			'name' => trans('Net Devices'),
 			'img' =>'netdev.gif',
@@ -207,6 +277,7 @@ $menu = array(
 			'tip' => trans('Network Devices Management'),
 			'accesskey' =>'o',
 			'prio' => 15,
+			'index' => 100,
 			'submenu' => array(
 				array(
 					'name' => trans('List'),
@@ -240,6 +311,42 @@ $menu = array(
 				),
 			),
 		),
+		
+		'monitoring' => array(
+			'name' => 'Monitoring',
+			'img' =>'Radar.icon.gif',
+			'link' =>'',
+			'tip' => '',
+			'accesskey' =>'',
+			'prio' =>16,
+			'index' => 110,
+			'submenu' => array(
+				array(
+					'name' => 'Urządzenia sieciowe',
+					'link' => '?m=monitnodelist&td=netdev',
+					'tip' => 'Lista monitorowanych urządzeń sieciowych',
+					'prio'=>'10'
+				),
+				array(
+					'name' => 'Urządzenia klientów',
+					'link' => '?m=monitnodelist&td=nodes',
+					'tip' => 'Lista monitorowanych komputerów klientów',
+					'prio'=>'20'
+				),
+				array(
+					'name' => 'Urządzenia własne',
+					'link' => '?m=monitownlist',
+					'tip' => 'Lista monitorowanych własnych urządzeń',
+					'prio'=>'30'
+				),
+				array(
+					'name' => 'Konfiguracja',
+					'link' => '?m=configlist&page=1&s=monit&n=',
+					'tip' => 'Podstawowa konfiguracja monitoringu',
+					'prio'=>'50'
+				),
+			)
+		),
 
 		'networks' => array(
 			'name' => trans('IP Networks'),
@@ -248,6 +355,7 @@ $menu = array(
 			'tip' => trans('IP Address Pools Management'),
 			'accesskey' =>'t',
 			'prio' => 20,
+			'index' => 120,
 			'submenu' => array(
 				array(
 					'name' => trans('List'),
@@ -263,14 +371,59 @@ $menu = array(
 				),
 			),
 		),
-
-		'finances' => array(
-			'name' => trans('Finances'),
-			'img' =>'money.gif',
+		'contractors' => array(
+			'name' => trans('Contractors'),
+			'img' =>'customer.gif',
+			'link' =>'?m=customerlist',
+			'tip' => trans('Customers Management'),
+			'accesskey' =>'u',
+			'prio' => 23,
+			'index' => 140,
+			'submenu' => array(
+				array(
+					'name' => trans('List'),
+					'link' =>'?m=contractorlist',
+					'tip' => trans('List of Contractors'),
+					'prio' => 10,
+				),
+				array(
+					'name' => trans('New Contractor'),
+					'link' =>'?m=contractoradd',
+					'tip' => trans('Allows you to add new contractor'),
+					'prio' => 20,
+				),
+				
+				array(
+					'name' => trans('Groups'),
+					'link' =>'?m=contractorgrouplist',
+					'tip' => trans('List of Contractors Groups'),
+					'prio' => 40,
+				),
+				array(
+					'name' => trans('New Group'),
+					'link' =>'?m=contractorgroupadd',
+					'tip' => trans('Allows you to add new group'),
+					'prio' => 50,
+				),
+/*
+				array(
+					'name' => trans('Reports'),
+					'link' =>'?m=customerprint',
+					'tip' => trans('Lists and reports printing'),
+					'prio' => 70,
+				),
+*/
+			),
+		),
+		
+		'tariffs' => array(
+			'name' => 'Taryfy',
+			'img' =>'tariffs.png',
 			'link' =>'?m=tarifflist',
-			'tip' => trans('Subscriptions and Network Finances Management'),
+			'tip' => 'Zarządzanie taryfami',
 			'accesskey' =>'f',
-			'prio' => 25,
+			'prio' => 24,
+			'index' => 150,
 			'submenu' => array(
 				array(
 					'name' => trans('Subscriptions List'),
@@ -284,6 +437,24 @@ $menu = array(
 					'tip' => trans('Add new subscription fee'),
 					'prio' => 20,
 				),
+				array(
+					'name' => trans('Promotions'),
+					'link' => '?m=promotionlist',
+					'tip' => trans('List of promotions'),
+					'prio' => 90,
+				),
+			),
+		),
+
+		'finances' => array(
+			'name' => trans('Finances'),
+			'img' =>'money.gif',
+			'link' =>'?m=tarifflist',
+			'tip' => 'Zarządzanie finansami sieci',
+			'accesskey' =>'f',
+			'prio' => 25,
+			'index' => 160,
+			'submenu' => array(
 				array(
 					'name' => trans('Payments List'),
 					'link' => '?m=paymentlist',
@@ -319,6 +490,12 @@ $menu = array(
 					'link' => '?m=invoicenew&action=init',
 					'tip' => trans('Generate invoice'),
 					'prio' => 75,
+				),
+				array(
+					'name' => trans('New Pro Forma Invoice'),
+					'link' => '?m=invoicenew&action=init&proforma',
+					'tip' => trans('Generate invoice'),
+					'prio' => 76,
 				),
 				array(
 					'name' => trans('Debit Notes List'),
@@ -372,6 +549,7 @@ $menu = array(
 			'tip' => trans('Documents Management'),
 			'accesskey' => '',
 			'prio' => 26,
+			'index' => 180,
 			'submenu' => array(
 				array(
 					'name' => trans('List'),
@@ -413,6 +591,7 @@ $menu = array(
 			'tip' => trans('Hosting Services Management'),
 			'accesskey' =>'a',
 			'prio' => 30,
+			'index' => 200,
 			'submenu' => array(
 				array(
 					'name' => trans('Accounts'),
@@ -466,6 +645,7 @@ $menu = array(
 			'tip' => trans('Customers Messaging'),
 			'accesskey' =>'m',
 			'prio' => 35,
+			'index' => 220,
 			'submenu' => array(
 				array(
 					'name' => trans('List'),
@@ -489,6 +669,7 @@ $menu = array(
 			'tip' => trans(''),
 			'accesskey' =>'r',
 			'prio' => 40,
+			'index' => 240,
 		),
 
 		'stats' => array(
@@ -498,6 +679,7 @@ $menu = array(
 			'tip' => trans('Statistics of Internet Link Usage'),
 			'accesskey' =>'x',
 			'prio' => 45,
+			'index' => 260,
 			'submenu' => array(
 				array(
 					'name' => trans('Filter'),
@@ -551,6 +733,7 @@ $menu = array(
 			'tip' => trans('Requests Tracking'),
 			'accesskey' =>'h',
 			'prio' => 50,
+			'index' => 280,
 			'submenu' => array(
 				array(
 					'name' => trans('Queues List'),
@@ -604,6 +787,7 @@ $menu = array(
 			'tip' => trans('Events Tracking'),
 			'accesskey' =>'v',
 			'prio' => 55,
+			'index' => 300,
 			'submenu' => array(
 				array(
 					'name' => trans('Timetable'),
@@ -633,6 +817,7 @@ $menu = array(
 			'tip' => trans('Allows you to change your password'),
 			'accesskey' => 'p',
 			'prio' => 65,
+			'index' => 320,
 		),
 
 		'config' => array(
@@ -642,6 +827,7 @@ $menu = array(
 			'tip' => trans('System Configuration'),
 			'accesskey' =>'o',
 			'prio' => 60,
+			'index' => 340,
 			'submenu' => array(
 				array(
 					'name' => trans('User Interface'),
@@ -691,12 +877,7 @@ $menu = array(
 					'tip' => trans('List of Cash Import Sources'),
 					'prio' => 80,
 				),
-				array(
-					'name' => trans('Promotions'),
-					'link' => '?m=promotionlist',
-					'tip' => trans('List of promotions'),
-					'prio' => 90,
-				),
+				
 			),
 		),
 
@@ -707,6 +888,7 @@ $menu = array(
 			'tip' => trans('Documentation'),
 			'accesskey' => 'h',
 			'prio' => 70,
+			'index' => 360,
 			'windowopen' => TRUE,
 		),
 

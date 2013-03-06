@@ -45,6 +45,9 @@ if($LMS->CustomerExists($customerid))
 			WHERE customerid = ? AND type IN (?, ?) AND closed = 0',
 			array($customerid, DOC_INVOICE, DOC_CNOTE));
 
+		if (SYSLOG)
+		    addlogs('rozliczono zobowiązania klienta '.$LMS->getcustomername($customerid),'e=up;m=fin;c='.$customerid.';');
+
 		$DB->CommitTrans();
 	}
 }

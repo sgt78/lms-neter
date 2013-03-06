@@ -156,6 +156,31 @@ class LMSDB_driver_postgres extends LMSDB_common
 	{
 		return implode(' || ',$input);
 	}
+	
+	function _driver_distinct()
+	{
+	    return 'DISTINCT ON';
+	}
+
+	function _driver_limit($start,$offset=NULL)
+	{
+	    return 'LIMIT '.$start.' '.($offset ? ' OFFSET $start' : '');
+	}
+
+	function _driver_year($data)
+	{
+	    return 'date_part(\'year\', '.$data.'::timestamp)';
+	}
+
+	function _driver_month($data)
+	{
+	    return 'date_part(\'month\', '.$data.'::timestamp)';
+	}
+
+	function _driver_day($data)
+	{
+	    return 'date_part(\'day\', '.$data.'::timestamp)';
+	}
 
 	function _driver_listtables()
 	{

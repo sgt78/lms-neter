@@ -220,7 +220,7 @@ BORDER="0"
 ></TR
 ><TR
 ><TD
->type - osobowość prawna (0-osoba fizyczna, 1-osoba prawna)</TD
+>type - osobowość prawna (0-osoba fizyczna, 1-osoba prawna, 2-kontrahent)</TD
 ></TR
 ><TR
 ><TD
@@ -324,6 +324,10 @@ BORDER="0"
 ></TR
 ><TR
 ><TD
+>constentdate - data od kiedy jest zgoda na przetwarzanie danych osobowych</TD
+></TR
+><TR
+><TD
 >paytime - termin płatności faktur</TD
 ></TR
 ><TR
@@ -341,6 +345,34 @@ BORDER="0"
 ><TR
 ><TD
 >mailingnotice - zezwolenie na dostarczanie informacji pocztą elektroniczną lub smsem</TD
+></TR
+><TR
+><TD
+>invoice_name - odbiorca faktury (opcja)</TD
+></TR
+><TR
+><TD
+>invoice_adres - adres odbiorcy faktury (opcja)</TD
+></TR
+><TR
+><TD
+>invoice_zip - kod pocztowy odbiorcy faktury (opcja)</TD
+></TR
+><TR
+><TD
+>invoice_city - miasto odbiorcy faktury (opcja)</TD
+></TR
+><TR
+><TD
+>invoice_countryid - kraj odbiorcy faktury (opcja)</TD
+></TR
+><TR
+><TD
+>invoice_ten - NIP odbiorcy faktury (opcja)</TD
+></TR
+><TR
+><TD
+>account - numer konta bankowego, tylko dla kontrahenta (opcja)</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -401,6 +433,17 @@ BORDER="0"
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
+
+
+
+
+
+
+
+
+
+
+
 ><A
 NAME="EXCLUDEDGROUPS"
 >7.2.5. Grupy klientów - dostęp użytkowników ('excludedgroups')</A
@@ -1761,6 +1804,10 @@ BORDER="0"
 ><TR
 ><TD
 >reason - np. powód korekty faktury</TD
+></TR
+><TR
+><TD
+>sale - typ operacji, 1-sprzedaż 0-zakup, domyślnie: 1</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -3125,6 +3172,58 @@ BORDER="0"
 ><TR
 ><TD
 >keyvalue - wartość</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="CONTRACTORGROUPS"
+>7.2.67. Grupy kontrahentów ('contractorgroups')</A
+></H2
+><TABLE
+BORDER="0"
+><TBODY
+><TR
+><TD
+>id - identyfikator</TD
+></TR
+><TR
+><TD
+>name - nazwa</TD
+></TR
+><TR
+><TD
+>description - opis</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="CONTRACOTRRASSIGNMENTS"
+>7.2.68. Grupy kontrahentow - powiązania ('contractorrassignments')</A
+></H2
+><TABLE
+BORDER="0"
+><TBODY
+><TR
+><TD
+>id - identyfikator</TD
+></TR
+><TR
+><TD
+>contractorgroupid - identyfikator grupy</TD
+></TR
+><TR
+><TD
+>customerid - identyfikator kontrahenta</TD
 ></TR
 ></TBODY
 ></TABLE

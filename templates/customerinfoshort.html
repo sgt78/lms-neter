@@ -15,10 +15,11 @@
 		<TD WIDTH="1%">
 			<IMG SRC="img/customer.gif" ALT="">
 		</TD>
-		<TD WIDTH="99%">
+		<TD WIDTH="99%" nowrap>
 			<B>{$customerinfo.customername|escape} ({$customerinfo.id|string_format:"%04d"}){if $customerinfo.deleted} <FONT COLOR="RED">({trans("deleted customer")})</FONT>{/if}</B>
 		</TD>
 	</TR>
+{if !$contractor}
 	<TR>
 		<TD WIDTH="1%">
 			{if $customerinfo.status eq "3"}<IMG src="img/customer.gif" alt="">{/if}
@@ -31,6 +32,7 @@
 			{if $customerinfo.status eq "1"}<B>{trans("interested<!singular>")}</B>{/if}
 		</TD>
 	</TR>
+{/if}
 	<TR>
 		<TD WIDTH="1%" >
 			<IMG SRC="img/home.gif" ALT="">
@@ -162,6 +164,7 @@
 		</TD>
 	</TR>
 {/if}
+{if !$contractor}
 {if !check_conf('privileges.hide_finances')}
 	<TR>
 		<TD WIDTH="1%">
@@ -172,6 +175,7 @@
 			{if $customerinfo.balance < 0}<FONT class="alert">{$customerinfo.balance|money_format}</FONT>{else}{$customerinfo.balance|default:"0"|money_format}{/if}
 		</TD>
 	</TR>
+{/if}
 {/if}
 </TABLE>
 <SCRIPT TYPE="text/javascript">

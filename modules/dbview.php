@@ -46,16 +46,16 @@ function readfile_chunked($filename,$retbytes=true)
 	return $status;
 }
 
-$filename = $CONFIG['directories']['backup_dir'].'/lms-'.$_GET['db'].'.sql';
+$filename = $CONFIG['directories']['backup_dir'].'/iNET-lms-'.$_GET['db'].'.sql';
 
 header('Content-Type: application/octet-stream');
 if ((extension_loaded('zlib')) && (strstr($_GET['file'],"sql.gz")))
 {
 	$filename .= '.gz';
-	header('Content-Disposition: attachment; filename=lms-backup-'.date('Ymd-His',$_GET['db']).'.sql.gz');
+	header('Content-Disposition: attachment; filename=iNET-lms-backup-'.date('Ymd-His',$_GET['db']).'.sql.gz');
 }
 else
-	header('Content-Disposition: attachment; filename=lms-backup-'.date('Ymd-His',$_GET['db']).'.sql');
+	header('Content-Disposition: attachment; filename=iNET-lms-backup-'.date('Ymd-His',$_GET['db']).'.sql');
 header('Pragma: public');
 header('Content-Length: '.filesize($filename));
 set_time_limit(0);

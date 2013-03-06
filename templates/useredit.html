@@ -56,12 +56,22 @@
 	</TR>
 	<TR CLASS="LIGHT">
 		<TD CLASS="FLEFT" style="white-space: nowrap;">
+			<IMG SRC="img/gg.gif" ALT="">
+		</TD>
+		<TD><span class="bold">Gadu-Gadu:</span></TD>
+		<TD CLASS="FRIGHT">
+			<INPUT TYPE="TEXT" NAME="userinfo[gadugadu]" VALUE="{$userinfo.gadugadu}" SIZE="40" {tip text="Wprowadź numer Gadu-Gadu (opcja)" trigger="gadugadu"}>
+		</TD>
+	</TR>
+	<TR CLASS="LIGHT">
+		<TD CLASS="FLEFT" style="white-space: nowrap;">
 			<IMG SRC="img/options.gif" ALT="">
 		</TD>
 		<TD><span class="bold">{trans("Notification:")}</span></TD>
 		<TD CLASS="FRIGHT">
 			<INPUT TYPE="checkbox" NAME="userinfo[ntype][]" VALUE="{$smarty.const.MSG_MAIL}" ID="ntypemail"{if ($userinfo.ntype & $smarty.const.MSG_MAIL)} checked{/if}><label for="ntypemail">{trans("email")}</label>
 			<INPUT TYPE="checkbox" NAME="userinfo[ntype][]" VALUE="{$smarty.const.MSG_SMS}" ID="ntypesms"{if ($userinfo.ntype & $smarty.const.MSG_SMS)} checked{/if}><label for="ntypesms">{trans("sms")}</label>
+			<INPUT TYPE="checkbox" NAME="userinfo[ntype][]" VALUE="{$smarty.const.MSG_GADUGADU}" ID="ntypegadugadu"{if ($userinfo.ntype & $smarty.const.MSG_GADUGADU)} checked{/if}><label for="ntypegadugadu">gadu-gadu</label>
 		</TD>
 	</TR>
 	{if $layout.logid ne $userinfo.id}
@@ -151,6 +161,20 @@
 		</TD>
 		<TD CLASS="fright" style="white-space: nowrap;">
 			{include file="multiselect.html" selected=$userinfo.selected available_tip="Enabled<!plural>:" selected_tip="Disabled<!plural>:"}
+		</TD>
+	</TR>
+	
+	<TR CLASS="LIGHT">
+		<TD CLASS="fleft">
+			<IMG SRC="img/empty.gif" ALT=""> 
+		</TD>
+		<TD style="white-space: nowrap;">
+		    <span class="bold">Menu / Moduły:</span>
+		</TD>
+		<TD CLASS="fright" style="white-space: nowrap;">
+			{assign var='available' value=$module}
+			{assign var='name' value='modules'}
+			{include file="multiselect.html" selected=$userinfo.modules available_tip="Enabled<!plural>:" selected_tip="Disabled<!plural>:"}
 		</TD>
 	</TR>
 	<TR CLASS="light">

@@ -32,8 +32,11 @@
 					<OPTION value="finances"{if $listdata.section eq "finances"} SELECTED{/if}>finances</OPTION>
 					<OPTION value="mail"{if $listdata.section eq "mail"} SELECTED{/if}>mail</OPTION>
 					<OPTION value="sms"{if $listdata.section eq "sms"} SELECTED{/if}>sms</OPTION>
+					<OPTION value="gadugadu"{if $listdata.section eq "gadugadu"} SELECTED{/if}>gadu-gadu</OPTION>
+					<OPTION value="monit"{if $listdata.section eq "monit"} SELECTED{/if}>monitoring</OPTION>
 					<OPTION value="zones"{if $listdata.section eq "zones"} SELECTED{/if}>zones</OPTION>
-					<OPTION value="tarifftypes"{if $listdata.section eq "tarifftypes"} SELECTED{/if}>tarifftypes</OPTION>
+					<OPTION value="hiperus_c5"{if $listdata.section eq "hiperus_c5"} SELECTED{/if}>VoIP Hiperus C5</OPTION>
+					<OPTION value="autobackup" {if $listdata.section eq "autobackup"}SELECTED{/if}>autobackup</OPTION>
 				</SELECT>
 				{trans("Option")}:
 				<INPUT type="text" name="n" value="{$listdata.search}" size="15" {tip text="Enter option name"}>

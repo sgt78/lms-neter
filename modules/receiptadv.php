@@ -39,7 +39,7 @@ if(isset($_GET['id']))
 	$record = $DB->GetRow('SELECT documents.*, template 
 			    FROM documents 
 			    LEFT JOIN numberplans ON (numberplanid = numberplans.id)
-			    WHERE documents.id = ? AND type = ? AND closed = 0', 
+			    WHERE documents.id = ? AND type = ? AND closed = 0 ', 
 			    array($id, DOC_RECEIPT));
 
 	if(!$record)

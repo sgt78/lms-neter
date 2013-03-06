@@ -41,6 +41,8 @@ if ($userinfo['ntype'] & MSG_MAIL)
     $ntype[] = trans('email');
 if ($userinfo['ntype'] & MSG_SMS)
     $ntype[] = trans('sms');
+if ($userinfo['ntype'] & MSG_GADUGADU)
+    $ntype[] = 'gadu-gadu';
 $userinfo['ntype'] = implode(', ', $ntype);
 
 $layout['pagetitle'] = trans('User Info: $a', $userinfo['login']);

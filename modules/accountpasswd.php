@@ -51,6 +51,11 @@ if(isset($_POST['passwd']))
 	{
 		$DB->Execute('UPDATE passwd SET password = ? WHERE id = ?', 
 			array(crypt($account['passwd1']), $id));
+		
+		if (SYSLOG) {
+		    $tmp = $DB->getrow('select login,ownerid from passwd where id=? limit 1;',array($id));
+		    addlogs('zmiana hasła dla konta '.$tmp['login'],'e=up;m=hosting;id='.$id.'c='.$tmp['ownerid'].';');
+		}
 	
 		$SESSION->redirect('?'.$SESSION->get('backto'));
 	}

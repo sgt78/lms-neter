@@ -98,7 +98,15 @@ switch($mode)
 			$eglible=array(); $actions=array(); $descriptions=array();
 			if ($candidates)
 			foreach($candidates as $idx => $row) {
-				$actions[$row['id']] = '?m=customerinfo&id='.$row['id'];
+			    
+				if (isset($_GET['infocenterlist']))
+				    $actions[$row['id']] = '?m=infocenterlist&cid='.$row['id'];
+				elseif(isset($_GET['iphistory']))
+				    $actions[$row['id']] = '?m=iphistory&cid='.$row['id'];
+				else
+				    $actions[$row['id']] = '?m=customerinfo&id='.$row['id'];
+				
+				
 				$eglible[$row['id']] = escape_js(($row['deleted'] ? '<font class="blend">' : '')
 				    .truncate_str($row['username'], 50).($row['deleted'] ? '</font>' : ''));
 
@@ -143,7 +151,11 @@ switch($mode)
 		{
 			if($customerid = $DB->GetOne('SELECT id FROM customersview WHERE id = '.$search))
 			{
-				$target = '?m=customerinfo&id='.$customerid;
+				
+				if (isset($_GET['infocenterlist']))
+				    $target = '?m=infocenterlist&cid='.$customerid;
+				else
+				    $target = '?m=customerinfo&id='.$customerid;
 				break;
 			}
 		}

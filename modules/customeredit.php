@@ -55,6 +55,12 @@ elseif (isset($_POST['customerdata']))
 		$error['ten'] = trans('Incorrect Tax Exempt Number! If you are sure you want to accept it, then click "Submit" again.');
 		$tenwarning = 1;
 	}
+	
+	if($customerdata['invoice_ten'] !='' && !check_ten($customerdata['invoice_ten']) && !isset($customerdata['invoice_tenwarning']))
+	{
+		$error['invoice_ten'] = trans('Incorrect Tax Exempt Number! If you are sure you want to accept it, then click "Submit" again.');
+		$invoice_tenwarning = 1;
+	}
 
 	if($customerdata['ssn'] != '' && !check_ssn($customerdata['ssn']) && !isset($customerdata['ssnwarning']))
 	{
@@ -73,10 +79,17 @@ elseif (isset($_POST['customerdata']))
 		$error['zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
 		$zipwarning = 1;
 	}
+
 	if($customerdata['post_zip'] !='' && !check_zip($customerdata['post_zip']) && !isset($customerdata['post_zipwarning']))
 	{
 		$error['post_zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
 		$post_zipwarning = 1;
+	}
+	
+	if($customerdata['invoice_zip'] !='' && !check_zip($customerdata['invoice_zip']) && !isset($customerdata['invoice_zipwarning']))
+	{
+		$error['invoice_zip'] = trans('Incorrect ZIP code! If you are sure you want to accept it, then click "Submit" again.');
+		$invoice_zipwarning = 1;
 	}
 
 	if($customerdata['email']!='' && !check_email($customerdata['email']))

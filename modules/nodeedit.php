@@ -51,6 +51,10 @@ switch ($action) {
 		$DB->Execute('UPDATE nodes SET halfduplex=? WHERE id=?', array($_GET['duplex'], $_GET['id']));
 		$SESSION->redirect('?m=nodeinfo&id=' . $_GET['id']);
 		break;
+	case 'monit':
+		$LMS -> SetMonit($_GET['id'],$_GET['monit']);
+		$SESSION->redirect('?m=nodeinfo&id=' . $_GET['id']);
+		break;
 }
 
 $nodeid = intval($_GET['id']);

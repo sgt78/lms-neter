@@ -96,17 +96,21 @@ elseif(isset($_GET['action']) && $_GET['action'] == 'txt')
 }
 elseif(isset($_GET['action']) && $_GET['action'] == 'delete')
 {
-	if($marks = $_POST['marks'])
+	if($marks = $_POST['marks']) {
+	    $DB->BeginTrans();
 		foreach($marks as $id)
-			$DB->Execute('UPDATE cashimport SET closed = 1 WHERE id = ?',
-				array($id));
+			$DB->Execute('UPDATE cashimport SET closed = 1 WHERE id = ?', array($id));
+	    $DB->CommitTrans();
+	}
 }
 elseif(isset($_GET['action']) && $_GET['action'] == 'save')
 {
-	if(!empty($_POST['customer']))
+	if(!empty($_POST['customer'])) {
+	    $DB->BeginTrans();
 		foreach($_POST['customer'] as $idx => $id) if($id)
-			$DB->Execute('UPDATE cashimport SET customerid = ? WHERE id = ?',
-				array($id, $idx));
+			$DB->Execute('UPDATE cashimport SET customerid = ? WHERE id = ?', array($id, $idx));
+	    $DB->CommitTrans();
+	}
 }
 elseif(isset($_POST['marks']))
 {
@@ -138,7 +142,8 @@ elseif(isset($_POST['marks']))
 	    	&& chkconfig($CONFIG['finances']['cashimport_checkinvoices']);
 
         foreach ($imports as $import) {
-
+		if($import['closed'] == 1)
+		          continue;
 			$DB->BeginTrans();
 
 			$balance['time'] = $idate ? $import['idate'] : $import['date'];

@@ -50,6 +50,17 @@ $messagelist = $LMS->GetMessages($customerid, 10);
 $eventlist = $LMS->EventSearch(array('customerid' => $customerid), 'date,desc', true);
 $customernodes = $LMS->GetCustomerNodes($customerid);
 
+//if (isset($_GET['alltopic'])) $limit = NULL; else $limit = 10;
+
+if (!get_conf('privileges.hide_callcenter')) {
+    $customercallcenter = $LMS->GetBoxListInfoCenter($customerid);
+    $SMARTY->assign('openedcallcenter',$customercallcenter['opened']);
+    unset($customercallcenter['opened']);
+
+} else
+    $customercallcenter = NULL;
+
+
 if(!empty($documents))
 {
         $SMARTY->assign('docrights', $DB->GetAllByKey('SELECT doctype, rights
@@ -77,5 +88,6 @@ $SMARTY->assignByRef('taxeslist', $taxeslist);
 $SMARTY->assignByRef('allnodegroups', $allnodegroups);
 $SMARTY->assignByRef('messagelist', $messagelist);
 $SMARTY->assignByRef('eventlist', $eventlist);
+$SMARTY->assignByRef('customercallcenter',$customercallcenter);
 
 ?>

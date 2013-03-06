@@ -45,8 +45,12 @@ switch($action)
 		// get default note's numberplanid and next number
 		$note['cdate'] = time();
 		$note['paytime'] = $CONFIG['notes']['paytime'];
-		if(isset($_GET['customerid']) && $_GET['customerid'] != '' && $LMS->CustomerExists($_GET['customerid']))
+		if (isset($_GET['contractor'])) $note['contractor'] = true; else $note['contractor'] = false;
+		if(isset($_GET['customerid']) && $_GET['customerid'] != '' && ($LMS->CustomerExists($_GET['customerid']) || $LMS->ContractorExists($_GET['customerid'])) )
 		{
+		    if ($note['contractor'])
+			$customer = $LMS->GetContractor($_GET['customerid']);
+		else
 			$customer = $LMS->GetCustomer($_GET['customerid'], true);
 							
 			$note['numberplanid'] = $DB->GetOne('SELECT n.id FROM numberplans n
@@ -92,6 +96,11 @@ switch($action)
 				$note[$key] = $val;
 		
 		$note['customerid'] = $_POST['customerid'];
+		
+		if (isset($_POST['contractor']) && !empty($_POST['contractor'])) 
+			$note['contractor'] = TRUE;
+		else
+			$note['contractor'] = FALSE;
 
 		if($note['cdate'])
 		{
@@ -139,8 +148,14 @@ switch($action)
 		if(!isset($error))
 		{
 			$cid = isset($_GET['customerid']) && $_GET['customerid'] != '' ? intval($_GET['customerid']) : intval($_POST['customerid']);
-			if($LMS->CustomerExists($cid))
+			
+			if ($note['contractor']) {
+			    if($LMS->ContractorExists($cid))
+				$customer = $LMS->GetContractor($cid, true);
+			} else {
+			    if($LMS->CustomerExists($cid))
 				$customer = $LMS->GetCustomer($cid, true);
+			}
 			
 			// finally check if selected customer can use selected numberplan
 			if($note['numberplanid'] && isset($customer))

@@ -208,6 +208,9 @@ if (isset($_POST['document'])) {
 		));
 
 		$docid = $DB->GetLastInsertID('documents');
+		
+		if (SYSLOG) 
+		addlogs('dodano nowy dokument '.$DOCTYPES[$document['type']],'e=add;m=doc;c='.$document['customerid']);
 
 		$DB->Execute('INSERT INTO documentcontents (docid, title, fromdate, todate, filename, contenttype, md5sum, description)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array($docid,

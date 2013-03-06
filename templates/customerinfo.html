@@ -8,31 +8,56 @@
 			{include file="customerinfobox.html"}
 		</TD>
 	</TR>
+	{if !get_conf('privileges.hide_callcenter')}
+	<TR>
+		<TD WIDTH="100%">
+			{include file="customerinfocenterbox.html"}
+		</TD>
+	</TR>
+	{/if}
+	
+	{if check_modules(60)}
 	<TR>
 		<TD WIDTH="100%">
 			{include file="customernodesbox.html"}
 		</TD>
 	</TR>
+	{/if}
+	{if check_modules(80)}
 	<TR>
 		<TD WIDTH="100%">
 			{include file="customervoipaccountsbox.html"}
 		</TD>
 	</TR>
+	{/if}
+	{if check_modules(81)}
+	<TR>
+		<TD WIDTH="100%">
+			{include file="hv_accountinfobox2.html"}
+		</TD>
+	</TR>
+	{/if}
+	{if check_modules(180)}
 	<TR>
 		<TD WIDTH="100%">
 			{include file="customerdocuments.html" limit=10}
 		</TD>
 	</TR>
+	{/if}
+	{if check_modules(220)}
 	<TR>
 		<TD WIDTH="100%">
 			{include file="customermessages.html" limit=10}
 		</TD>
 	</TR>
+	{/if}
+	{if check_modules(300)}
 	<TR>
 		<TD WIDTH="100%">
 			{include file="customerevents.html" limit=10}
 		</TD>
 	</TR>
+	{/if}
 	<TR>
 		<TD WIDTH="100%">
 			{include file="customergroups.html"}
@@ -43,12 +68,15 @@
 			{include file="customerassignments.html"}
 		</TD>
 	</TR>
+	
+	{if check_modules(160)}
 	{if !check_conf('privileges.hide_finances')}
 	<TR>
 		<TD WIDTH="100%">
 			{include file="customerbalancebox.html" limit=-10}
 		</TD>
 	</TR>
+	{/if}
 	{/if}
 	<TR>
 		<TD WIDTH="100%">

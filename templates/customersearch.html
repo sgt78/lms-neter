@@ -152,6 +152,7 @@
 			</SELECT>
 		</TD>
 	</TR>
+	
 	<TR CLASS="LIGHT">
 		<TD CLASS="fleft" style="width: 1%; white-space: nowrap;">
 			<IMG src="img/netdev.gif" alt=""> <span class="bold">{trans("Link type:")}</span>
@@ -236,7 +237,7 @@
 	</TR>
 	<TR CLASS="LIGHT">
 		<TD CLASS="fleft" style="width: 1%; white-space: nowrap;">
-			<IMG src="img/access.gif" width="16" alt=""> <span class="bold">{trans("Status:")}</span>
+			<IMG src="img/access.gif" width="16" alt=""> <span class="bold">{trans("Customers:")}</span>
 		</TD>
 		<TD CLASS="fright" style="width: 99%;">
 			<SELECT SIZE="1" NAME="s">
@@ -246,6 +247,17 @@
 				<OPTION VALUE="1">{trans("interested<!plural>")}</OPTION>
 				<OPTION VALUE="4">{trans("deleted<!plural>")}</OPTION>
 				<OPTION VALUE="5">{trans("disconnected<!plural>")}</OPTION>
+			</SELECT>
+		</TD>
+	</TR>
+	
+	<TR CLASS="LIGHT">
+		<TD CLASS="fleft" style="width: 1%; white-space: nowrap;">
+			<IMG src="img/access.gif" width="16" alt=""> <span class="bold">{trans("Status:")}</span>
+		</TD>
+		<TD CLASS="fright" style="width: 99%;">
+			<SELECT SIZE="1" NAME="st">
+				<OPTION VALUE="0">{trans("- all -")}</OPTION>
 				<OPTION VALUE="6">{trans("in debt")}</OPTION>
 				<OPTION VALUE="11">{trans("in debt above 100%")}</OPTION>
 				<OPTION VALUE="12">{trans("in debt above 200%")}</OPTION>
@@ -256,6 +268,25 @@
 			</SELECT>
 		</TD>
 	</TR>
+	
+	<TR CLASS="LIGHT">
+		<TD CLASS="fleft" style="width: 1%; white-space: nowrap;">
+			<IMG src="img/money.gif" width="16" alt=""> <span class="bold">Zobowiązania:</span>
+		</TD>
+		<TD CLASS="fright" style="width: 99%;">
+			<SELECT SIZE="1" NAME="ce" >
+				<OPTION value="">- wszystkie -</OPTION>
+				<OPTION value="3">wygasną w ciągu 3 dni</OPTION>
+				<OPTION value="7">wygasną w ciągu 7 dni</OPTION>
+				<OPTION value="14">wygasną w ciągu 14 dni</OPTION>
+				<OPTION value="30">wygasną w ciągu 30 dni</OPTION>
+				<OPTION value="-2">bezterminowe</OPTION>
+			</SELECT>
+		</TD>
+	</TR>
+	
+	
+	
 	<TR CLASS="LIGHT">
 		<TD CLASS="fleft" style="width: 1%; white-space: nowrap;">
 			<IMG src="img/network.gif" alt=""> <span class="bold">{trans("Network:")}</span>

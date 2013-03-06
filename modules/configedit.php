@@ -70,7 +70,9 @@ if(isset($_POST['config']))
     		$error['section'] = trans('Section name contains forbidden characters!');
 	    
 	if($cfg['value']=='')
-		$error['value'] = trans('Empty option value is not allowed!');
+	{
+		if (!get_conf('phpui.config_empty_value')) $error['value'] = trans('Empty option value is not allowed!');
+	}
 	elseif($msg = $LMS->CheckOption($cfg['var'], $cfg['value']))
 		$error['value'] = $msg;
 	
@@ -86,7 +88,10 @@ if(isset($_POST['config']))
 					$cfg['disabled'],
 					$cfg['id']
 					));
-
+		
+		if (SYSLOG) 
+		    addlogs('aktualizacja zmiennej, sekcja: '.$cfg['section'].' , zmienna: '.$cfg['var'],'e=up;m=conf;');
+		
 		$SESSION->redirect('?m=configlist');
 	}
 	$config = $cfg;

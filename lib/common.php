@@ -548,7 +548,7 @@ if (!function_exists('bcmod'))
 	while ( strlen($x) );
 	    return (int)$mod;
     }
-}					     
+}
 
 function docnumber($number=NULL, $template=NULL, $time=NULL, $ext_num='')
 {
@@ -899,6 +899,148 @@ function access_denied() {
 	$SMARTY->display('noaccess.html');
 	$SESSION->close();
 	die;
+}
+
+function addLogs($message = NULL, $string = NULL, $diff = NULL)
+{
+	global $DB, $AUTH;
+	if (empty($message)) return NULL;
+	
+	$cid = 0;
+	$nid = 0;
+	$oid = 0;
+	$uid = ($AUTH->id ? $AUTH->id : 0);
+	$event = _ADD_;
+	$module = MOD_OTHER;
+	
+	if (!is_null($diff) && !empty($diff))
+	{
+		if (is_array($diff)) 
+		    $diff = serialize($diff);
+		else 
+		    $diff = NULL;
+	}
+	else 
+	    $diff = NULL;
+	
+	if (!empty($string) && is_string($string))
+	{
+		$string = strtolower($string);
+		$tmp = explode(';',$string);
+		$count = sizeof($tmp);
+		for ( $i = 0; $i < $count; $i++ ) if (!empty($tmp[$i]))
+		{
+			$t = explode('=',$tmp[$i]);
+			switch ($t[0]) 
+			{
+				case 'c'	: // customerid
+				case 'cus'	:
+				case 'cid'	:
+				case 'customer' :
+						$cid = (int)$t[1]; 
+				break;
+				
+				case 'n'	: // nodeid
+				case 'nid'	:
+				case 'node'	:
+						$nid = (int)$t[1]; 
+				break;
+				
+				case 'u'	:
+				case 'uid'	:
+				case 'user'	:
+						$uid = (int)$t[1];
+				break;
+				
+				case 'id'	:
+				case 'oid'	:
+						$oid = intval($t1[1]);
+				break;
+				
+				case 'e'	: // event
+				case 'event'	:
+						if (in_array($t[1],array('add','rm','del','up','mov','err','inf','warn','acl')))
+							switch ($t[1])
+							{
+								case 'add'	: $event = _ADD_;	break;
+								case 'rm'	: 
+								case 'del'	: $event = _RM_;	break;
+								case 'up'	: $event = _UP_;	break;
+								case 'mov'	: $event = _MOV_;	break;
+								case 'err'	: $event = _ERR_;	break;
+								case 'inf'	: $event = _INF_;	break;
+								case 'warn'	: $event = _WARN_;	break;
+								case 'acl'	: $event = _ACL_;	break;
+							} // end switch ($t[1]) 
+				break;
+				
+				case 'm'	: //modules
+				case 'mod'	:
+				case 'module'	:
+						switch($t[1])
+						{
+							case 'oth'	: case 'other'		: $module = MOD_OTHER;		break;
+							case 'cus'	: case 'customer'	: $module = MOD_CUSTOMER;	break;
+							case 'node'				: $module = MOD_NODE;		break;
+							case 'netdev'				: $module = MOD_NETDEV;		break;
+							case 'fin'	: case 'finances'	: $module = MOD_FINANCES;	break;
+							case 'doc'	: case 'documents'	: $module = MOD_DOCUMENTS;	break;
+							case 'hd'	: case 'helpdesk'	: $module = MOD_HELPDESK;	break;
+							case 'tt'	: case 'timetable'	: $module = MOD_TIMETABLE;	break;
+							case 'conf'	: case 'config'		: $module = MOD_CONFIG;		break;
+							case 'admin'				: $module = MOD_ADMIN;		break;
+							case 'voip'				: $module = MOD_VOIP;		break;
+							case 'hosting'				: $module = MOD_HOSTING;	break;
+							case 'sl'	: case 'syslog'		: $module = MOD_SYSLOG;		break;
+							case 'mon'	: case 'monitoring'	: $module = MOD_MONITORING;	break;
+							case 'mag'	: case 'magazyn'	: $module = MOD_MAGAZYN;	break;
+							case 'con'	: case 'contractor'	: $module = MOD_CONTRACTOR;	break;
+							case 'dem'	: case 'daemon'		: $module = MOD_DAEMON;		break;
+							case 'tariff'				: $module = MOD_TARIFF;		break;
+							case 'cc'	: case 'callcenter'	: $module = MOD_CALLCENTER;	break;
+						}
+				break;
+			}
+		}
+	}
+	// tymczasowo bez diff'a
+	$diff = null;
+	if (!$DB->Execute('INSERT INTO syslog (cdate, uid, cid, nid, module, event, msg, diff, oid) VALUES (?,?,?,?,?,?,?,?,?) ;',array(time(),$uid,$cid,$nid,$module,$event,$message,$diff,$oid)))
+	{
+		$DB->LockTables('syslog');
+		$DB->Execute('INSERT INTO syslog (cdate, uid, cid, nid, module, event, msg, diff, oid) VALUES (?,?,?,?,?,?,?,?,?) ;',array(time(),$uid,$cid,$nid,$module,$event,$message,$diff,$oid));
+		$DB->UnlockTables();
+	}
+	return $DB->GetLastInsertID('syslog');
+} // end addlogs
+
+function check_modules($mod = NULL)
+{
+    global $AUTH,$menu;
+    
+    $return = true;
+    if (empty($mod) || is_null($mod)) return $return;
+    if (empty($AUTH->nomodules)) return $return;
+    if (is_numeric($mod))
+    {
+	$mod = intval($mod);
+	if (in_array($mod,$AUTH->nomodules)) $return = false;
+	else $return = true;
+    }
+    else // if string
+    {
+	$mod = strtolower($mod);
+	$tab = array();
+	foreach($menu as $key => $item) {
+	    $name = strtolower($key);
+	    $tab[$name] = $item['index'];
+	}
+	$id = $tab[$mod];
+	if (in_array($id,$AUTH->nomodules)) $return = false;
+	else $return = true;
+    }
+    
+    return $return;
 }
 
 ?>

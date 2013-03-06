@@ -87,12 +87,13 @@ function GetReceiptList($registry, $order='', $search=NULL, $cat=NULL, $from=0, 
 	if($list = $DB->GetAll(
 	        'SELECT documents.id AS id, SUM(value) AS value, number, cdate, customerid, 
 		documents.name AS customer, address, zip, city, template, extnumber, closed,
-		MIN(description) AS title, COUNT(*) AS posnumber, users.name AS user 
+		MIN(description) AS title, COUNT(*) AS posnumber, users.name AS user ,
+		(SELECT type FROM customers WHERE id = customerid LIMIT 1) AS customertype 
 		FROM documents 
 		LEFT JOIN numberplans ON (numberplanid = numberplans.id)
 		LEFT JOIN users ON (userid = users.id)
 		LEFT JOIN receiptcontents ON (documents.id = docid AND type = ?) 
-		WHERE regid = ?'
+		WHERE regid = ? '
 		.$where
 		.' GROUP BY documents.id, number, cdate, customerid, documents.name, address, zip, city, template, users.name, extnumber, closed '
 		.$having

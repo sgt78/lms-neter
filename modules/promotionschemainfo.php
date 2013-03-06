@@ -84,6 +84,7 @@ $tariffs = $DB->GetAll('SELECT t.name, t.value, t.id, t.upceil, t.downceil
     WHERE t.id NOT IN (
         SELECT tariffid FROM promotionassignments
         WHERE promotionschemaid = ?)
+        AND t.active=1 
     ORDER BY t.name, t.value DESC', array($schema['id']));
 
 $layout['pagetitle'] = trans('Schema Info: $a', $schema['name']);

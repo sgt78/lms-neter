@@ -36,6 +36,7 @@ class Auth {
 	var $access = FALSE;
 	var $accessfrom = FALSE;
 	var $accessto = FALSE;
+	var $nomodules = NULL;
 	var $last;
 	var $ip;
 	var $lastip;
@@ -94,11 +95,13 @@ class Auth {
 
 			$this->logname = $this->logname ? $this->logname : $this->SESSION->get('session_logname');
 			$this->id = $this->id ? $this->id : $this->SESSION->get('session_id');
+			$this->nomodules = $this->nomodules ? $this->nomodules : $this->SESSION->get('session_nomodules');
 
 			if (isset($loginform))
 			{
 				$this->DB->Execute('UPDATE users SET lastlogindate=?, lastloginip=? WHERE id=?', array(time(), $this->ip ,$this->id));
 				writesyslog('User '.$this->login.' logged in.', LOG_INFO);
+				if (SYSLOG) addlogs('logowanie do systemu: '.$this->login.' IP: '.$this->ip.' ( '.gethostbyaddr($this->ip).' ) ','e=add;m=admin;uid='.$this->id);
 			}
 
 			$this->SESSION->save('session_id', $this->id);
@@ -106,6 +109,7 @@ class Auth {
 			$this->SESSION->save('session_logname', $this->logname);
 			$this->SESSION->save('session_last', $this->last);
 			$this->SESSION->save('session_lastip', $this->lastip);
+			$this->SESSION->save('session_nomodules',$this->nomodules);
 		}
 		else
 		{
@@ -216,9 +220,10 @@ class Auth {
 		$this->islogged = false;
 
 		if ($user = $this->DB->GetRow('SELECT id, name, passwd, hosts, lastlogindate, lastloginip, 
-			passwdexpiration, passwdlastchange, access, accessfrom, accessto 
+			passwdexpiration, passwdlastchange, access, accessfrom, accessto, modules
 			FROM users WHERE login=? AND deleted=0', array($this->login)))
 		{
+			$this->nomodules = unserialize($user['modules']);
 			$this->logname = $user['name'];
 			$this->id = $user['id'];
 			$this->last = $user['lastlogindate'];

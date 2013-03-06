@@ -198,8 +198,12 @@ if (isset($_POST['document'])) {
 					$gencust['ssn'] ? $gencust['ssn'] : '',
 					!empty($document['closed']) ? 1 : 0
 			));
+			
 
 			$docid = $DB->GetLastInsertID('documents');
+			
+			if (SYSLOG) 
+			    addlogs('dodano nowy dokument '.$DOCTYPES[$document['type']],'e=add;m=doc;c='.$document['customerid'].';id='.$docid.';');
 
 			$DB->Execute('INSERT INTO documentcontents (docid, title, fromdate, todate, filename, contenttype, md5sum, description)
 				VALUES (?, ?, ?, ?, ?, ?, ?, ?)', array($docid,

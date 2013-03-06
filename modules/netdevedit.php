@@ -131,28 +131,34 @@ switch ($action) {
 		break;
 
 	case 'disconnect':
-
 		$LMS->NetDevUnLink($_GET['id'], $_GET['devid']);
 		$SESSION->redirect('?m=netdevinfo&id=' . $_GET['id']);
+	break;
 
 	case 'disconnectnode':
-
 		$LMS->NetDevLinkNode($_GET['nodeid'], 0);
 		$SESSION->redirect('?m=netdevinfo&id=' . $_GET['id']);
+	break;
 
 	case 'chkmac':
-
 		$DB->Execute('UPDATE nodes SET chkmac=? WHERE id=?', array($_GET['chkmac'], $_GET['ip']));
 		$SESSION->redirect('?m=netdevinfo&id=' . $_GET['id'] . '&ip=' . $_GET['ip']);
+	break;
 
 	case 'duplex':
-
 		$DB->Execute('UPDATE nodes SET halfduplex=? WHERE id=?', array($_GET['duplex'], $_GET['ip']));
 		$SESSION->redirect('?m=netdevinfo&id=' . $_GET['id'] . '&ip=' . $_GET['ip']);
+	break;
+	
+	case 'monit':
+		$LMS->SetMonit($_GET['ip'],$_GET['monit']);
+		$SESSION->redirect('?m=netdevinfo&id=' . $_GET['id'] . '&ip=' . $_GET['ip']);
+	break;
 
 	case 'nas':
 		$DB->Execute('UPDATE nodes SET nas=? WHERE id=?', array($_GET['nas'], $_GET['ip']));
 		$SESSION->redirect('?m=netdevinfo&id=' . $_GET['id'] . '&ip=' . $_GET['ip']);
+	break;
 
 	case 'connect':
 
@@ -202,7 +208,7 @@ switch ($action) {
 
 		$SMARTY->assign('connect', $dev);
 
-		break;
+	break;
 
 	case 'connectnode':
 
@@ -236,7 +242,7 @@ switch ($action) {
 
 		$SMARTY->assign('connectnode', $node);
 
-		break;
+	break;
 
 	case 'addip':
 
@@ -245,7 +251,7 @@ switch ($action) {
 		$nodeipdata['macs'] = array(0 => '');
 		$SMARTY->assign('nodeipdata', $nodeipdata);
 		$edit = 'addip';
-		break;
+	break;
 
 	case 'editip':
 
@@ -258,7 +264,7 @@ switch ($action) {
 		$nodeipdata['macs'] = $macs;
 		$SMARTY->assign('nodeipdata', $nodeipdata);
 		$edit = 'ip';
-		break;
+	break;
 
 	case 'ipdel':
 
@@ -267,6 +273,7 @@ switch ($action) {
 		}
 
 		$SESSION->redirect('?m=netdevinfo&id=' . $_GET['id']);
+	break;
 
 	case 'ipset':
 
@@ -277,7 +284,7 @@ switch ($action) {
 			$LMS->IPSetU($_GET['id'], $_GET['access']);
 
 		header('Location: ?' . $SESSION->get('backto'));
-		break;
+	break;
 
 	case 'formaddip':
 
@@ -348,6 +355,8 @@ switch ($action) {
 			$nodeipdata['halfduplex'] = 0;
 		if (!isset($nodeipdata['nas']))
 			$nodeipdata['nas'] = 0;
+		if (!isset($nodeipdata['monitoring']))
+			$nodeipdata['monitoring'] = 0;
 
 		if (!$error) {
 			$nodeipdata['warning'] = 0;
@@ -360,7 +369,7 @@ switch ($action) {
 
 		$SMARTY->assign('nodeipdata', $nodeipdata);
 		$edit = 'addip';
-		break;
+	break;
 
 	case 'formeditip':
 
@@ -437,6 +446,8 @@ switch ($action) {
 			$nodeipdata['halfduplex'] = 0;
 		if (!isset($nodeipdata['nas']))
 			$nodeipdata['nas'] = 0;
+		if (!isset($nodeipdata['monitoring']))
+			$nodeipdata['monitoring'] = 0;
 
 		if (!$error) {
 			$nodeipdata['warning'] = 0;

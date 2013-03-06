@@ -326,14 +326,21 @@ function invoice_title() {
 	$docnumber = docnumber($invoice['number'], $invoice['template'], $invoice['cdate']);
 	if (isset($invoice['invoice']))
 		$title = trans('Credit Note No. $a', $docnumber);
-	else
-		$title = trans('Invoice No. $a', $docnumber);
+	else {
+		if ($invoice['type'] == DOC_INVOICE)
+		    $title = trans('Invoice No. $a', $docnumber);
+		else
+		    $title = trans('Pro Forma Invoice No. $a', $docnumber);
+	}
 	$pdf->Write(0, $title, '', 0, 'C', true, 0, false, false, 0);
 
 	if (isset($invoice['invoice'])) {
 		$pdf->SetFont('arial', 'B', 12);
 		$docnumber = docnumber($invoice['invoice']['number'], $invoice['invoice']['template'], $invoice['invoice']['cdate']);
-		$title = trans('for Invoice No. $a', $docnumber);
+		if ($invoice['type'] == DOC_INVOICE)
+		    $title = trans('for Invoice No. $a', $docnumber);
+		else
+		    $title = trans('for Pro Forma Invoice No. $a', $docnumber);
 		$pdf->Write(0, $title, '', 0, 'C', true, 0, false, false, 0);
 	}
 
@@ -370,12 +377,21 @@ function invoice_buyer() {
 	$oldy = $pdf->GetY();
 
 	$buyer = '<b>' . trans('Purchaser:') . '</b><br>';
-
-	$buyer .= $invoice['name'] . '<br>';
-	$buyer .= $invoice['address'] . '<br>';
-	$buyer .= $invoice['zip'] . ' ' . $invoice['city'] . '<br>';
-	if ($invoice['ten'])
-		$buyer .= trans('TEN') . ': ' . $invoice['ten'] . '<br>';
+	
+	if (!empty($invoice['invoice_name']) && !empty($invoice['invoice_address']) && !empty($invoice['invoice_zip'])&& !empty($invoice['invoice_city']))
+	{
+	    $buyer .= $invoice['invoice_name'] . '<br>';
+	    $buyer .= $invoice['invoice_address'] . '<br>';
+	    $buyer .= $invoice['invoice_zip'] . ' ' . $invoice['invoice_city'] . '<br>';
+	    if ($invoice['invoice_ten']) $buyer .= trans('TEN') . ': ' . $invoice['invoice_ten'] . '<br>';
+	}
+	else
+	{
+	    $buyer .= $invoice['name'] . '<br>';
+	    $buyer .= $invoice['address'] . '<br>';
+	    $buyer .= $invoice['zip'] . ' ' . $invoice['city'] . '<br>';
+	    if ($invoice['ten']) $buyer .= trans('TEN') . ': ' . $invoice['ten'] . '<br>';
+	}
 	$pdf->SetFont('arial', '', 10);
 	$pdf->writeHTMLCell(80, '', '', '', $buyer, 0, 1, 0, true, 'L');
 
