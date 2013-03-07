@@ -1815,6 +1815,9 @@ reset($tslist);
 				$this->DB->CommitTrans();
 			}
 
+			foreach ($nodedata['macs'] as $mac)
+				$this->DB->Execute('INSERT INTO macs (mac, nodeid) VALUES(?, ?)', array(strtoupper($mac), $id));
+
 			return $id;
 		}
 
