@@ -1578,9 +1578,6 @@ reset($tslist);
 				))) {
 			$id = $this->DB->GetLastInsertID('nodes');
 
-			foreach ($nodedata['macs'] as $mac)
-				$this->DB->Execute('INSERT INTO macs (mac, nodeid) VALUES(?, ?)', array(strtoupper($mac), $id));
-
 			// EtherWerX support (devices have some limits)
 			// We must to replace big ID with smaller (first free)
 			if ($id > 99999 && chkconfig($this->CONFIG['phpui']['ewx_support'])) {
@@ -1598,6 +1595,9 @@ reset($tslist);
 				$this->DB->UnLockTables();
 				$this->DB->CommitTrans();
 			}
+
+			foreach ($nodedata['macs'] as $mac)
+				$this->DB->Execute('INSERT INTO macs (mac, nodeid) VALUES(?, ?)', array(strtoupper($mac), $id));
 
 			return $id;
 		}
