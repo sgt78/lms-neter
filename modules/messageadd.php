@@ -3,7 +3,7 @@
 /*
  * iNET LMS  version 1.0.2
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *

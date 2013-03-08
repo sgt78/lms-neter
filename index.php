@@ -3,6 +3,7 @@
  * LMS version 1.11-git ( iNET )
  *
  *  (C) Copyright 2012 LMS-EX Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *

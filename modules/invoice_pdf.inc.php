@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-cvs
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -303,7 +303,7 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 					$tt_width[$v] = $tmp_width;
 			}
 			if (!empty($invoice['pdiscount']) || !empty($invoice['vdiscount']))
-			$v++;
+				$v++;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['basevalue']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totalbase']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", $item['taxlabel'])) + 6;
@@ -331,7 +331,7 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 					$tt_width[$v] = $tmp_width;
 			}
 			if (!empty($invoice['pdiscount']) || !empty($invoice['vdiscount']))
-			$v++;
+				$v++;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['basevalue']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totalbase']))) + 6;
 			$tt_width[$v++] = $pdf->getTextWidth($font_size, iconv("UTF-8", "ISO-8859-2//TRANSLIT", $item['taxlabel'])) + 6;
@@ -372,7 +372,7 @@ function invoice_data($x, $y, $width, $font_size, $margin)
 					$t_data[$v++] = sprintf('%.2f %%', $item['pdiscount']);
 				elseif (!empty($item['vdiscount']))
 					$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['vdiscount']));
-				elseif (!empty($invoice['pdiscount']) || !empty($invoice['vdiscount'))
+				elseif (!empty($invoice['pdiscount']) || !empty($invoice['vdiscount']))
 				    $t_data[$v++] = '';
 				$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['basevalue']));
 				$t_data[$v++] = iconv("UTF-8", "ISO-8859-2//TRANSLIT", moneyf($item['totalbase']));

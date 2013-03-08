@@ -3,7 +3,7 @@
 /*
  * LMS version 1.11-git
  *
- *  (C) Copyright 2001-2012 LMS Developers
+ *  (C) Copyright 2001-2013 LMS Developers
  *
  *  Please, see the doc/AUTHORS for more information about authors!
  *
@@ -2420,7 +2420,7 @@ class LMS {
 						$nodedata['halfduplex'],
 						isset($nodedata['nas']) ? $nodedata['nas'] : 0,
 						!empty($nodedata['longitude']) ? str_replace(',', '.', $nodedata['longitude']) : null,
-						!empty($nodedata['latitude']) ? str_replace(',', '.', $nodedata['latitude']) : null,
+						!empty($nodedata['latitude']) ? str_replace(',', '.', $nodedata['latitude']) : null
 				))) 
 			{
 			    
@@ -2470,6 +2470,9 @@ class LMS {
 			    else
 				addlogs('dodano adres IP do urządzenia sieciowego '.$this->getnodename($id),'e=add;m=netdev;n='.$nodedata['netdev'].';');
 			}
+
+			foreach ($nodedata['macs'] as $mac)
+				$this->DB->Execute('INSERT INTO macs (mac, nodeid) VALUES(?, ?)', array(strtoupper($mac), $id));
 
 			return $id;
 		}
@@ -3201,7 +3204,7 @@ class LMS {
 			$result['pesel'] = $result['ssn'];
 			$result['nip'] = $result['ten'];
 			if ($result['post_name'] || $result['post_address']) {
-				$reulst['serviceaddr'] = $result['post_name'];
+				$result['serviceaddr'] = $result['post_name'];
 				if ($result['post_address'])
 					$result['serviceaddr'] .= "\n" . $result['post_address'];
 				if ($result['post_zip'] && $result['post_city'])
@@ -4965,12 +4968,12 @@ class LMS {
 
 		$error = $mail_object = & Mail::factory('smtp', $params);
 //		if (PEAR::isError($error))
-		if (is_a($error,'PEAR::_Error'))
+		if (is_a($error, 'PEAR_Error'))
 			return $error->getMessage();
 
 		$error = $mail_object->send($recipients, $headers, $buf);
 //		if (PEAR::isError($error))
-		if (is_a($error,'PEAR::_Error'))
+		if (is_a($error, 'PEAR_Error'))
 			return $error->getMessage();
 		else
 			return MSG_SENT;
