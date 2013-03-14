@@ -17,7 +17,7 @@
 	{foreach from=$assignments item=assignment}
 	<tr class="dark">
 		<td class="nobr"><b>
-		{if $_config.userpanel.show_tariffname}{$assignment.name}{/if}
+		<!--{if $_config.userpanel.show_tariffname}{$assignment.name}{/if}-->{$assignment.name}
 		</b></td>
 		<td class="nobr" align="right">{$assignment.value|money_format}</td>
 		<td class="nobr" align="right">{$assignment.subscription}</td>

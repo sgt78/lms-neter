@@ -377,11 +377,11 @@ if(!$numberplan) $numberplan=0;
 $number=$LMS->GetNewDocumentNumber(DOC_INVOICE, $numberplan, $now);
 $urow=$this->lmsdb->GetRow('SELECT lastname, name, address, city, zip, ssn, ten FROM customers WHERE id=?', array($user));
 
-$this->lmsdb->Execute('INSERT INTO documents (number, numberplanid, type, customerid, name, address, zip, city, ten, ssn, cdate, paytime, paytype, divisionid) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 2, 1)', array($number, $numberplan, $user, $urow['lastname'].' '.$urow['name'], $urow['address'], $urow['zip'], $urow['city'], $urow['ten'], $urow['ssn'], $now, 7));
+$this->lmsdb->Execute('INSERT INTO documents (number, numberplanid, type, customerid, name, address, zip, city, ten, ssn, cdate, sdate, paytime, paytype, divisionid) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 2, 1)', array($number, $numberplan, $user, $urow['lastname'].' '.$urow['name'], $urow['address'], $urow['zip'], $urow['city'], $urow['ten'], $urow['ssn'], $now, $now, 7));
 $docid=$this->lmsdb->GetOne('SELECT id FROM documents WHERE number=? AND cdate=? AND type = 1 AND customerid=?', array($number, $now, $user));
 $itemid=1;
 
-$this->lmsdb->Execute('INSERT INTO invoicecontents (docid, value, taxid, prodid, content, count, description, tariffid, itemid, discount) VALUES (?,?,?,?,?,?,?,?,?,?)', array($docid, number_format($tax*$netto,2,'.',''), $taxid,'','szt', 1, 'Usługi telekomunikacyjne',0,$itemid,0));
+$this->lmsdb->Execute('INSERT INTO invoicecontents (docid, value, taxid, prodid, content, count, description, tariffid, itemid, pdiscount, vdiscount) VALUES (?,?,?,?,?,?,?,?,?,?,?)', array($docid, number_format($tax*$netto,2,'.',''), $taxid,'','szt', 1, 'Usługi telekomunikacyjne',0,$itemid,0,0));
 
 $this->lmsdb->Execute('INSERT INTO cash (time, value, taxid, customerid, comment, docid, itemid) VALUES (?,?,?,?,?,?,?)', array($now,number_format(-$tax*$netto,2,'.',''),$taxid,$user,'Usługi telekomunikacyjne',$docid,$itemid));
 $this->_ImportInvoice_updatefreesec(round(($ab['free']/date('t'))*$diff)*60,$us);
@@ -456,11 +456,11 @@ if(!$numberplan) $numberplan=0;
 $number=$LMS->GetNewDocumentNumber(DOC_INVOICE, $numberplan, $now);
 $urow=$this->lmsdb->GetRow('SELECT lastname, name, address, city, zip, ssn, ten FROM customers WHERE id=?', array($val['lmsid']));
 
-$this->lmsdb->Execute('INSERT INTO documents (number, numberplanid, type, customerid, name, address, zip, city, ten, ssn, cdate, paytime, paytype, divisionid) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 2, 1)', array($number, $numberplan, $val['lmsid'], $urow['lastname'].' '.$urow['name'], $urow['address'], $urow['zip'], $urow['city'], $urow['ten'], $urow['ssn'], $now, 7));
+$this->lmsdb->Execute('INSERT INTO documents (number, numberplanid, type, customerid, name, address, zip, city, ten, ssn, cdate, sdate, paytime, paytype, divisionid) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 2, 1)', array($number, $numberplan, $val['lmsid'], $urow['lastname'].' '.$urow['name'], $urow['address'], $urow['zip'], $urow['city'], $urow['ten'], $urow['ssn'], $now, $now, 7));
 $docid=$this->lmsdb->GetOne('SELECT id FROM documents WHERE number=? AND cdate=? AND type = 1 AND customerid=?', array($number, $now, $val['lmsid']));
 $itemid=1;
 }
-$this->lmsdb->Execute('INSERT INTO invoicecontents (docid, value, taxid, prodid, content, count, description, tariffid, itemid, discount) VALUES (?,?,?,?,?,?,?,?,?,?)', array($docid, round($tax*$netto,2), $taxid,'','szt', 1, 'Usługi telekomunikacyjne',0,$itemid,0));
+$this->lmsdb->Execute('INSERT INTO invoicecontents (docid, value, taxid, prodid, content, count, description, tariffid, itemid, pdiscount, vdiscount) VALUES (?,?,?,?,?,?,?,?,?,?,?)', array($docid, round($tax*$netto,2), $taxid,'','szt', 1, 'Usługi telekomunikacyjne',0,$itemid,0,0));
 
 $this->lmsdb->Execute('INSERT INTO cash (time, value, taxid, customerid, comment, docid, itemid) VALUES (?,?,?,?,?,?,?)', array($now,round($tax*$netto,2)*-1,$taxid,$val['lmsid'],'Usługi telekomunikacyjne',$docid,$itemid));
 

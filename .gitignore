@@ -1,5 +1,3 @@
-templates_c/*
-userpanel/templates_c/*
 lib/Smarty/Smarty.class.php
 lib/Smarty/SmartyBC.class.php
 lib/Smarty/debug.tpl
@@ -52,6 +50,16 @@ lib/Smarty/plugins/shared.mb_wordwrap.php
 lib/Smarty/plugins/variablefilter.htmlspecialchars.php
 lib/Smarty/sysplugins
 nbproject/private
+contrib/teryt/
+contrib/teryt_bak/
+documents/
+!documents/templates/
+!documents/.htaccess
+rt_zalaczniki/
+templates_c/*
+!templates_c/.htaccess
+userpanel/templates_c/*
+!userpanel/templates_c/.htaccess
 lms.ini
 *~
 *.swp
