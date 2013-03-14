@@ -61,6 +61,16 @@ templates_c/*
 userpanel/templates_c/*
 !userpanel/templates_c/.htaccess
 backups/*
+contrib/teryt/
+contrib/teryt_bak/
+documents/
+!documents/templates/
+!documents/.htaccess
+rt_zalaczniki/
+templates_c/*
+!templates_c/.htaccess
+userpanel/templates_c/*
+!userpanel/templates_c/.htaccess
 lms.ini
 *~
 *.swp
