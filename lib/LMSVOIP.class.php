@@ -456,7 +456,7 @@ if(!$numberplan) $numberplan=0;
 $number=$LMS->GetNewDocumentNumber(DOC_INVOICE, $numberplan, $now);
 $urow=$this->lmsdb->GetRow('SELECT lastname, name, address, city, zip, ssn, ten FROM customers WHERE id=?', array($val['lmsid']));
 
-$this->lmsdb->Execute('INSERT INTO documents (number, numberplanid, type, customerid, name, address, zip, city, ten, ssn, cdate, cdate, paytime, paytype, divisionid) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 2, 1)', array($number, $numberplan, $val['lmsid'], $urow['lastname'].' '.$urow['name'], $urow['address'], $urow['zip'], $urow['city'], $urow['ten'], $urow['ssn'], $now, $now, 7));
+$this->lmsdb->Execute('INSERT INTO documents (number, numberplanid, type, customerid, name, address, zip, city, ten, ssn, cdate, sdate, paytime, paytype, divisionid) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 2, 1)', array($number, $numberplan, $val['lmsid'], $urow['lastname'].' '.$urow['name'], $urow['address'], $urow['zip'], $urow['city'], $urow['ten'], $urow['ssn'], $now, $now, 7));
 $docid=$this->lmsdb->GetOne('SELECT id FROM documents WHERE number=? AND cdate=? AND type = 1 AND customerid=?', array($number, $now, $val['lmsid']));
 $itemid=1;
 }
