@@ -151,8 +151,8 @@ function module_mailsave()
 	$pw_crypted = md5crypt($password1);
 
     	$query = 'INSERT INTO mailbox (username,password,name,maildir,quota,domain,created,modified,customerid)
-				 values (\''.$mail.'\',\''.$pw_crypted.'\',\'Created from Ebok\',\''.$domain.'/'.$mail.'\',
-				 50000000,\''.$domain.'/\',now(),now(),'.$SESSION->id.');';
+				 values (\''.$mail.'\',\''.$pw_crypted.'\',\'Created from Ebok\',\''.$domain.'/'.$mail.'/\',
+				 51200000,\''.$domain.'\',now(),now(),'.$SESSION->id.');';
 
 	$DB_MAIL->Execute($query);
 

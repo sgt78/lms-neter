@@ -267,8 +267,15 @@ my $row;
 
 		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
 		my $netto_vat = $converter1->convert($row->{'podatek'});
-		$netto_vat = sprintf("%.1f",$netto_vat);
-		$netto_vat = sprintf("%-4s",$netto_vat);
+		if ($netto_vat == 0)
+			{
+			$netto_vat = "ZWOL";
+			}
+		else
+			{
+			$netto_vat = sprintf("%.1f",$netto_vat);
+			$netto_vat = sprintf("%-4s",$netto_vat);
+			}
 		#12 kwota netto
 		my $netto_wart = $row->{'wartosc'}/(1+$row->{'podatek'}/100);
 		my $vat_wart = $row->{'wartosc'} - $netto_wart;
@@ -279,8 +286,15 @@ my $row;
 
 		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
 		my $vat_vat = $converter1->convert($row->{'podatek'});
-		$vat_vat = sprintf("%.1f",$vat_vat);
-		$vat_vat = sprintf("%-4s",$vat_vat);
+		if ($vat_vat == 0)
+			{
+			$vat_vat = "ZWOL";
+			}
+		else
+			{
+			$vat_vat = sprintf("%.1f",$vat_vat);
+			$vat_vat = sprintf("%-4s",$vat_vat);
+			}
 		#12 kwota podatku
 		$vat_wart = sprintf("%.2f",$vat_wart);
 		$vat_wart = sprintf("%12s",$vat_wart);
@@ -326,7 +340,7 @@ my $row;
 		$bufor_faktury .= "R  ".$record;	
 		$bufor_faktury .= "\r\n";			
 	}
-print $bufor_faktury;
+# print $bufor_faktury;
 $dbq->finish();
 
 # wyciągamy korekty faktury sprzedaży
@@ -421,8 +435,15 @@ $dbq->finish();
 
 		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
 		my $netto_vat = $converter1->convert($row->{'podatek'});
-		$netto_vat = sprintf("%.1f",$netto_vat);
-		$netto_vat = sprintf("%-4s",$netto_vat);
+		if ($netto_vat == 0)
+			{
+			$netto_vat = "ZWOL";
+			}
+		else
+			{
+			$netto_vat = sprintf("%.1f",$netto_vat);
+			$netto_vat = sprintf("%-4s",$netto_vat);
+			}
 		#12 kwota netto
 		my $netto_wart = $row->{'wartosc'}/(1+$row->{'podatek'}/100);
 		my $vat_wart = $row->{'wartosc'} - $netto_wart;
@@ -433,8 +454,15 @@ $dbq->finish();
 
 		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
 		my $vat_vat = $converter1->convert($row->{'podatek'});
-		$vat_vat = sprintf("%.1f",$vat_vat);
-		$vat_vat = sprintf("%-4s",$vat_vat);
+		if ($vat_vat == 0)
+			{
+			$vat_vat = "ZWOL";
+			}
+		else
+			{
+			$vat_vat = sprintf("%.1f",$vat_vat);
+			$vat_vat = sprintf("%-4s",$vat_vat);
+			}
 		#12 kwota podatku
 		$vat_wart = sprintf("%.2f",$vat_wart);
 		$vat_wart = sprintf("%12s",$vat_wart);
@@ -483,38 +511,38 @@ $dbq->finish();
 $dbq->finish();
 
 # wyciągamy faktury zakupu
-	$dbq = $dbase->prepare("SELECT 
-							d.type, d.extnumber as number, d.cdate, cdate+84000*paytime as pdate, d.id,  
-							d.name, d.customerid, CONCAT_WS(' ',d.address,d.zip,d.city) AS address, d.ten,
-							taxes.value as podatek, SUM(ic.value*ic.count) AS wartosc, COUNT(ic.docid) AS count
-    		
-							FROM documents d
-							LEFT JOIN invoicecontents ic ON ic.docid = d.id
-							LEFT JOIN taxes t ON t.id = ic.taxid
-			
-							WHERE d.type = 10
-							and cdate >= $timestamp_from_date and cdate <= $timestamp_to_date
-							GROUP BY type, number, cdate, pdate, d.id, name, address, ten, customerid, t.value
-							ORDER BY cdate, type;
+		$dbq = $dbase->prepare("SELECT 
+								d.type, d.extnumber as number, d.cdate, cdate+84000*paytime as pdate, d.id,  
+								d.name, d.customerid, CONCAT_WS(' ',d.address,d.zip,d.city) AS address, d.ten,
+								t.value as podatek, SUM(ic.value*ic.count) AS wartosc, COUNT(ic.docid) AS count
+				
+								FROM documents d
+								LEFT JOIN invoicecontents ic ON ic.docid = d.id
+								LEFT JOIN taxes t ON t.id = ic.taxid
+				
+								WHERE d.type = 10
+								and cdate >= $timestamp_from_date and cdate <= $timestamp_to_date
+								GROUP BY type, number, cdate, pdate, d.id, name, address, ten, customerid, t.value
+								ORDER BY cdate, type;
 							");
 	$dbq->execute();
 
 	$lp = 0;
-	$bufor_zakupy;
+	my $bufor_zakupy;
 	while($row = $dbq->fetchrow_hashref())
 	{
 		$lp++;
 
 		#2 rodzaj dokumentu
-		my $n_rodz = 'SP';
+		my $n_rodz = 'ZA';
 		#3 typ dokumentu
-		my $n_typ = 'FVB';
+		my $n_typ = 'FV-';
 		#8 DDMMRRRR data dokumentu = data wystawienia
 		my $n_data_dok	= strftime '%d%m%Y', localtime($row->{'cdate'});
 		#8 DDMMRRRR data dokumentu 2 = data sprzedaży
 		my $n_data_sprz = strftime '%d%m%Y', localtime($row->{'cdate'});
 		#16 numer dokumentu
-		my $n_nr_dok = $converter1->convert($invoice_number);
+		my $n_nr_dok = $converter1->convert($row->{'number'});
 		$n_nr_dok = sprintf("%.16s",$n_nr_dok);
 		$n_nr_dok = sprintf("%-16s",$n_nr_dok);
 		#16 numer dokumentu korygowanego, "dla dok. kasowych i bankowych numer konta księgowego dla elementu szablonu z opcją numer konta na dokumencie"
@@ -528,9 +556,7 @@ $dbq->finish();
 		$n_kwota_dok = sprintf("%12s",$n_kwota_dok);
 		$n_kwota_dok =~ s/\./\,/g;
 		#8 DDMMRRRR termin płatności
-		my $term_platn = DateTime->from_epoch( epoch=> $row->{'cdate'}, time_zone => 'Europe/Warsaw', locale => 'pl_PL'  );
-		$term_platn->add(days => $row->{'paytime'});
-		my $n_term_platn = strftime '%d%m%Y', localtime($term_platn->epoch());
+		my $n_term_platn = strftime '%d%m%Y', localtime($row->{'pdate'});
 		#5 symbol dokumentu
 		my $n_symbol = sprintf("%-5s",'');
 		my $naglowek = $n_rodz.' '.$n_typ.' '.$n_data_dok.' '.$n_data_sprz.' '.$n_nr_dok.' '.$n_nr_dok_kor.' '.$n_rej_sprz.' '.$n_rej_zak.' '.$n_kwota_dok.' '.$n_term_platn.' '.$n_symbol;
@@ -555,8 +581,15 @@ $dbq->finish();
 
 		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
 		my $netto_vat = $converter1->convert($row->{'podatek'});
-		$netto_vat = sprintf("%.1f",$netto_vat);
-		$netto_vat = sprintf("%-4s",$netto_vat);
+		if ($netto_vat == 0)
+			{
+			$netto_vat = "ZWOL";
+			}
+		else
+			{
+			$netto_vat = sprintf("%.1f",$netto_vat);
+			$netto_vat = sprintf("%-4s",$netto_vat);
+			}
 		#12 kwota netto
 		my $netto_wart = $row->{'wartosc'}/(1+$row->{'podatek'}/100);
 		my $vat_wart = $row->{'wartosc'} - $netto_wart;
@@ -567,8 +600,15 @@ $dbq->finish();
 
 		#4 stawka podatku - '22.0' 'ZWOL' 'NP  '
 		my $vat_vat = $converter1->convert($row->{'podatek'});
-		$vat_vat = sprintf("%.1f",$vat_vat);
-		$vat_vat = sprintf("%-4s",$vat_vat);
+		if ($vat_vat == 0)
+			{
+			$vat_vat = "ZWOL";
+			}
+		else
+			{
+			$vat_vat = sprintf("%.1f",$vat_vat);
+			$vat_vat = sprintf("%-4s",$vat_vat);
+			}
 		#12 kwota podatku
 		$vat_wart = sprintf("%.2f",$vat_wart);
 		$vat_wart = sprintf("%12s",$vat_wart);
@@ -586,7 +626,7 @@ $dbq->finish();
 		$info = sprintf("%-50s",$info);
 		
 		#20 unikalny kod towaru
-		my $t_kod = 'sprzedaż usług';
+		my $t_kod = 'zakupy';
 		$t_kod = $converter1->convert($t_kod);
 		$t_kod = sprintf("%.20s",$t_kod);
 		$t_kod = sprintf("%-20s",$t_kod);
@@ -614,7 +654,7 @@ $dbq->finish();
 		$bufor_zakupy .= "R  ".$record;	
 		$bufor_zakupy .= "\r\n";			
 	}
-print $bufor_zakupy;
+# print $bufor_zakupy;
 $dbq->finish();
 
 # wyciągamy wpłaty bankowe z importów
@@ -708,7 +748,7 @@ my $ftype = 'text/html';
 my $fext = 'html';
 
 my $mail = build MIME::Entity Type=>"multipart/mixed";
-$mail->head->add('To', '"=?UTF-8?Q?'.encode_qp('Księgowość', '').'?="'.' <daniel@neter.pl>');
+$mail->head->add('To', '"=?UTF-8?Q?'.encode_qp('Księgowość', '').'?="'.' <faktury@neter.pl>');
 $mail->head->add('From', '"Neter Sp. z o.o."'.' <finanse@neter.pl>');
 $mail->head->add('Reply-To', '"Neter Sp. z o.o."'.' <finanse@neter.pl>');
 $mail->head->add('Subject', '=?UTF-8?Q?'.encode_qp('Faktury za: '.$from.' - '.$to, '').'?=');
@@ -738,6 +778,13 @@ $mail->attach(
 	Type => $ftype,
 	Charset => 'UTF-8',
 	Encoding => $fencoding,
+	Filename => 'faktury_zakup.txt',
+	Data => [ "#KsH v.006\r\n".$bufor_zakupy ],
+);
+$mail->attach(
+	Type => $ftype,
+	Charset => 'UTF-8',
+	Encoding => $fencoding,
 	Filename => 'wyciag_bankowy.txt',
 	Data => [ "#KsH v.006\r\n".$bufor_wyciag_bankowy ],
 );
@@ -746,10 +793,10 @@ $mail->attach(
 	Charset => 'UTF-8',
 	Encoding => $fencoding,
 	Filename => 'wszystko.txt',
-	Data => [ "#KsH v.006\r\n".$bufor_faktury.$bufor_faktury_kor.$bufor_wyciag_bankowy ],
+	Data => [ "#KsH v.006\r\n".$bufor_faktury.$bufor_faktury_kor.$bufor_zakupy.$bufor_wyciag_bankowy ],
 );
-# $mail->smtpsend('MailFrom' => 'finanse@neter.pl', 'To' => 'faktury@neter.pl', 'Return-path' => 'finanse@neter.pl');
-$mail->smtpsend('MailFrom' => 'finanse@neter.pl', 'To' => 'daniel@neter.pl', 'Return-path' => 'finanse@neter.pl');
+$mail->smtpsend('MailFrom' => 'finanse@neter.pl', 'To' => 'faktury@neter.pl', 'Return-path' => 'finanse@neter.pl');
+# $mail->smtpsend('MailFrom' => 'finanse@neter.pl', 'To' => 'daniel@neter.pl', 'Return-path' => 'finanse@neter.pl');
 
 
 exit;
