@@ -154,6 +154,9 @@ $access['table'][103]['allow_reg']	= '^(hv_+(accountinfo|accountlist|billinginfo
 $access['table'][105]['name']		= 'Monitoring';
 $access['table'][105]['allow_reg']	= '^monit.*$';
 
+$access['table'][252]['name']		= 'VoiP';
+$access['table'][252]['allow_reg']	= '^(v_.*|customer(list|info))$';
+
 $access['table'][253]['name']		= trans('users edition and addition forbidden');
 $access['table'][253]['deny_reg']	= '^(user(add|del|edit|passwd))$';
 

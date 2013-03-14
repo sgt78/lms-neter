@@ -56,6 +56,9 @@ if (!check_conf('privileges.hide_sysinfo')) {
 
 if (!check_conf('privileges.hide_summaries')) {
 	$SMARTY->assign('customerstats', $LMS->CustomerStats());
+	$SMARTY->assign('sum',$voip->get_mov_stat());
+	$customerstats = $voip->CustomerStats($customerstats);
+	$SMARTY->assign('customerstats',$customerstats);
 	$SMARTY->assign('nodestats', $LMS->NodeStats());
 }
 

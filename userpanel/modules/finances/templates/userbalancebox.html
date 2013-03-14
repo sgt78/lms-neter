@@ -1,3 +1,18 @@
+<script language="JavaScript">
+<!--
+{literal}
+function confirmLink(theLink, message)
+{
+        var is_confirmed = confirm(message);
+
+        if (is_confirmed) {
+                theLink.href += '&is_sure=1';
+        }
+        return is_confirmed;
+}
+{/literal}
+-->
+</script>
 {$disable_invoices = check_conf('userpanel.disable_invoices')}
 <form name="invoices" action="?m=finances&amp;f=invoice" method="POST" target="_blank">
 <table class="table table-bordered table-striped">
@@ -42,6 +57,14 @@
 	<td>
             {if $balancelist.doctype[balancelist]==1 || $balancelist.doctype[balancelist]==3 || $balancelist.doctype[balancelist]==6}
                 <a href="?m=finances&amp;f=invoice&amp;id={$balancelist.docid[balancelist]}" target="_blank">Wydrukuj</a> <input type="checkbox" name="inv[{$balancelist.docid[balancelist]}]" value="1" />
+                <!--
+				<a href="?m=finances&amp;f=invoice&amp;id={$balancelist.docid[balancelist]}" target="_blank">{img src="print.gif" alt="[ Print ]" text=$balancelist.number[balancelist]}</a><input style="vertical-align: middle" type="checkbox" name="inv[{$balancelist.docid[balancelist]}]" value="1" />
+				-->
+				{if $balancelist.details[balancelist]}
+					<a href="?m=finances&amp;f=v_attachment&amp;docid={$balancelist.docid[balancelist]}" target="_blank" onclick="confirmLink(this,'Drukować szczegółowy biling ?');">Zał.</a>
+                {else}
+					&nbsp;
+                {/if}
             {else}
                 &nbsp;
             {/if}

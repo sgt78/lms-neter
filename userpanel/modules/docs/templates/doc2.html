@@ -1,0 +1,80 @@
+﻿<DIV style="margin:10px; width:21cm; height:29cm;" >
+<div id="lewyrog" style="width:6cm;  position:relative;float:left;">
+Abonent:
+<br>
+Nazwa: {$d.lastname} {$d.name}<br>
+Adres: {$d.address}<br>
+NIP: {$d.ten}<br>
+REGON: 
+</div>
+<div id="prawyrog" style="width:6cm; height:100px; position:relative; float:right; text-align:left;">
+Data: {$smarty.now|date_format:"%Y-%m-%d"}
+<br>
+Miejscowość: _______________
+</div>
+<br>
+<div id="prawyrog" style="width:6cm; height:100px; position:absolute; top:2cm;  left:15.5cm; text-align:left;">
+Operator:<br>
+{$d.nazwa}
+<br>
+{$d.adres}
+<br>
+{$d.kod}{$d.poczta}
+</div>
+<br>
+<div id="tytul" style="width:16cm; position:relative; margin:0 auto; top:3cm; text-align:center">
+<span style="font-size:15pt; font-weight:bold">Wniosek</span><br><span style="font-size:13pt;font-weight:bold">o rozwiązanie umowy na świadczenie usług telekomunikacyjnych z przeniesieniem numeru</span>
+</div>
+<br>
+<div id="tresc" style="width:16cm; position:relative; margin:0 auto; top:3cm; font-size:12pt; text-align:justify; padding: 0px;">
+Wnoszę o rozwiązanie umowy na świadczenie usług telekomunikacyjnych:
+<br>
+<br>
+<table><tr>
+<td>
+<span style="font-weight:bold; font-size:13pt;">Numer ewidencyjny Abonenta:</span>
+</td>
+<td>
+<table border=1 style="border-collapse:collapse;"><tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+</table>
+</td>
+</tr>
+</table>
+<br>
+<span style="font-weight:bold; font-size:13pt;">Numery lub przedział numerów, którego ma dotyczyć przeniesienie:</span>
+<br>
+<br>
+<b>{$d.numery}</b>
+<br>
+<br>
+<span style="font-weight:bold; font-size:12pt;">Nazwa operatora, do którego będą przeniesione numery: Crowley Data Poland Sp. z o.o..</span>
+<br>
+<br><br><br>
+<span style="font-size:10pt; font-style:italic">
+Załączniki:<br></span>
+<span style="font-size:10pt; ">
+1.Zawiadomienie o możliwości zawarcia umowy o świadczenie usługi telekomunikacyjnej z przeniesieniem numeru.</span>
+<br>
+
+</div>
+<div id="podpis" style="width:350px;  position:relative; right:30px; top:300px; text-align:center; float:right;">
+<table  border=1 style="border-collapse:collapse; text-align:center" width=100%>
+<tr>
+<td>
+Abonent:
+</td>
+</tr>
+<tr style="height:70px;">
+<td valign=bottom>
+...................................................................<br>
+<span style="font-size:7pt">Podpis przedstawiciela Abonenta</span>
+</td>
+</tr>
+</table>
+</div>
+</DIV>

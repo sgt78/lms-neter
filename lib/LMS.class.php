@@ -950,6 +950,11 @@ class LMS {
 				break;
 		}
 		
+		if($state == 99)
+		{
+			$searchargs[] = ' c.id in ('.$network.')';
+			unset($network);
+		}	
 
 		if ($network)
 			$net = $this->GetNetworkParams($network);
@@ -1252,6 +1257,15 @@ class LMS {
 			$i = 0;
 			
 			
+
+foreach($tslist as $key=>$val)
+{
+if($this->DB->GetOne('select count(id) from billing_details where documents_id=?',array($val['docid']))>0)
+$val['details']=1;
+else $val['details']=0;
+$tslist[$key]=$val;
+}
+reset($tslist);
 
 			foreach ($tslist as $row) {
 				// old format wrapper

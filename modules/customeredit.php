@@ -26,6 +26,9 @@
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $exists = $LMS->CustomerExists($_GET['id']);
 
+($voip->CustomerExists($_GET['id']) ? $v=true : $v=false);
+$SMARTY->assign('isvoip',$v);
+
 if($exists < 0 && $action != 'recover')
 {
 	$SESSION->redirect('?m=customerinfo&id='.$_GET['id']);
@@ -139,6 +142,16 @@ elseif (isset($_POST['customerdata']))
 	                $contacts[] = array('name' => $name, 'phone' => $phone, 'type' => $type);
 	}
 
+	if($v)
+	{
+		if($customerdata['voippoczatekum'] != '' and (!preg_match('/^\d{4}-\d{2}-\d{2}$/',$customerdata['voippoczatekum']) or !checkdate(substr($customerdata['voippoczatekum'],5,2),substr($customerdata['voippoczatekum'],-2),substr($customerdata['voippoczatekum'],0,4))))
+			$error['voippoczatekum'] = trans('Incorrect date!');
+		if($customerdata['voipkoniecum'] != '' and (!preg_match('/^\d{4}-\d{2}-\d{2}$/',$customerdata['voipkoniecum']) or !checkdate(substr($customerdata['voipkoniecum'],5,2),substr($customerdata['voipkoniecum'],-2),substr($customerdata['voipkoniecum'],0,4))))
+			$error['voipkoniecum'] = trans('Incorrect date!');
+		if($customerdata['voippoczatekum'] != '' and $customerdata['voipkoniecum'] != '' and $customerdata['voipkoniecum'] < $customerdata['voippoczatekum'])
+			$error['voippoczatekum'] = trans('Incorrect date!');
+	}
+
 	if(!$error)
 	{
 		if($customerdata['cutoffstop'])
@@ -156,6 +169,7 @@ elseif (isset($_POST['customerdata']))
 			$customerdata['divisionid'] = 0;
 
 		$LMS->CustomerUpdate($customerdata);
+		if($customerdata['isvoip']) $voip->update_user($customerdata);
 
 		$DB->Execute('DELETE FROM imessengers WHERE customerid = ?', array($customerdata['id']));
 		if(isset($im))
@@ -195,6 +209,7 @@ elseif (isset($_POST['customerdata']))
 else
 {
 	$customerinfo = $LMS->GetCustomer($_GET['id']);
+	if($v) $customerinfo = $voip->GetCustomer($customerinfo,$_GET['id']);
 
 	if($customerinfo['cutoffstop'] > mktime(0,0,0))
 		$customerinfo['cutoffstop'] = floor(($customerinfo['cutoffstop'] - mktime(23,59,59))/86400);
@@ -221,6 +236,18 @@ $SMARTY->assign('cstateslist',$LMS->GetCountryStates());
 $SMARTY->assign('countrieslist',$LMS->GetCountries());
 $SMARTY->assign('divisions', $DB->GetAll('SELECT id, shortname, status FROM divisions ORDER BY shortname'));
 $SMARTY->assign('recover',($action == 'recover' ? 1 : 0));
+if($v)
+{
+
+	$customersip = $voip->GetCustomerNodes($_GET['id']);
+	$v_balancelist = $voip->GetCustomerBalance($_GET['id']);
+	$customersip['ownerid']=$_GET['id'];
+	$SMARTY->assign('customersip',$customersip);
+	$SMARTY->assign('v_balancelist',$v_balancelist);
+	$SMARTY->assign('woj',$voip->list_woj());
+	$SMARTY->assign('pow',$voip->list_pow($customerinfo['woj']));
+	$SMARTY->assign('mia',$voip->list_mia($customerinfo['pow']));
+}
 $SMARTY->display('customeredit.html');
 
 ?>

@@ -1,0 +1,58 @@
+﻿<DIV style="margin:10px; width:21cm; height:29cm;" >
+<div id="lewyrog" style="width:6cm;  position:relative;float:left;">
+Abonent:
+<br>
+Nazwa: {$d.lastname} {$d.name}<br>
+Adres: {$d.address}<br>
+NIP: {$d.ten}<br>
+REGON: 
+</div>
+<div id="prawyrog" style="width:6cm; height:100px; position:relative; float:right; text-align:left;">
+Data: {$smarty.now|date_format:"%Y-%m-%d"}
+<br>
+Miejscowość: _______________
+</div>
+<br>
+<div id="tytul" style="width:16cm; position:relative; margin:0 auto; top:3cm; text-align:center">
+<span style="font-size:15pt; font-weight:bold">Zawiadomienie</span><br><span style="font-size:13pt;font-weight:bold">o możliwości zawarcia umowy o świadczenie usługi Telekomunikacyjnej z&nbsp;przeniesieniem numeru</span>
+</div>
+<br>
+<div id="tresc" style="width:16cm; position:relative; margin:0 auto; top:3cm; font-size:12pt; text-align:justify; padding: 0px;">
+&nbsp;&nbsp;&nbsp;W odpowiedzi na Państwa wniosek z dnia {$d.data}, dotyczący potwierdzenia możliwości zawarcia umowy na świadczenie usług 
+telekomunikacyjnych z przeniesieniem numeru informujemy, iż istnieje możliwość zawarcia umowy o świadczenie usług telekomunikacyjnych
+z przeniesieniem numeru.
+
+<br>
+<br>
+<br>
+<span style="font-weight:bold; font-size:13pt;">Numery lub przedział numerów, którego ma dotyczyć przeniesienie:</span>
+<br>
+<br>
+<b>{$d.numery}</b>
+<br>
+<br>
+<span style="font-weight:bold; font-size:13pt;">Numer rutingowy operatora biorcy RN=C5279</span>
+<br>
+<br>
+Rozpoczęcie świadczenia usługi z przeniesieniem numeru nastąpi nie wcześniej<br> niż w dniu rozwiązania umowy z obecnym 
+operatorem telekomunikacyjnym,<br> zgodnie z zapisami tej umowy.
+<br>
+<br>
+Niniejsze zawiadomienie jest ważne przez 60 dni od daty jego wydania.
+</div>
+<div id="podpis" style="width:350px;  position:relative; right:30px; top:300px; text-align:center; float:right;">
+<table  border=1 style="border-collapse:collapse; text-align:center" width=100%>
+<tr>
+<td>
+W imieniu Operatora:
+</td>
+</tr>
+<tr style="height:70px;">
+<td valign=bottom>
+...................................................................<br>
+<span style="font-size:7pt">Podpis przedstawiciela operatora</span>
+</td>
+</tr>
+</table>
+</div>
+</DIV>

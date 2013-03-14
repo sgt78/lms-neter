@@ -1,0 +1,112 @@
+{include file="header.html"}
+<center>
+
+<h3>
+Numery telefonów zgłoszonych przez klientów do przeniesienia.
+</h3>
+<br>
+<br>
+{if $dane}
+<form action="?m=v_usr_movs" method="POST">
+<input type="hidden" name="id_mov" value='{$dane.id}' id="id_mov">
+<table width=40%> 
+<tr style="font-weight:bold">
+<td>
+Użytkownik
+</td>
+<td>
+Numery
+</td>
+<td>
+Obecny operator
+</td>
+<td>
+Nr. ewidencyjny u operatora
+</td>
+<td>
+Operacje
+</td>
+</tr>
+<tr>
+<td id="uz">
+{$dane.lastname}
+</td>
+<td>
+<input type="text" name="numery" value='{$dane.numery}' id="numery">
+</td>
+<td id="op">
+<select name="operr" >
+	{foreach from=$ops item=op name=op}
+  <option value="{$op.id}" {if $op.id==$dane.oper} selected='selected'{/if}>{$op.nazwa}</option>
+
+   {/foreach}
+</select>
+</td>
+<td id="ewi">
+{$dane.nr_ewid}
+</td>
+<td>
+
+<input type="submit" value="OK">
+
+</td>
+</tr>
+</table>
+</form>
+<hr>
+{/if}
+<br><br>
+<table border=2 cellpadding=3 cellspacing=3 width=80%>
+<tr style="font-weight:bold">
+<td>
+Użytkownik
+</td>
+<td>
+Numery
+</td>
+<td>
+Obecny operator
+</td>
+<td>
+Nr. ewidencyjny u operatora
+</td>
+<td>
+Operacje
+</td>
+</tr>
+
+
+{foreach from=$nums item=num name=dd}
+	
+	<tr >
+		<td>
+		<a href="?m=customerinfo&id={$num.cusid}">{$num.lastname}</a>
+		</td>
+		
+		<td>{$num.numery}</td>
+		<td >{$num.nazwa}</td>
+		<td >{$num.nr_ewid}</td>
+		<td>
+		
+		<a href="?m=v_usr_movs&id={$num.id}">Edytuj</a> &nbsp;&nbsp;&nbsp;
+		
+		<form action="?m=v_usr_movs" method="POST">
+		<input type="hidden" value="{$num.id}" name="idd">
+		<select id='sel' name='sel' onchange="this.form.submit();">
+		
+		<option value=0 {if $num.status==0}selected='selected'{/if}>Oczekujący</option>
+		<option value=1 {if $num.status==1}selected='selected'{/if}>W realizacji</option>
+		<option value=2 {if $num.status==2}selected='selected'{/if}>Przeniesiony</option>
+		</select>
+		</form>
+		</td>
+		
+		
+	</tr>
+	
+	{/foreach}
+	
+	
+</table>
+</center>
+{include file="footer.html"}

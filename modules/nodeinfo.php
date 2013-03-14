@@ -76,6 +76,15 @@ $customerid = $nodeinfo['ownerid'];
 
 include(MODULES_DIR . '/customer.inc.php');
 
+	($voip->CustomerExists($customerid) ? $v=true : $v=false);
+	$SMARTY->assign('isvoip',$v);
+if($v)
+{
+	$customersip = $voip->GetCustomerNodes($customerid);
+	$customersip['ownerid']=$customerid;
+	$SMARTY->assign('customersip',$customersip);
+	if($customerid) $customerinfo = $voip->GetCustomer($customerinfo, $customerid);
+}
 $nodestats['hour'] = NodeStats($nodeid, 60 * 60);
 $nodestats['day'] = NodeStats($nodeid, 60 * 60 * 24);
 $nodestats['month'] = NodeStats($nodeid, 60 * 60 * 24 * 30);

@@ -1,0 +1,209 @@
+{*
+<!--// $Id: customerbalancebox.html,v 1.30 2006/01/29 08:42:17 alec Exp $ //-->
+{literal}
+<SCRIPT language=JavaScript>
+	<!--
+
+	function v_CheckAll()
+	{
+		for (var i=0; i<document.v_addbalance.elements.length; i++)
+		{
+			var e = document.v_addbalance.elements[i];
+			if (e.name != 'allbox' && e.type=='checkbox')
+			e.checked = document.v_addbalance.allbox.checked;
+		}
+	}
+
+	function v_CheckAll2()
+	{
+		document.v_addbalance.allbox.checked = !document.v_addbalance.allbox.checked;
+		v_CheckAll();
+	}
+
+	function v_AddBalance()
+	{
+		if(document.forms['v_addbalance'].elements['addbalance[value]'].value != '')
+		document.v_addbalance.submit();
+		else
+			alert('{/literal}{t}Enter transaction value{/t}{literal}!');
+	}
+
+	function v_printr()
+	{
+		var add = "";
+		if(document.v_addbalance.original.checked && document.v_addbalance.copy.checked)
+			add = "";
+		else if(document.v_addbalance.original.checked && !document.v_addbalance.copy.checked)
+			add = "&which=original";
+		else if(!document.v_addbalance.original.checked && document.v_addbalance.copy.checked)
+			add = "&which=copy";
+		
+		document.v_addbalance.action = "?m=v_receipt&print=cached&cash=1" + add;
+		document.v_addbalance.target = "_blank";
+		document.v_addbalance.submit();
+	}
+
+	function v_printi()
+	{
+		var add = "";
+		if(document.v_addbalance.original.checked)
+			add = "&original=1";
+		if(document.v_addbalance.copy.checked)
+			add += "&copy=1";
+		if(document.v_addbalance.duplicate.checked)
+			add += "&duplicate=1";
+
+		document.v_addbalance.action="?m=v_invoice&print=cached&cash=1" + add;
+		document.v_addbalance.target="_blank";
+		document.v_addbalance.submit();
+	}
+	
+	//-->
+</SCRIPT>
+{/literal}
+	<FORM name="v_addbalance" method="POST" action="?m=v_balanceadd&id={$customerinfo.id}">
+<INPUT type="submit" class="hiddenbtn">
+<TABLE WIDTH="100%" CELLPADDING="3">
+	<TR CLASS="DARK">
+			<TD class="fleftu" {if $limit}OnCLick="showOrHide('v_customerbalance');"{/if}>
+			<IMG src="img/pay.gif" alt="">
+			<B>VOIP - {t}Customer Account:{/t}</B> 
+			{if $limit}
+				{math equation="x * -1" x=$limit assign=n}
+				({t a=$n}last $a transactions{/t})
+			{/if}
+		</TD>
+		<TD class="frightu" align="right">
+			<A href="?m=v_invoicenew&action=init&customerid={$balancelist.customerid}">{t}New Invoice{/t} &raquo;</A>&nbsp;<!--
+			<A href="?m=receiptadd&type=in&action=init&customerid={$balancelist.customerid}">{t}New Cash-in Receipt{/t} &raquo;</A>&nbsp;
+			<A href="?m=receiptadd&type=out&action=init&customerid={$balancelist.customerid}">{t}New Cash-out Receipt{/t} &raquo;</A>&nbsp;
+			{if $limit}<A href="?m=customerbalance&id={$balancelist.customerid}">{t}See all transactions{/t} &raquo;</A>{/if}-->
+		</TD>
+	</TR>
+			<TR id="v_customerbalance">
+		<TD width="100%" colspan="2" class="fall">
+			<TABLE cellpadding="5" cellspacing="0" width="100%">
+				<TR class="dark">
+					<TD width="1%" class="fleftu">{t}Date:{/t}</TD>
+					<TD width="1%" class="fbt"></TD>
+					<TD width="1%" class="fbt" align="right">{t}Liability:{/t}</TD>
+					<TD width="1%" class="fbt" align="right">{t}Income:{/t}</TD>
+					<TD width="1%" class="fbt" align="right">{t}Expense:{/t}</TD>
+					<TD width="1%" class="fbt" align="center">&raquo;</TD>
+					<TD width="1%" class="fbt" align="right">{t}After:{/t}</TD>
+					<TD width="92%" class="fbt">{t}Description:{/t}</TD>
+					<TD width="1%" class="frightu">&nbsp;</TD>
+				</TR>
+				{cycle name=bal values="light,lucid" print=false}
+				{section name=v_balancelist loop=$v_balancelist start=$limit}
+				<TR class="{cycle name=bal}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+			<TD width="1%"><nobr>{$v_balancelist[v_balancelist].date}</nobr></TD>
+					<TD width="1%"></TD>
+			<TD width="1%" align="right" nowrap>{if !$v_balancelist[v_balancelist].type}{$v_balancelist[v_balancelist].value*-1|money_format}{else}-{/if}</TD>
+			<TD width="1%" align="right" nowrap>{if $v_balancelist[v_balancelist].type && $v_balancelist[v_balancelist].value > 0}{$v_balancelist[v_balancelist].value|money_format}{else}-{/if}</TD>
+			<TD width="1%" align="right" nowrap>{if $v_balancelist[v_balancelist].type && $v_balancelist[v_balancelist].value < 0}{$v_balancelist[v_balancelist].value*-1|money_format}{else}-{/if}</TD>
+					<TD width="1%" align="center">&raquo;</TD>
+			<TD width="1%" align="right" nowrap>{if $v_balancelist[v_balancelist].after < 0}<FONT class="red">{/if}{$v_balancelist[v_balancelist].after|money_format}{if $v_balancelist[v_balancelist].after < 0}</FONT>{/if}</TD>
+			<TD width="92%">{$v_balancelist[v_balancelist].comment}</TD>
+					<TD width="1%" align="right" nowrap>
+	{if $v_balancelist[v_balancelist].id}
+	{if $v_balancelist[v_balancelist].type == 0}
+	<A href="?m=v_invoice&id={$v_balancelist[v_balancelist].id}" TARGET="_blank"><IMG SRC="img/print.gif" ALT="[ {t}Invoice{/t} ]"></A>
+			<A onClick="return confirmLink(this, 'Jesteś pewien, że chcesz usunąć fakturę z bazy danych?')" HREF="?m=v_invoiceedit&id={$v_balancelist[v_balancelist].id}&action=invoicedel"><IMG SRC="img/delete.gif" ALT="[ {t}Delete{/t} ]"></A>
+
+			<A HREF="?m=v_invoiceedit&id={$v_balancelist[v_balancelist].id}&action=edit"><IMG SRC="img/edit.gif" ALT="[ {t}Edit{/t} ]"></A>
+<!--
+ <A HREF="?m=invoicenote&id={$balancelist.docid[balancelist]}&action=init">F.K.</A> 
+			-->
+			<A onClick="return confirmLink(this, 'Jesteś pewien, że chcesz wyzerowac fakture ?')" HREF="?m=v_invoiceedit&id={$v_balancelist[v_balancelist].id}&action=invoicezero">Zeruj</A>
+	{else}
+	<A onClick="return confirmLink(this, 'Jesteś pewien, że chcesz usunąć wpłatę z bazy danych?')" HREF="?m=customerinfo&id={$v_balancelist[v_balancelist].id}&action=v_balancedel"><IMG SRC="img/delete.gif" ALT="[ {t}Delete{/t} ]"></A>						
+	{/if}
+							{if $balancelist.doctype[balancelist] == $smarty.const.DOC_CNOTE}
+								<A href="?m=invoice&id={$balancelist.docid[balancelist]}" TARGET="_blank"><IMG SRC="img/printn.gif" ALT="[ {t}Credit note{/t} ]" {tip a=$balancelist.docid[balancelist] dynpopup='?m=number&id=$a'}></A>
+							{/if}
+							{if $balancelist.doctype[balancelist] == $smarty.const.DOC_RECEIPT}
+								<A href="?m=receipt&id={$balancelist.docid[balancelist]}" TARGET="_blank"><IMG SRC="img/printr.gif" ALT="[ {t}Cash receipt{/t} ]" {tip a=$balancelist.docid[balancelist] dynpopup='?m=number&id=$a'}></A>
+							{/if}
+
+						{/if}
+						{cycle name=bal print=false}
+	<INPUT class="box {cycle name=bal}" TYPE="checkbox" NAME="marks[{$v_balancelist[v_balancelist].id}]" VALUE="{$v_balancelist[v_balancelist].id}">
+					</TD>
+				</TR>
+				{sectionelse}
+				<TR>
+					<TD align="center" width="100%" colspan="9">
+						<p>&nbsp;</p>
+						<p><B>{t}That customer hasn't got any transactions.{/t}</B></p>
+						<p>&nbsp;</p>
+					</TD>
+				</TR>
+				{/section}
+				<TR class="light">
+					<TD CLASS="ftop" ALIGN="left" colspan="8">
+						<nobr>
+						<A href="javascript:v_printi();">{t}Print invoices{/t} <IMG src="img/print.gif" alt=""></A>&nbsp;
+						<!--<A href="javascript:v_printr();">{t}Print cash receipts{/t} <IMG src="img/printr.gif" alt=""></A>&nbsp;-->
+						<INPUT type="checkbox" class="box light" name="original" checked> {t}original{/t}&nbsp;
+						<INPUT type="checkbox" class="box light" name="copy" checked> {t}copy{/t}
+						<INPUT type="checkbox" class="box light" name="duplicate"> {t}duplicate{/t} z dnia <INPUT type="text" name="dupldate" onClick="cal6.popup();">
+						</nobr>
+					</TD>
+					<TD CLASS="ftop" ALIGN="right" COLSPAN="2">
+						<NOBR><A href="javascript:v_CheckAll2();">{t}Check All{/t}</A><INPUT CLASS="box light" TYPE="checkbox" NAME="allbox" onClick="v_CheckAll();" VALUE="Check All Boxes"></NOBR>
+					</TD>
+				</TR>
+				<TR class="light">
+					<TD class="ftop">
+						<INPUT TYPE="hidden" NAME="addbalance[customerid]" VALUE="{$balancelist.customerid}">
+						<INPUT TYPE="text" name="addbalance[time]" size="15" maxsize="16" {tip text="Enter transaction time in 'yyyy/mm/dd hh:mm' format (empty field means current time). Click to select date from calendar."} onClick="cal5.popup();">
+					</TD>
+					<TD class="ftop" nowrap>
+						{$layout.logname|truncate:16:"...":true}
+					</TD>
+					<TD class="ftop" colspan="2" nowrap>
+						<INPUT TYPE="text" size="8" name="addbalance[value]" accesskey="s" {tip text="Enter transaction value"}>&nbsp;
+						<SELECT SIZE="1" name="addbalance[taxid]" {tip text="Select Tax value"}>
+						{foreach item=tax from=$taxeslist}
+							<OPTION value="{$tax.id}"{if $tax.value==$_config.phpui.default_taxrate} selected{/if}>{$tax.label}</OPTION>
+						{/foreach}
+						</SELECT>
+					</TD>
+					<TD class="ftop" colspan="3" nowrap>
+						<INPUT TYPE="radio" NAME="addbalance[type]" VALUE="0" class="box light" {tip text="Select type of operation"}>{t}liability{/t}<BR>
+						<INPUT TYPE="radio" NAME="addbalance[type]" VALUE="1" class="box light" {tip text="Select type of operation"} checked>{t}income/expense{/t}
+					</TD>
+					<TD class="ftop" colspan="2">
+						<INPUT TYPE="text" size="30" align="left" name="addbalance[comment]" {tip text="Enter short description of transaction"}> 
+					</TD>
+				</TR>
+				<TR class="light">
+					<TD colspan="3">
+						{if $customerinfo.balance < 0}
+						<A href="?m=customerbalanceok&id={$customerinfo.id}" OnClick="return confirmLink(this, '{t a=$customerinfo.customername|escape:"javascript"|escape:"html"}Are you sure, you want to account ALL debts of customer \'$a\'?{/t}');">{t}Clear Account{/t} <IMG src="img/edit.gif" alt=""></A>
+						{/if}
+					</TD>
+					<TD align="right" colspan="6">
+						<A href="javascript:v_AddBalance();">{t}Submit{/t} <IMG src="img/save.gif" alt=""></A>
+					</TD>
+				</TR>
+			</TABLE>
+		</TD>
+	</TR>
+</TABLE>
+</FORM>
+<SCRIPT>
+<!--
+var cal5 = new calendar(document.forms['v_addbalance'].elements['addbalance[time]']);
+var cal6 = new calendar(document.forms['v_addbalance'].elements['dupldate']);
+{if $limit}{literal}
+if(getCookie('customerbalance')=='0')
+{
+	document.getElementById('customerbalance').style.display = 'none';
+}
+{/literal}{/if}
+//-->
+</SCRIPT>
+*}
+

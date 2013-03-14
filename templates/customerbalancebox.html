@@ -148,6 +148,7 @@
 							    <a href="?m=invoiceconvert&docid={$balancelist.docid[balancelist]}&parent=customerinfo&cid={$customerinfo.id}" {tip text="Convert a proforma invoice to invoice"}><img src="img/convert.png"></a>
 							{/if}
 							{if $balancelist.doctype[balancelist] == $smarty.const.DOC_INVOICE || $balancelist.doctype[balancelist] == $smarty.const.DOC_INVOICE_PRO}
+								{if $balancelist.details[balancelist]}<a href="?m=v_attachment&docid={$balancelist.docid[balancelist]}" TARGET="_blank" onclick="confirmLink(this,'Drukować szczegółowy biling ?');">Zał.</a>{/if}
 								<A href="?m=invoice&id={$balancelist.docid[balancelist]}" TARGET="_blank"><IMG SRC="img/print.gif" ALT="[ {trans("Invoice")} ]" {tip a=$balancelist.docid[balancelist] dynpopup='?m=number&id=$a'}></A>
 							{elseif $balancelist.doctype[balancelist] == $smarty.const.DOC_CNOTE}
 								<A href="?m=invoice&id={$balancelist.docid[balancelist]}" TARGET="_blank"><IMG SRC="img/printn.gif" ALT="[ {trans("Credit note")} ]" {tip a=$balancelist.docid[balancelist] dynpopup='?m=number&id=$a'}></A>

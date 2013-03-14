@@ -184,6 +184,7 @@ window.open('?m=invoice&id={$invoice.invoice}&original={$invoice.original}&copy=
 			{/if}
 			{if $invoice.type == $smarty.const.DOC_INVOICE || $invoice.type == $smarty.const.DOC_INVOICE_PRO}
 			    <A HREF="?m=invoice&id={$invoice.id}" TARGET="_blank"><IMG src="img/print.gif" alt="[ {trans("Print")} ]" title="[ {trans("Print")} ]"></A>
+				{if $invoice.details}<a href="?m=v_attachment&docid={$invoice.id}" TARGET="_blank" onclick="confirmLink(this,'Drukować szczegółowy biling ?');">Zał.</a>{/if}
 			{/if}
 			{if $invoice.type == $smarty.const.DOC_CNOTE}
 			    <A HREF="?m=invoice&id={$invoice.id}" TARGET="_blank"><IMG src="img/printn.gif" alt="[ {trans("Print")} ]" title="[ {trans("Print")} ]"></A>

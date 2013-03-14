@@ -37,6 +37,13 @@
 		</td>
 	</tr>
 	{/if}
+	{if $isvoip}
+	<tr>
+		<td width="100%">
+			{include file="customersipbox.html"}
+		</td>
+	</tr>
+	{/if}
 	{if check_modules(81)}
 	<tr>
 		<td width="100%">
@@ -90,5 +97,17 @@
 			{include file="customeractions.html"}
 		</td>
 	</tr>
+	{if $isvoip}
+	<tr>
+		<td width="100%" colspan="2">
+			{include file="v_customerbalancebox.html" limit=-10}
+        </td>
+    </tr>
+    <tr>
+		<td width="100%" colspan="2">
+			{include file="v_customercdr.html"}
+        </td>
+    </tr>
+	{/if}
 </table>
 {include file="footer.html"}

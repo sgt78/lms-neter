@@ -936,6 +936,8 @@ if(!empty($CONFIG['phpui']['custom_menu']))
 	if(file_exists($CONFIG['phpui']['custom_menu']))
 	        require_once($CONFIG['phpui']['custom_menu']);
 
+require_once('menu-voip.php');
+
 /* Example for custom_menu file
 <?php
 	$menu['config']['submenu'][] = array(

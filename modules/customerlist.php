@@ -96,6 +96,13 @@ if (!empty($ce)) {
     else $cetmp = NULL;
     
 	    
+if($s==99)
+{
+$ids=$voip->GetCustomerList();
+if($ids) $customerlist = $LMS->GetCustomerList($o, $s, $ids, $g, NULL, NULL, 'AND', $ng, $d, $fletter, $st, $cetmp);
+	else $customerlist=array();
+}
+else
 $customerlist = $LMS->GetCustomerList($o, $s, $n, $g, NULL, NULL, 'AND', $ng, $d, $fletter, $st, $cetmp);
 
 $listdata['total'] = $customerlist['total'];

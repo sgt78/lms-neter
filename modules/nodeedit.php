@@ -241,6 +241,16 @@ if (empty($nodeinfo['macs']))
 
 include(MODULES_DIR . '/customer.inc.php');
 
+($voip->CustomerExists($ownerid) ? $v=true : $v=false);
+$SMARTY->assign('isvoip',$v);
+if($v)
+{
+$customersip = $voip->GetCustomerNodes($ownerid);
+$customersip['ownerid']=$ownerid;
+$SMARTY->assign('customersip',$customersip);
+$customerinfo=$voip->GetCustomer($customerinfo,$ownerid); 
+}
+
 if (!isset($CONFIG['phpui']['big_networks']) || !chkconfig($CONFIG['phpui']['big_networks'])) {
 	$SMARTY->assign('customers', $LMS->GetCustomerNames());
 }

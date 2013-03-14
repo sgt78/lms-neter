@@ -59,6 +59,72 @@
 				</TR>
 				{/foreach}
 			</TABLE>
+			
+			
+			<TABLE cellpadding="5" cellspacing="0" WIDTH="100%">
+				<TR class="dark">
+					<TD NOWRAP class="fleftu" colspan=5>Przenoszenie numerów</TD>
+				</TR>
+			
+				<TR class="{cycle name=doc}{if $doc.closed} blend{/if}" onmouseover="addClass(this, 'highlight')" onmouseout="removeClass(this, 'highlight')">
+				<TD>
+					<form action="?m=customerinfo&id={$smarty.get.id}" method="POST">
+						<table> 
+						<tr>
+						<td align="right">Podaj numer, numery lub przedział numerów, <br>które chcesz przenieść (oddzielaj je przecinkami)</td>
+						<td>
+						<input type="text" name="mov[numery]" value="">
+						</td>
+						
+						<td align="right">&nbsp;&nbsp;Podaj swój numer ewidencyjny u obecnego operatora</td>
+						<td>
+						<input type="text" name="mov[nr_ewid]" value="">
+						</td>
+						
+						<td align="right">&nbsp;&nbsp;Wybierz nazwę obecnego operatora</td>
+						<td>
+
+						<select name="mov[operator]" >
+							{foreach from=$ops item=op name=op}
+						  <option value="{$op.id}" >{$op.nazwa}</option>
+
+						   {/foreach}
+						</select>
+						</td>
+						
+						<td colspan=2 align="center">
+						<input type="submit" value="zgłoś">
+						</td>
+						</tr>
+
+						</table>
+
+					</form>
+						{if $docs}
+						Dokumenty przenoszenia numerów
+
+
+						<table border=1 width=70%>
+						<tr style="font-weight:bold">
+						<td>Numery</td><td>Status</td><td>Dokumenty</td></tr>
+
+						{foreach from=$docs item=doc name=dd}
+						<tr>
+						<td>{$doc.numery}</td><td>{if $doc.status==0}Oczekujące{/if}{if $doc.status==1}W realizacji{/if}{if $doc.status==2}Przeniesiony{/if}</td>
+						<td>{if $doc.status==1}
+							<a href="?m=customerinfo&docs&genpdf=1&idn={$doc.id}&id={$smarty.get.id}">Dokument1</a>
+						&nbsp;&nbsp;	<a href="?m=customerinfo&genpdf=2&idn={$doc.id}&id={$smarty.get.id}">Dokument2</a>
+						{if $doc.nazwa=="Netia S.A. Netia Tower"}&nbsp;&nbsp;	<a href="?m=customerinfo&genpdf=3&idn={$doc.id}&id={$smarty.get.id}">Dokument3</a>{/if}
+							{/if}
+							</td>
+							
+						</tr>
+						{/foreach}
+						</table>
+						{/if}
+				</TR>
+				
+			</TABLE>
 		</TD>
 	</TR>
 </TABLE>

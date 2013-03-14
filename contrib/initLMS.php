@@ -42,6 +42,7 @@ define('SYS_DIR', $CONFIG['directories']['sys_dir']);
 define('LIB_DIR', $CONFIG['directories']['lib_dir']);
 define('DOC_DIR', $CONFIG['directories']['doc_dir']);
 define('MODULES_DIR', $CONFIG['directories']['modules_dir']);
+$_LIB_DIR = $CONFIG['directories']['lib_dir'];
 
 require_once(LIB_DIR.'/config.php');
 

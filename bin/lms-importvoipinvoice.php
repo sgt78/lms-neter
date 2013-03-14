@@ -5,6 +5,8 @@ chdir(dirname ( __FILE__ ).'/..'); // go to LMS root directory
 require 'contrib/initLMS.php';
 
 $voip=new LMSVOIP($DB,$CONFIG['voip']);
+// >>>>>>> LMS+ntt
+// $voip=new LMSVOIP(&$DB,$CONFIG['phpui']);
 setlocale(LC_NUMERIC, 'C');
 $voip->ImportInvoice($argv[1]);
 ?>
